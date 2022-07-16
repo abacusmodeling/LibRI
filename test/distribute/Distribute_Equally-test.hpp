@@ -9,6 +9,8 @@
 #include "global/MPI_Wrapper.h"
 #include "test/print_stl.h"
 
+#include <fstream>
+
 namespace Distribute_Equally_Test
 {
 	void test_distribute_atoms()

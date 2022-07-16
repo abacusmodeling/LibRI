@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Tensor.h"
+#include "Blas_Interface-Tensor.h"
 
 #include <complex>
 #include <memory>

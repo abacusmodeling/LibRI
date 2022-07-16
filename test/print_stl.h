@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <tuple>
 #include <iostream>
 
 template<typename T>
@@ -47,5 +48,12 @@ std::ostream &operator<<(std::ostream &os, const std::map<Tkey,Tvalue> &m)
 {
 	for(const auto &i : m)
 		os<<i.first<<"\t"<<i.second<<std::endl;
+	return os;
+}
+
+template<typename T0, typename T1>
+std::ostream &operator<<(std::ostream &os, const std::tuple<T0,T1> &t)
+{
+	os<<"[ "<<std::get<0>(t)<<", "<<std::get<1>(t)<<" ]";
 	return os;
 }
