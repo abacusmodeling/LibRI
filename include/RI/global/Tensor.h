@@ -54,5 +54,4 @@ Tensor<T> operator- (const Tensor<T> &t1, const Tensor<T> &t2);
 template<typename T>
 Tensor<T> operator* (const Tensor<T> &t1, const Tensor<T> &t2);
 
-#include "Tensor.hpp"
-#include "Tensor-multiply.hpp"
+#include "Blas_Interface-Tensor.h"

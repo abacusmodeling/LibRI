@@ -7,7 +7,7 @@
 
 #include "distribute/Distribute_Equally.h"
 #include "global/MPI_Wrapper.h"
-#include "test/print_stl.h"
+#include "unittests/print_stl.h"
 
 #include <fstream>
 

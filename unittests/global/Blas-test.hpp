@@ -1,3 +1,10 @@
+// ===================
+//  Author: Peize Lin
+//  date: 2021.10.31
+// ===================
+
+#pragma once
+
 #include <vector>
 #include <iostream>
 
@@ -5,7 +12,7 @@
 #include "global/Blas_Interface-Contiguous.h"
 #include "global/Blas_Interface-Tensor.h"
 #include "global/Tensor.h"
-#include "Tensor-test.h"
+#include "Tensor-test-3.hpp"
 
 #include <mkl_blas.h>
 
