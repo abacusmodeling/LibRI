@@ -10,15 +10,14 @@
 #include "CS_Matrix.h"
 #include <algorithm>
 
-
-template<typename TA, typename Tperiod, size_t Ndim_period, typename Tdata>
-void LRI<TA,Tperiod,Ndim_period,Tdata>::set_tensor2(
-	const std::map<TA, std::map<TAp, Tensor<Tdata>>> &Ds_local,
+template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+void LRI<TA,Tcell,Ndim,Tdata>::set_tensor2(
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 	const Label::ab &label,
 	const Global_Func::To_Real_t<Tdata> &threshold)
 {
 	//if()
-		std::map<TA, std::map<TAp, Tensor<Tdata>>> Ds_period = RI_Tools::cal_period(Ds_local, this->period);
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_period = RI_Tools::cal_period(Ds_local, this->period);
 	//this->Ds_ab[label] = Communicate::communicate(Ds_period, threshold);
 	if(threshold)
 		this->Ds_ab[label] = RI_Tools::filter(Ds_period, filter_funcs[label], threshold);
@@ -30,7 +29,7 @@ void LRI<TA,Tperiod,Ndim_period,Tdata>::set_tensor2(
 
 /*
 void LRI::set_tensor3(
-	const std::map<TA, std::map<TAp, std::map<TAp, Tensor<Tdata>>>> &Ds_local,
+	const std::map<TA, std::map<TAC, std::map<TAC, Tensor<Tdata>>>> &Ds_local,
 	const Label::ab &label,
 	const Global_Func::To_Real_t<Tdata> &threshold)
 {

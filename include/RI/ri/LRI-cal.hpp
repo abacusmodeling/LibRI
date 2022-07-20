@@ -11,8 +11,8 @@
 #include "CS_Matrix.h"
 #include <memory.h>
 
-template<typename TA, typename Tperiod, size_t Ndim_period, typename Tdata>
-void LRI<TA,Tperiod,Ndim_period,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
+template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+void LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
 {
 	using namespace Array_Operator;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
@@ -43,7 +43,7 @@ void LRI<TA,Tperiod,Ndim_period,Tdata>::cal(const std::vector<Label::ab_ab> &lab
 
 	auto get_D_result = [&](
 		const Label::ab_ab &label,
-		const TA &Aa01, const TAp &Aa2, const TAp &Ab01, const TAp &Ab2)
+		const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2)
 		-> Tensor<Tdata>&
 	{
 		const bool flag_a_01 = (Label::get_unused_a(label)!=2);
@@ -110,19 +110,19 @@ void LRI<TA,Tperiod,Ndim_period,Tdata>::cal(const std::vector<Label::ab_ab> &lab
 
 	for(const TA &Aa01 : list_Aa01())
 	{
-		for(const TAp &Aa2 : list_Aa2())
+		for(const TAC &Aa2 : list_Aa2())
 		{
 			const Tensor<Tdata> D_a = Global_Func::find( Ds_ab[Label::ab::a],
 				Aa01, Aa2);
 			if(D_a.empty())	continue;
-			for(const TAp &Ab01 : list_Ab01())
+			for(const TAC &Ab01 : list_Ab01())
 			{
 				std::unordered_map<Label::ab_ab, Tensor<Tdata>> Ds_b01;
 				std::unordered_map<Label::ab_ab, Tdata_real> Ds_b01_csm;
-				for(const TAp &Ab2 : list_Ab2())
+				for(const TAC &Ab2 : list_Ab2())
 				{
 					const Tensor<Tdata> D_b = Global_Func::find( Ds_ab[Label::ab::b],
-						Ab01.first, TAp{Ab2.first, (Ab2.second-Ab01.second)%period});
+						Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%period});
 
 					if(D_b.empty())	continue;
 					const Tensor<Tdata> D_b_transpose = flag_D_b_transpose ? tensor3_transpose(D_b) : Tensor<Tdata>{};

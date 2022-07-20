@@ -10,13 +10,13 @@
 
 namespace RI_Tools
 {
-	template<typename TA, typename TAp, typename Tdata>
-	std::map<TA, std::map<TAp, Tensor<Tdata>>> filter(
-		const std::map<TA, std::map<TAp, Tensor<Tdata>>> &Ds,
+	template<typename TA, typename TAC, typename Tdata>
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> filter(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
 		const T_filter_func<Tdata> &filter_func,
 		const Global_Func::To_Real_t<Tdata> &threshold)
 	{
-		std::map<TA, std::map<TAp, Tensor<Tdata>>> Ds_filter;
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_filter;
 		for(const auto &Ds_tmp0 : Ds)
 			for(const auto &Ds_tmp1 : Ds_tmp0.second)
 				if(filter_func( Ds_tmp1.second, threshold ))

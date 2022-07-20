@@ -12,16 +12,16 @@
 
 #include <stdexcept>
 
-template<typename TA, typename Tperiod, size_t Ndim_period, typename Tdata>
-void CS_Matrix<TA,Tperiod,Ndim_period,Tdata>::set_label_A(
+template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+void CS_Matrix<TA,Tcell,Ndim,Tdata>::set_label_A(
 	const Label::ab_ab &label_in,
-	const TA &Aa01, const TAp &Aa2, const TAp &Ab01, const TAp &Ab2,
-	const std::array<Tperiod,Ndim_period> &period)
+	const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2,
+	const std::array<Tcell,Ndim> &period)
 {
 	using namespace Array_Operator;
 
 	// 每种实现如 LRI_01_01 要写一份
-	auto get_Ab = [&Ab01, &Ab2](const int xb) -> TAp
+	auto get_Ab = [&Ab01, &Ab2](const int xb) -> TAC
 	{
 		switch(xb)
 		{
@@ -30,9 +30,9 @@ void CS_Matrix<TA,Tperiod,Ndim_period,Tdata>::set_label_A(
 			default:		throw std::invalid_argument("get_Ab");
 		}
 	};
-	auto get_Aa_Ab = [&Aa01, &Aa2, &period, &get_Ab](const int xa, const int xb) -> std::pair<TA,TAp>
+	auto get_Aa_Ab = [&Aa01, &Aa2, &period, &get_Ab](const int xa, const int xb) -> std::pair<TA,TAC>
 	{
-		const TAp Ab = get_Ab(xb);
+		const TAC Ab = get_Ab(xb);
 		switch(xa)
 		{
 			case 0:	case 1:	return {Aa01, Ab};
@@ -41,13 +41,13 @@ void CS_Matrix<TA,Tperiod,Ndim_period,Tdata>::set_label_A(
 		}
 	};
 	auto get_uplimit = [&get_Aa_Ab](
-		const std::unordered_map<Label::ab, std::map<TA,std::map<TAp,Tdata>>> &uplimits,
+		const std::unordered_map<Label::ab, std::map<TA,std::map<TAC,Tdata>>> &uplimits,
 		const Label::ab label_ab)
 	{
 		const int xa = Label::get_a(label_ab);
 		const int xb = Label::get_b(label_ab);
-		const std::pair<TA,TAp> &Aa_Ab = get_Aa_Ab(xa,xb);
-		const TA &Aa=Aa_Ab.first;	const TAp &Ab=Aa_Ab.second;
+		const std::pair<TA,TAC> &Aa_Ab = get_Aa_Ab(xa,xb);
+		const TA &Aa=Aa_Ab.first;	const TAC &Ab=Aa_Ab.second;
 		return Global_Func::find(uplimits.at(label_ab), Aa, Ab);
 	};
 

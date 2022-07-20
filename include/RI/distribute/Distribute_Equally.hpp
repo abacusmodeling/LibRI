@@ -11,22 +11,22 @@
 
 namespace Distribute_Equally
 {
-	template<typename TA, typename Tperiod, size_t Ndim_period>
+	template<typename TA, typename Tcell, size_t Ndim>
 	std::pair<std::vector<TA>,
-	          std::vector<std::vector<std::pair<TA,std::array<Tperiod,Ndim_period>>>>>
+	          std::vector<std::vector<std::pair<TA,std::array<Tcell,Ndim>>>>>
 	distribute_atoms(
 		const MPI_Comm &mpi_comm,
 		const std::vector<TA> &atoms,
-		const std::array<Tperiod,Ndim_period> &period,
+		const std::array<Tcell,Ndim> &period,
 		const size_t num_index)
 	{
 		assert(num_index>=1);
-		using TAp = std::pair<TA,std::array<Tperiod,Ndim_period>>;
+		using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
 
 		const std::vector<int> Ns(num_index, atoms.size());
 		const std::vector<std::tuple<MPI_Comm,int,int>> comm_color_sizes = Split_Processes::split_all(mpi_comm, Ns);
 
-		std::pair<std::vector<TA>, std::vector<std::vector<TAp>>> atoms_split_list;
+		std::pair<std::vector<TA>, std::vector<std::vector<TAC>>> atoms_split_list;
 		atoms_split_list.first = Divide_Atoms::divide_atoms(
 			std::get<1>(comm_color_sizes[1]),
 			std::get<2>(comm_color_sizes[1]),
@@ -41,27 +41,27 @@ namespace Distribute_Equally
 		return atoms_split_list;
 	}
 
-	template<typename TA, typename Tperiod, size_t Ndim_period>
+	template<typename TA, typename Tcell, size_t Ndim>
 	std::pair<std::vector<TA>,
-	          std::vector<std::vector<std::pair<TA,std::array<Tperiod,Ndim_period>>>>>
+	          std::vector<std::vector<std::pair<TA,std::array<Tcell,Ndim>>>>>
 	distribute_atoms_periods(
 		const MPI_Comm &mpi_comm,
 		const std::vector<TA> &atoms,
-		const std::array<Tperiod,Ndim_period> &period,
+		const std::array<Tcell,Ndim> &period,
 		const size_t num_index)
 	{
 		assert(num_index>=1);
-		using TAp = std::pair<TA,std::array<Tperiod,Ndim_period>>;
+		using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
 
 		std::vector<int> Ns(num_index);
 		Ns[0] = atoms.size();
 		for(size_t i=0; i<num_index; ++i)
 			Ns[i] = 
 				atoms.size()
-				* std::accumulate( period.begin(), period.end(), 1, std::multiplies<Tperiod>() );
+				* std::accumulate( period.begin(), period.end(), 1, std::multiplies<Tcell>() );
 		const std::vector<std::tuple<MPI_Comm,int,int>> comm_color_sizes = Split_Processes::split_all(mpi_comm, Ns);
 
-		std::pair<std::vector<TA>, std::vector<std::vector<TAp>>> atoms_split_list;
+		std::pair<std::vector<TA>, std::vector<std::vector<TAC>>> atoms_split_list;
 		atoms_split_list.first = Divide_Atoms::divide_atoms(
 			std::get<1>(comm_color_sizes[1]),
 			std::get<2>(comm_color_sizes[1]),

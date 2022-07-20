@@ -18,22 +18,22 @@ namespace Distribute_Equally
 	// 返回值为每维上本进程被分配到的值列表，first为第0维，second[i-1]为第i维。
 
 	// 全部维按照atoms，尽可能均分
-	template<typename TA, typename Tperiod, size_t Ndim_period>
+	template<typename TA, typename Tcell, size_t Ndim>
 	std::pair<std::vector<TA>,
-	          std::vector<std::vector<std::pair<TA,std::array<Tperiod,Ndim_period>>>>>
+	          std::vector<std::vector<std::pair<TA,std::array<Tcell,Ndim>>>>>
 	distribute_atoms(
 		const MPI_Comm &mpi_comm,
 		const std::vector<TA> &atoms,
-		const std::array<Tperiod,Ndim_period> &period,
+		const std::array<Tcell,Ndim> &period,
 		const size_t num_index);
 
 	// 第0维按照atoms、剩余维按照{atom,period}，尽可能均分。
-	template<typename TA, typename Tperiod, size_t Ndim_period>
+	template<typename TA, typename Tcell, size_t Ndim>
 	std::pair<std::vector<TA>,
-	          std::vector<std::vector<std::pair<TA,std::array<Tperiod,Ndim_period>>>>>
+	          std::vector<std::vector<std::pair<TA,std::array<Tcell,Ndim>>>>>
 	distribute_atoms_periods(
 		const MPI_Comm &mpi_comm,
 		const std::vector<TA> &atoms,
-		const std::array<Tperiod,Ndim_period> &period,
+		const std::array<Tcell,Ndim> &period,
 		const size_t num_index);
 }

@@ -9,8 +9,8 @@
 #include "Label.h"
 #include <limits>
 
-template<typename TA, typename Tperiod, size_t Ndim_period, typename Tdata>
-LRI<TA,Tperiod,Ndim_period,Tdata>::LRI()
+template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+LRI<TA,Tcell,Ndim,Tdata>::LRI()
 {
 	Ds_ab.reserve(Label::array_ab.size());
 
@@ -21,6 +21,6 @@ LRI<TA,Tperiod,Ndim_period,Tdata>::LRI()
 				const Global_Func::To_Real_t<Tdata> &thr) -> bool
 			{	return D.norm(std::numeric_limits<double>::max()) > thr;	};
 
-	for(size_t i=0; i<Ndim_period; ++i)
-		period[i] = std::numeric_limits<Tperiod>::max();
+	for(size_t i=0; i<Ndim; ++i)
+		period[i] = std::numeric_limits<Tcell>::max();
 }

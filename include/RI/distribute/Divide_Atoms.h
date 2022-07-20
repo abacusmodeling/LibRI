@@ -23,21 +23,21 @@ namespace Divide_Atoms
 	// 	[0,1]  [2]
 	// with all period
 	// 	[{0,0},{0,1},{1,0},{1,1}]  [{2,0},{2,1}]
-    template<typename TA, typename Tperiod, size_t Ndim_period>
-	std::vector<std::pair<TA,std::array<Tperiod,Ndim_period>>> divide_atoms(
+    template<typename TA, typename Tcell, size_t Ndim>
+	std::vector<std::pair<TA,std::array<Tcell,Ndim>>> divide_atoms(
 		const int group_rank,
 		const int group_size,
 		const std::vector<TA> &atoms,
-		const std::array<Tperiod,Ndim_period> &period);
+		const std::array<Tcell,Ndim> &period);
 
 	// equally divide atoms and periods:
 	// 	[{0,0},{0,1},{1,0}]  [{1,1},{2,0},{2,1}]  [{3,0},{3,1}]
-	template<typename TA, typename Tperiod, size_t Ndim_period>
-	std::vector<std::pair<TA,std::array<Tperiod,Ndim_period>>> divide_atoms_periods(
+	template<typename TA, typename Tcell, size_t Ndim>
+	std::vector<std::pair<TA,std::array<Tcell,Ndim>>> divide_atoms_periods(
 		const int group_rank,
 		const int group_size,
 		const std::vector<TA> &atoms,
-		const std::array<Tperiod,Ndim_period> &period);
+		const std::array<Tcell,Ndim> &period);
 }
 
 #include "Divide_Atoms.hpp"
