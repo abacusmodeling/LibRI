@@ -5,12 +5,13 @@
 
 #pragma once
 
-#include "Label.h"
-#include "global/Tensor.h"
+#include "../ri/Label.h"
+#include "../global/Tensor.h"
 #include "CS_Matrix.h"
 #include "RI_Tools.h"
-#include "global/Global_Func-2.h"
+#include "../global/Global_Func-2.h"
 
+#include <mpi.h>
 #include <map>
 #include <set>
 #include <array>
@@ -31,13 +32,13 @@ public:
 	CS_Matrix< TA,TA,Ndim,
 		Global_Func::To_Real_t<Tdata> > csm;
 
-	LRI();
-	
-	void set_tensor2(
+	LRI(const MPI_Comm &mpi_comm_in);
+
+	void set_tensors_map2(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 		const Label::ab &label,
 		const Global_Func::To_Real_t<Tdata> &threshold);
-	//void set_tensor3(
+	//void set_tensors_map3(
 	//	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 	//	const std::string &label,
 	//	const Tdata &threshold);
@@ -52,6 +53,13 @@ public:
 	std::function<std::set<TAC>()> list_Ab2;
 
 	std::array<Tcell,Ndim> period;
+
+private:
+	const MPI_Comm mpi_comm;
+
+	std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
+		const Label::ab &label,
+		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const;
 };
 
 #include "LRI.hpp"

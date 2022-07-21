@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "global/Tensor.h"
-#include "global/Global_Func-2.h"
+#include "../global/Tensor.h"
+#include "../global/Global_Func-2.h"
 #include <map>
 
 namespace RI_Tools

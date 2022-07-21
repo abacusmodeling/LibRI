@@ -115,6 +115,14 @@ Tensor<T> operator- (const Tensor<T> &t1, const Tensor<T> &t2)
 }
 
 template<typename T>
+Tensor<T> &Tensor<T>::operator+= (const Tensor &t)
+{
+	assert(same_shape(*this,t));
+	*this->data += *t.data;
+	return *this;
+}
+
+template<typename T>
 Tensor<T> Tensor<T>::transpose() const
 {
 	assert(this->shape.size()==2);

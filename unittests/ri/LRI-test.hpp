@@ -3,8 +3,10 @@
 #include<map>
 #include<unordered_map>
 #include<iostream>
+#include<mpi.h>
 #include"ri/Label.h"
 #include"ri/LRI.h"
+#include"global/MPI_Wrapper.h"
 
 #include"unittests/print_stl.h"
 #include"unittests/global/Tensor-test.h"
@@ -32,6 +34,15 @@ namespace LRI_Test
 	template<typename Tdata>
 	void main()
 	{
+		int mpi_init_provide;
+		MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+
+		if(MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD)!=0)
+		{
+			MPI_Finalize();
+			return;
+		}
+
 		const size_t Na0=2, Nb0=3, Na1=4, Nb1=5, Na2=6, Nb2=7;
 		const int Aa01=1, Ab01=2, Aa2=5, Ab2=6;
 		std::unordered_map<Label::ab, std::map<int, std::map<std::pair<int,std::array<int,1>>, Tensor<Tdata>>>> Ds_ab;
@@ -48,7 +59,7 @@ namespace LRI_Test
 		Ds_ab[Label::ab::a2b1][Aa2][{Ab01,{0}}] = init_tensor<Tdata>({Na2,Nb1});
 		Ds_ab[Label::ab::a2b2][Aa2][{Ab2,{0}}] = init_tensor<Tdata>({Na2,Nb2});
 
-		LRI<int,int,1,Tdata> lri;
+		LRI<int,int,1,Tdata> lri(MPI_COMM_WORLD);
 
 		lri.csm.set_threshold(0);
 		lri.list_Aa01 = [&]()->std::set<int>{ return {Aa01}; };
@@ -57,7 +68,7 @@ namespace LRI_Test
 		lri.list_Ab2 = [&]()->std::set<std::pair<int,std::array<int,1>>>{ return {{Ab2,{0}}}; };
 
 		for(const Label::ab &label : Label::array_ab)
-			lri.set_tensor2(Ds_ab[label], label, 0);
+			lri.set_tensors_map2(Ds_ab[label], label, 0);
 
 		{
 			lri.cal({Label::ab_ab::a0b0_a1b1});
@@ -292,6 +303,8 @@ namespace LRI_Test
 			std::cout<<"a1b2_a2b1\t"<<(lri.Ds_result[Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 			lri.Ds_result.clear();
 		}
+
+		MPI_Finalize();
 	}
 
 }

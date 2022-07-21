@@ -7,8 +7,8 @@
 
 #include "CS_Matrix.h"
 #include "CS_Matrix_Tools.h"
-#include "global/Global_Func-1.h"
-#include "global/Array_Operator.h"
+#include "../global/Global_Func-1.h"
+#include "../global/Array_Operator.h"
 
 #include <stdexcept>
 

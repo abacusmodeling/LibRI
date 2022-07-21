@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Label.h"
+#include "../ri/Label.h"
 
 #include <array>
 #include <map>

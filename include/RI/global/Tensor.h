@@ -34,8 +34,6 @@ public:
 	inline T& operator() (const size_t i0, const size_t i1) const;
 	inline T& operator() (const size_t i0, const size_t i1, const size_t i2) const;
 
-	bool empty() const { return shape.empty(); }
-
 	Tensor transpose() const;
 
 	// ||d||_p = (|d_1|^p+|d_2|^p+...)^{1/p}
@@ -43,6 +41,13 @@ public:
 	Global_Func::To_Real_t<T> norm(const double p) const;
 
 	T* ptr()const{ return &(*this->data)[0]; }
+
+	bool empty() const { return shape.empty(); }
+	operator bool () const { return !shape.empty(); }
+
+	Tensor & operator += (const Tensor &);
+
+	template <class Archive> void serialize( Archive & ar ){ ar(shape); ar(data); }		// for cereal
 };
 
 

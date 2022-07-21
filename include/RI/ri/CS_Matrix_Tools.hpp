@@ -6,7 +6,7 @@
 #pragma once
 
 #include "CS_Matrix_Tools.h"
-#include "global/Blas_Interface-Tensor.h"
+#include "../global/Blas_Interface-Tensor.h"
 #include <stdexcept>
 #include <memory.h>
 

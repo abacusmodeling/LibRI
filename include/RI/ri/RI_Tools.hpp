@@ -6,7 +6,7 @@
 #pragma once
 
 #include "RI_Tools.h"
-#include "global/Array_Operator.h"
+#include "../global/Array_Operator.h"
 
 namespace RI_Tools
 {

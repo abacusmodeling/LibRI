@@ -6,8 +6,8 @@
 #pragma once
 
 #include "LRI.h"
-#include "global/Array_Operator.h"
-#include "global/Global_Func-1.h"
+#include "../global/Array_Operator.h"
+#include "../global/Global_Func-1.h"
 #include "CS_Matrix.h"
 #include <memory.h>
 
