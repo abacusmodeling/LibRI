@@ -22,6 +22,26 @@
 
 namespace LRI_Test
 {
+	template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+	class Parallel_LRI_test: public Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>
+	{
+		using TatomR = std::array<double,Ndim>;		// tmp
+		void set_parallel(
+			const MPI_Comm &mpi_comm_in,
+			const std::map<TA,TatomR> &atomsR,
+			const std::array<TatomR,Ndim> &latvec,
+			const std::array<Tcell,Ndim> &period_in) override
+		{
+			this->mpi_comm = mpi_comm_in;
+			this->period = period_in;
+			const int Aa01=1, Ab01=2, Aa2=5, Ab2=6;
+			this->list_Aa01 = {Aa01};
+			this->list_Aa2={{Aa2,{0}}};
+			this->list_Ab01={{Ab01,{0}}};
+			this->list_Ab2={{Ab2,{0}}};
+		}
+	};
+
 	template<typename Tdata>
 	static Tensor<Tdata> init_tensor(const std::vector<size_t> &shape)
 	{
@@ -59,17 +79,15 @@ namespace LRI_Test
 		Ds_ab[Label::ab::a2b1][Aa2][{Ab01,{0}}] = init_tensor<Tdata>({Na2,Nb1});
 		Ds_ab[Label::ab::a2b2][Aa2][{Ab2,{0}}] = init_tensor<Tdata>({Na2,Nb2});
 
-		LRI<int,int,1,Tdata> lri(MPI_COMM_WORLD);
+		constexpr size_t Ndim = 1;
+		LRI<int,int,Ndim,Tdata> lri(MPI_COMM_WORLD);
+		lri.parallel = std::make_shared<Parallel_LRI_test<int,int,Ndim,Tdata>>();
+		lri.set_parallel({}, {}, {1});
 
 		lri.csm.set_threshold(0);
-		lri.list_Aa01 = [&]()->std::set<int>{ return {Aa01}; };
-		lri.list_Aa2 = [&]()->std::set<std::pair<int,std::array<int,1>>>{ return {{Aa2,{0}}}; };
-		lri.list_Ab01 = [&]()->std::set<std::pair<int,std::array<int,1>>>{ return {{Ab01,{0}}}; };
-		lri.list_Ab2 = [&]()->std::set<std::pair<int,std::array<int,1>>>{ return {{Ab2,{0}}}; };
 
 		for(const Label::ab &label : Label::array_ab)
 			lri.set_tensors_map2(Ds_ab[label], label, 0);
-
 		{
 			lri.cal({Label::ab_ab::a0b0_a1b1});
 			Tensor<Tdata> D_test({Na2,Nb2});

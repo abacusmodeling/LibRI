@@ -61,4 +61,30 @@ namespace Global_Func
 	{
 		return s.find(item) != s.end();
 	}
+
+	template<typename Tkey, typename Tvalue>
+	std::vector<Tkey> map_key_to_vec(const std::map<Tkey,Tvalue> &m)
+	{
+		std::vector<Tkey> v;
+		v.reserve(m.size());
+		for(const auto &im : m)
+			v.push_back(im.first);
+		return v;
+	}
+
+	template<typename Tkey, typename Tvalue>
+	std::vector<Tkey> map_value_to_vec(const std::map<Tkey,Tvalue> &m)
+	{
+		std::vector<Tvalue> v;
+		v.reserve(m.size());
+		for(const auto &im : m)
+			v.push_back(im.second);
+		return v;
+	}
+
+	template<typename T>
+	std::set<T> to_set(const std::vector<T> &v)
+	{
+		return std::set<T>(v.begin(), v.end());
+	}
 }

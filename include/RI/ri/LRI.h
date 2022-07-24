@@ -8,6 +8,7 @@
 #include "../ri/Label.h"
 #include "../global/Tensor.h"
 #include "CS_Matrix.h"
+#include "../parallel/Parallel_LRI_Equally.h"
 #include "RI_Tools.h"
 #include "../global/Global_Func-2.h"
 
@@ -16,23 +17,27 @@
 #include <set>
 #include <array>
 #include <unordered_map>
+#include <memory>
 #include <functional>
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 class LRI
 {
 public:
-	using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
+	using TC = std::array<Tcell,Ndim>;
+	using TAC = std::pair<TA,TC>;
+	using TatomR = std::array<double,Ndim>;		// tmp
 
-	//std::map<TA, std::map<TAC, Tensor<Tdata>> Ds_a;
-	//std::map<TA, std::map<TAC, Tensor<Tdata>> Ds_b;
 	std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_ab;
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_result;
 
-	CS_Matrix< TA,TA,Ndim,
-		Global_Func::To_Real_t<Tdata> > csm;
-
 	LRI(const MPI_Comm &mpi_comm_in);
+
+	//template<typename TatomR>
+	void set_parallel(
+		const std::map<TA,TatomR> &atomsR,
+		const std::array<TatomR,Ndim> &latvec,
+		const std::array<Tcell,Ndim> &period_in);	
 
 	void set_tensors_map2(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
@@ -45,21 +50,16 @@ public:
 
 	void cal(const std::vector<Label::ab_ab> &lables);
 
+	CS_Matrix< TA,TA,Ndim,
+		Global_Func::To_Real_t<Tdata> > csm;
+	std::shared_ptr<Parallel_LRI<TA,Tcell,Ndim,Tdata>>
+		parallel = std::make_shared<Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>>();
 	std::unordered_map<	Label::ab, RI_Tools::T_filter_func<Tdata> > filter_funcs;
 
-	std::function<std::set<TA>()> list_Aa01;
-	std::function<std::set<TAC>()> list_Aa2;
-	std::function<std::set<TAC>()> list_Ab01;
-	std::function<std::set<TAC>()> list_Ab2;
-
+// private:
+public:
 	std::array<Tcell,Ndim> period;
-
-private:
 	const MPI_Comm mpi_comm;
-
-	std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
-		const Label::ab &label,
-		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const;
 };
 
 #include "LRI.hpp"

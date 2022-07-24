@@ -108,18 +108,18 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
 		return false;
 	}();
 
-	for(const TA &Aa01 : list_Aa01())
+	for(const TA &Aa01 : this->parallel->get_list_Aa01())
 	{
-		for(const TAC &Aa2 : list_Aa2())
+		for(const TAC &Aa2 : this->parallel->get_list_Aa2(Aa01))
 		{
 			const Tensor<Tdata> D_a = Global_Func::find( Ds_ab[Label::ab::a],
 				Aa01, Aa2);
 			if(D_a.empty())	continue;
-			for(const TAC &Ab01 : list_Ab01())
+			for(const TAC &Ab01 : this->parallel->get_list_Ab01(Aa01, Aa2))
 			{
 				std::unordered_map<Label::ab_ab, Tensor<Tdata>> Ds_b01;
 				std::unordered_map<Label::ab_ab, Tdata_real> Ds_b01_csm;
-				for(const TAC &Ab2 : list_Ab2())
+				for(const TAC &Ab2 : this->parallel->get_list_Ab2(Aa01, Aa2, Ab01))
 				{
 					const Tensor<Tdata> D_b = Global_Func::find( Ds_ab[Label::ab::b],
 						Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%period});

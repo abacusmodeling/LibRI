@@ -8,8 +8,17 @@
 #include "LRI.h"
 #include "RI_Tools.h"
 #include "CS_Matrix.h"
-#include "../comm/mix/Communicate_Tensors.h"
 #include <algorithm>
+
+template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+void LRI<TA,Tcell,Ndim,Tdata>::set_parallel(
+	const std::map<TA,TatomR> &atomsR,
+	const std::array<TatomR,Ndim> &latvec,
+	const std::array<Tcell,Ndim> &period_in)
+{
+	this->parallel->set_parallel( this->mpi_comm, atomsR, latvec, period_in );
+	this->period = period_in;
+}
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
@@ -19,12 +28,14 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 {
 	//if()
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_period = RI_Tools::cal_period(Ds_local, this->period);
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_comm = this->comm_tensors_map2(label, std::move(Ds_period));
+
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_comm = this->parallel->comm_tensors_map2(label, std::move(Ds_period));
 
 	if(threshold)
 		this->Ds_ab[label] = RI_Tools::filter(std::move(Ds_comm), filter_funcs[label], threshold);
 	else
 		this->Ds_ab[label] = std::move(Ds_comm);
+
 	if(this->csm.threshold_max)
 		this->csm.set_tensor(label, this->Ds_ab[label]);
 }
@@ -57,32 +68,6 @@ void RI<TA,Tcell,Ndim,Tdata>::set_tensors_map3(
 }
 */
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-std::map<TA,std::map<std::pair<TA,std::array<Tcell,Ndim>>,Tensor<Tdata>>>
-LRI<TA,Tcell,Ndim,Tdata>::comm_tensors_map2(
-	const Label::ab &label,
-	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const
-{
-	switch(label)
-	{
-		case Label::ab::a:
-			return Communicate_Tensors::comm_judge_map2(this->mpi_comm, Ds, this->list_Aa01(), this->list_Aa2());
-		case Label::ab::b:
-			return Communicate_Tensors::comm_judge_map2_period(this->mpi_comm, Ds, this->list_Ab01(), this->list_Ab2(), this->period);
-		case Label::ab::a0b0:	case Label::ab::a0b1:
-		case Label::ab::a1b0:	case Label::ab::a1b1:
-			return Communicate_Tensors::comm_judge_map2(this->mpi_comm, Ds, this->list_Aa01(), this->list_Ab01());
-		case Label::ab::a0b2:
-		case Label::ab::a1b2:
-			return Communicate_Tensors::comm_judge_map2(this->mpi_comm, Ds, this->list_Aa01(), this->list_Ab2());
-		case Label::ab::a2b0:	case Label::ab::a2b1:
-			return Communicate_Tensors::comm_judge_map2_period(this->mpi_comm, Ds, this->list_Aa2(), this->list_Ab01(), this->period);
-		case Label::ab::a2b2:
-			return Communicate_Tensors::comm_judge_map2_period(this->mpi_comm, Ds, this->list_Aa2(), this->list_Ab2(), this->period);
-		default:
-			throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
-	}
-}
 
 /*
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
