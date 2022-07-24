@@ -22,9 +22,11 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel(
 
 	constexpr size_t num_index = 4;
 	const std::vector<TA> atoms_vec = Global_Func::map_key_to_vec(atomsR);
+
 	std::pair<std::vector<TA>, std::vector<std::vector<std::pair<TA,TC>>>>
 		atoms_split_list = Distribute_Equally::distribute_atoms_periods(
 			mpi_comm, atoms_vec, period, num_index);
+			
 	this->list_Aa01 = Global_Func::to_set(atoms_split_list.first);
 	this->list_Aa2  = Global_Func::to_set(atoms_split_list.second[0]);
 	this->list_Ab01 = Global_Func::to_set(atoms_split_list.second[1]);
