@@ -19,7 +19,7 @@ LRI<TA,Tcell,Ndim,Tdata>::LRI(const MPI_Comm &mpi_comm_in)
 	for(const Label::ab &label : Label::array_ab)
 		filter_funcs[label]	=
 			[](const Tensor<Tdata> &D,
-				const Global_Func::To_Real_t<Tdata> &thr) -> bool
+				const Tdata_real &thr) -> bool
 			{	return D.norm(std::numeric_limits<double>::max()) > thr;	};
 
 	for(size_t i=0; i<Ndim; ++i)

@@ -15,8 +15,8 @@ template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 class CS_Matrix
 {
 public:
-
-	using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
+	using TC = std::array<Tcell,Ndim>;
+	using TAC = std::pair<TA,TC>;
 
 	std::unordered_map<Label::ab_ab, Tdata> threshold;
 	void set_threshold(const Tdata &threshold_in);
@@ -28,7 +28,7 @@ public:
 	void set_label_A(
 		const Label::ab_ab &label_in,
 		const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2,
-		const std::array<Tcell,Ndim> &period);
+		const TC &period);
 
 	bool filter_4(                         ) const { return step.a_square * step.first_square * step.second_square * step.b_square < this->threshold.at(step.label); }
 	bool filter_3(const Tdata &uplimit_norm) const { return uplimit_norm                      * step.second_square * step.b_square < this->threshold.at(step.label); }

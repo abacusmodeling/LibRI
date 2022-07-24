@@ -16,7 +16,7 @@ template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void CS_Matrix<TA,Tcell,Ndim,Tdata>::set_label_A(
 	const Label::ab_ab &label_in,
 	const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2,
-	const std::array<Tcell,Ndim> &period)
+	const TC &period)
 {
 	using namespace Array_Operator;
 

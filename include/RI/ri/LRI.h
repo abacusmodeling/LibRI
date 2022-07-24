@@ -26,11 +26,9 @@ class LRI
 public:
 	using TC = std::array<Tcell,Ndim>;
 	using TAC = std::pair<TA,TC>;
+	using Tdata_real = Global_Func::To_Real_t<Tdata>;
 	using TatomR = std::array<double,Ndim>;		// tmp
-
-	std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_ab;
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_result;
-
+	
 	LRI(const MPI_Comm &mpi_comm_in);
 
 	//template<typename TatomR>
@@ -42,24 +40,26 @@ public:
 	void set_tensors_map2(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 		const Label::ab &label,
-		const Global_Func::To_Real_t<Tdata> &threshold);
+		const Tdata_real &threshold);
 	//void set_tensors_map3(
 	//	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 	//	const std::string &label,
 	//	const Tdata &threshold);
 
-	void cal(const std::vector<Label::ab_ab> &lables);
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> cal(const std::vector<Label::ab_ab> &lables);
 
-	CS_Matrix< TA,TA,Ndim,
-		Global_Func::To_Real_t<Tdata> > csm;
+public:
 	std::shared_ptr<Parallel_LRI<TA,Tcell,Ndim,Tdata>>
 		parallel = std::make_shared<Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>>();
 	std::unordered_map<	Label::ab, RI_Tools::T_filter_func<Tdata> > filter_funcs;
+	CS_Matrix< TA,TA,Ndim, Tdata_real > csm;
 
 // private:
 public:
 	std::array<Tcell,Ndim> period;
 	const MPI_Comm mpi_comm;
+	
+	std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_ab;
 };
 
 #include "LRI.hpp"

@@ -43,3 +43,20 @@ std::ostream &operator<<(std::ostream &os, const Tensor<T> &t)
 	return os;
 }
 
+
+//int main1()
+//{
+//	Tensor<double> t1({2,3});
+//	for(int i=0; i<t1.shape[0]; ++i)
+//		for(int j=0; j<t1.shape[1]; ++j)
+//			t1(i,j) = 10*i+j;
+//	std::cout<<t1.shape<<std::endl<<t1<<std::endl;
+//	Tensor<double> t2 = t1;
+//	t2(1,1)=200;
+//	std::cout<<t1.shape<<std::endl<<t1<<std::endl;
+//	Tensor<double> t3 = std::move(t2);
+//	t3(0,0)=100;
+//	std::cout<<t1.shape<<std::endl<<t1<<std::endl;
+//	std::cout<<t2.shape<<std::endl<<t2<<std::endl;
+//	std::cout<<t3.shape<<std::endl<<t3<<std::endl;
+//}

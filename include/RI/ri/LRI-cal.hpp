@@ -12,10 +12,12 @@
 #include <memory.h>
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-void LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
+auto LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
+-> std::map<TA, std::map<TAC, Tensor<Tdata>>>
 {
 	using namespace Array_Operator;
-	using Tdata_real = Global_Func::To_Real_t<Tdata>;
+
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_result;
 
 	auto tensor3_merge = [](const Tensor<Tdata> &D, const bool flag_01_2) -> Tensor<Tdata>
 	{
@@ -50,14 +52,14 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
 		const bool flag_b_01 = (Label::get_unused_b(label)!=2);
 		if(flag_a_01)
 			if(flag_b_01)
-				return this->Ds_result[Aa01][Ab01];
+				return Ds_result[Aa01][Ab01];
 			else
-				return this->Ds_result[Aa01][Ab2];
+				return Ds_result[Aa01][Ab2];
 		else
 			if(flag_b_01)
-				return this->Ds_result[Aa2.first][{Ab01.first, (Ab01.second-Aa2.second)%period}];
+				return Ds_result[Aa2.first][{Ab01.first, (Ab01.second-Aa2.second)%period}];
 			else
-				return this->Ds_result[Aa2.first][{Ab2.first, (Ab2.second-Aa2.second)%period}];
+				return Ds_result[Aa2.first][{Ab2.first, (Ab2.second-Aa2.second)%period}];
 	};
 
 	auto add_D = [](const Tensor<Tdata> &D_add, Tensor<Tdata> &D_result)
@@ -509,8 +511,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
 							tensor3_merge(D_mul3,false),
 							tensor3_merge(D_bx,false));}
 					);
-				}
-			}
-		}
-	}
+				} // for Ab2
+			} // for Ab01
+		} // for Aa2
+	} // for Aa01
+
+	return Ds_result;
 }

@@ -24,7 +24,7 @@ template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 	const Label::ab &label,
-	const Global_Func::To_Real_t<Tdata> &threshold)
+	const Tdata_real &threshold)
 {
 	//if()
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_period = RI_Tools::cal_period(Ds_local, this->period);
@@ -45,7 +45,7 @@ template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void RI<TA,Tcell,Ndim,Tdata>::set_tensors_map3(
 	const std::map<TA, std::map<TAC, std::map<TAC, Tensor<Tdata>>>> &Ds_local,
 	const Label::ab &label,
-	const Global_Func::To_Real_t<Tdata> &threshold)
+	const Tdata_real &threshold)
 {
 	if(label==Label::ab::a)
 	{
