@@ -12,9 +12,9 @@ namespace Array_Operator
 	template<typename T, size_t N>
 	std::array<T,N> operator%(const std::array<T,N> &v1, const std::array<T,N> &v2)
 	{
-	//	auto mod = [](const int i, const int n){ return (i%n+3*n/2)%n-n/2; };			// [-n/2,n/2]
+		auto mod = [](const int i, const int n){ return (i%n+3*n/2)%n-n/2; };			// [-n/2,n/2]
 	//	auto mod = [](const int i, const int n){ return (i%n+n)%n; };					// [0,n)
-		auto mod = [](const int i, const int n){ return i%n; };
+	//	auto mod = [](const int i, const int n){ return i%n; };
 		std::array<T,N> v;
 		for(size_t i=0; i<N; ++i)
 			v[i] = mod(v1[i], v2[i]);

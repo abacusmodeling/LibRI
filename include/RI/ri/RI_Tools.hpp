@@ -25,13 +25,13 @@ namespace RI_Tools
 	}
 
 
-	template<typename TA, typename TP, typename Tdata>
-	std::map<TA, std::map<std::pair<TA,TP>, Tensor<Tdata>>> cal_period(
-		const std::map<TA, std::map<std::pair<TA,TP>, Tensor<Tdata>>> &Ds,
-		const TP &period)
+	template<typename TA, typename TC, typename Tdata>
+	std::map<TA, std::map<std::pair<TA,TC>, Tensor<Tdata>>> cal_period(
+		const std::map<TA, std::map<std::pair<TA,TC>, Tensor<Tdata>>> &Ds,
+		const TC &period)
 	{
 		using namespace Array_Operator;
-		std::map<TA, std::map<std::pair<TA,TP>, Tensor<Tdata>>> Ds_period;
+		std::map<TA, std::map<std::pair<TA,TC>, Tensor<Tdata>>> Ds_period;
 		for(const auto &Ds_tmp0 : Ds)
 		{
 			for(const auto &Ds_tmp1 : Ds_tmp0.second)

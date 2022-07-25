@@ -21,7 +21,7 @@ namespace Exx_Test
 		exx.set_Cs({}, 0);
 		exx.set_Vs({}, 0);
 		exx.set_Ds({}, 0);
-		exx.cal();
+		exx.cal_Hs();
 
 		MPI_Finalize();
 	}

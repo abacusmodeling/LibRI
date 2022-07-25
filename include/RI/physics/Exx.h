@@ -37,6 +37,7 @@ public:
 	void set_Ds(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
 		const Tdata_real &threshold_D);
+	void set_csm_threshold(const Tdata_real &threshold){ this->lri.csm.set_threshold(threshold); }
 
 	void cal_Hs();
 

@@ -19,9 +19,9 @@ LRI<TA,Tcell,Ndim,Tdata>::LRI(const MPI_Comm &mpi_comm_in)
 	for(const Label::ab &label : Label::array_ab)
 		filter_funcs[label]	=
 			[](const Tensor<Tdata> &D,
-				const Tdata_real &thr) -> bool
-			{	return D.norm(std::numeric_limits<double>::max()) > thr;	};
+				const Tdata_real &threshold) -> bool
+			{	return D.norm(std::numeric_limits<double>::max()) > threshold;	};
 
 	for(size_t i=0; i<Ndim; ++i)
-		period[i] = std::numeric_limits<Tcell>::max();
+		period[i] = std::numeric_limits<Tcell>::max()/4;		// /4 for not out of range when Array_Operator::operator%
 }
