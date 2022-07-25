@@ -1,7 +1,7 @@
-// ===================
-//  Author: Peize Lin
-//  date: 2022.06.02
-// ===================
+// ==========================================
+//  Author: Peize Lin, Rong Shi, Minye Zhang
+//  Date:   2022.07.25
+// ==========================================
 
 #pragma once
 
@@ -14,33 +14,30 @@
 #include <map>
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-class Exx
+class RPA
 {
 public:
 	using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
 	using TatomR = std::array<double,Ndim>;		// tmp
 
-	Exx(const MPI_Comm &mpi_comm):lri(mpi_comm){}
+	RPA(const MPI_Comm &mpi_comm):lri(mpi_comm){}
 
 	void set_stru(
 		const std::map<TA,TatomR> &atomsR,
 		const std::array<TatomR,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period);
-	
+
 	void set_Cs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
 		const Tdata_real &threshold_C);
-	void set_Vs(
-		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Vs,
-		const Tdata_real &threshold_V);
-	void set_Ds(
-		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
-		const Tdata_real &threshold_D);
 
-	void cal_Hs();
+	void cal_chi0s(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_tau_positive,
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_tau_negative,
+		const Tdata_real &threshold_G);
 
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> Hs;
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> chi0s;
 
 public:
 	LRI<TA,Tcell,Ndim,Tdata> lri;
@@ -49,10 +46,8 @@ public:
 	{
 		bool stru=false;
 		bool C=false;
-		bool V=false;
-		bool D=false;
 	};
 	Flag_Finish flag_finish;
 };
 
-#include "Exx.hpp"
+#include "RPA.hpp"

@@ -52,7 +52,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 }
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-void Exx<TA,Tcell,Ndim,Tdata>::cal()
+void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs()
 {
 	assert(this->flag_finish.stru);
 	assert(this->flag_finish.C);
