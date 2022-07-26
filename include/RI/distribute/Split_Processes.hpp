@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Split_Processes.h"
-#include "global/MPI_Wrapper.h"
+#include "../global/MPI_Wrapper.h"
 
 #include <numeric>
 #include <cassert>

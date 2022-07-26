@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "distribute/Distribute_Equally.h"
-#include "global/MPI_Wrapper.h"
+#include "RI/distribute/Distribute_Equally.h"
+#include "RI/global/MPI_Wrapper.h"
 #include "unittests/print_stl.h"
 
 #include <fstream>

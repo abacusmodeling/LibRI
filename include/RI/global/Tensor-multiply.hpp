@@ -7,7 +7,7 @@
 
 #include "Tensor.h"
 
-#include "global/Blas_Interface-Tensor.h"
+#include "../global/Blas_Interface-Tensor.h"
 #include <cassert>
 #include <stdexcept>
 #include <string>

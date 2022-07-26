@@ -3,8 +3,8 @@
 // DATE :   2022-07-20
 //=======================
 
-#include "comm/mix/Communicate_Tensors_Map_Judge.h"
-#include "global/MPI_Wrapper.h"
+#include "RI/comm/mix/Communicate_Tensors_Map_Judge.h"
+#include "RI/global/MPI_Wrapper.h"
 #include "unittests/print_stl.h"
 #include "unittests/global/Tensor-test.h"
 

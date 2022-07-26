@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "global/Global_Func-2.h"
+#include "../global/Global_Func-2.h"
 #include <memory>
 #include <vector>
 #include <valarray>

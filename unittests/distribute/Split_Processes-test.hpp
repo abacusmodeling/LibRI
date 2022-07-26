@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "distribute/Split_Processes.h"
+#include "RI/distribute/Split_Processes.h"
 
 #include <fstream>
 

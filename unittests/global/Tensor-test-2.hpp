@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Tensor-test.h"
-#include "global/Tensor.h"
+#include "RI/global/Tensor.h"
 #include "unittests/print_stl.h"
 #include <iostream>
 #include <complex>

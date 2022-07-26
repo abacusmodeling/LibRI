@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "global/Tensor.h"
+#include "../global/Tensor.h"
 
 #include <map>
 #include <set>

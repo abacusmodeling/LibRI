@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "physics/Exx.h"
+#include "RI/physics/Exx.h"
 #include <complex>
 
 namespace Exx_Test

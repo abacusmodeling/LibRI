@@ -1,6 +1,6 @@
 #pragma once
 
-#include "distribute/Divide_Atoms.h"
+#include "RI/distribute/Divide_Atoms.h"
 #include "unittests/print_stl.h"
 
 namespace Divide_Atoms_Test

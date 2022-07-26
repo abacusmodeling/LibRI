@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "physics/RPA.h"
+#include "RI/physics/RPA.h"
 #include <complex>
 
 namespace RPA_Test

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "global/Tensor.h"
+#include "RI/global/Tensor.h"
 
 template<typename T>
 std::ostream &operator<<(std::ostream &os, const Tensor<T> &t)

@@ -8,11 +8,11 @@
 #include <vector>
 #include <iostream>
 
-#include "global/Blas_Interface.h"
-#include "global/Blas_Interface-Contiguous.h"
-#include "global/Blas_Interface-Tensor.h"
-#include "global/Tensor.h"
-#include "Tensor-test-3.hpp"
+#include "RI/global/Blas_Interface.h"
+#include "RI/global/Blas_Interface-Contiguous.h"
+#include "RI/global/Blas_Interface-Tensor.h"
+#include "RI/global/Tensor.h"
+#include "../global/Tensor-test-3.hpp"
 
 #include <mkl_blas.h>
 

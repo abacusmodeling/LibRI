@@ -8,7 +8,7 @@
 #include "Communicate_Tensors_Map.h"
 #include "../../global/Cereal_Types.h"
 #include <Comm/example/Communicate_Map-2.h>
-#include "comm/example/Communicate_Map_Period.h"
+#include "../example/Communicate_Map_Period.h"
 
 #include <map>
 #include <mpi.h>

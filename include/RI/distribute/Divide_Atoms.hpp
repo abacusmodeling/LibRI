@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Divide_Atoms.h"
-#include "global/Global_Func-3.h"
+#include "../global/Global_Func-3.h"
 
 #include <numeric>
 #include <stdexcept>
