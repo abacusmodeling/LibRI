@@ -16,10 +16,6 @@
 #include <cassert>
 #include <limits>
 
-
-// test
-#include <iostream>
-
 template<typename T>
 Tensor<T>::Tensor (const std::vector<size_t> &shape_in)
 {
@@ -35,6 +31,38 @@ Tensor<T>::Tensor (const std::vector<size_t> &shape_in, std::shared_ptr<std::val
 	this->shape = shape_in;
 	this->data = data_in;
 }
+
+/*
+template<typename T>
+Tensor<T>::Tensor (const Tensor<T> &t_in)
+{
+	this->shape = t_in.shape;
+	this->data = t_in.data;
+}
+
+template<typename T>
+Tensor<T>::Tensor (Tensor<T> &&t_in)
+{
+	this->shape = std::move(t_in.shape);
+	this->data = std::move(t_in.data);
+}
+
+template<typename T>
+Tensor<T> &Tensor<T>::operator=(const Tensor<T> &t_in)
+{
+	this->shape = t_in.shape;
+	this->data = t_in.data;
+	return *this;
+}
+
+template<typename T>
+Tensor<T> &Tensor<T>::operator=(Tensor<T> &&t_in)
+{
+	this->shape = std::move(t_in.shape);
+	this->data = std::move(t_in.data);
+	return *this;
+}
+*/
 
 template<typename T>
 size_t Tensor<T>::get_shape_all() const
@@ -115,12 +143,30 @@ Tensor<T> operator- (const Tensor<T> &t1, const Tensor<T> &t2)
 }
 
 template<typename T>
+Tensor<T> operator* (const T &t1, const Tensor<T> &t2)
+{
+	Tensor<T> t(t2.shape);
+	*t.data = t1 * *t2.data;
+	return t;
+}
+
+template<typename T>
+Tensor<T> operator* (const Tensor<T> &t1, const T &t2)
+{
+	Tensor<T> t(t1.shape);
+	*t.data = *t1.data * t2;
+	return t;
+}
+
+/*
+template<typename T>
 Tensor<T> &Tensor<T>::operator+= (const Tensor &t)
 {
 	assert(same_shape(*this,t));
 	*this->data += *t.data;
 	return *this;
 }
+*/
 
 template<typename T>
 Tensor<T> Tensor<T>::transpose() const
@@ -159,5 +205,18 @@ Global_Func::To_Real_t<T> Tensor<T>::norm(const double p) const
 		for(size_t i=0; i<this->data->size(); ++i)
 			s += std::pow(std::abs((*this->data)[i]), p);
 		return std::pow(s,1.0/p);
+	}
+}
+
+
+namespace Global_Func
+{
+	template<typename Tout, typename Tin>
+	Tensor<Tout> convert(const Tensor<Tin> &t_in)
+	{
+		Tensor<Tout> t_out(t_in.shape);
+		for(size_t i=0; i<t_out.data->size(); ++i)
+			(*t_out.data)[i] = Global_Func::convert<Tout>((*t_in.data)[i]);
+		return t_out;
 	}
 }

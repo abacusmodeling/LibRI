@@ -24,7 +24,11 @@ public:
 	Tensor(){};
 	explicit Tensor (const std::vector<size_t> &shape_in);
 	explicit Tensor (const std::vector<size_t> &shape_in, std::shared_ptr<std::valarray<T>> data_in);
-
+	//Tensor (const Tensor<T> &t_in);
+	//Tensor (Tensor<T> &&t_in);
+	//Tensor<T> &operator=(const Tensor<T> &t_in);
+	//Tensor<T> &operator=(Tensor<T> &&t_in);	
+	
 	inline size_t get_shape_all() const;
 	inline Tensor reshape (const std::vector<size_t> &shape_in) const;
 	
@@ -45,7 +49,7 @@ public:
 	bool empty() const { return shape.empty(); }
 	operator bool () const { return !shape.empty(); }
 
-	Tensor & operator += (const Tensor &);
+	//Tensor & operator += (const Tensor &);
 
 	template <class Archive> void serialize( Archive & ar ){ ar(shape); ar(data); }		// for cereal
 };
@@ -58,5 +62,16 @@ Tensor<T> operator- (const Tensor<T> &t1, const Tensor<T> &t2);
 
 template<typename T>
 Tensor<T> operator* (const Tensor<T> &t1, const Tensor<T> &t2);
+template<typename T>
+Tensor<T> operator* (const T &t1, const Tensor<T> &t2);
+template<typename T>
+Tensor<T> operator* (const Tensor<T> &t1, const T &t2);
+
+
+namespace Global_Func
+{
+	template< typename Tout, typename Tin >
+	Tensor<Tout> convert(const Tensor<Tin> &t);
+}
 
 #include "Blas_Interface-Tensor.h"
