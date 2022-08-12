@@ -12,7 +12,7 @@
 
 namespace Blas_Interface
 {	
-	static inline char change_uplo(const char &uplo)
+	inline char change_uplo(const char &uplo)
 	{
 		switch(uplo)
 		{
@@ -22,7 +22,7 @@ namespace Blas_Interface
 		}
 	}
 
-	static inline char change_trans_NT(const char &trans)
+	inline char change_trans_NT(const char &trans)
 	{
 		switch(trans)
 		{
@@ -33,23 +33,53 @@ namespace Blas_Interface
 	}
 
 	// nrm2 = ||x||_2
-	static inline double nrm2(const int n, const double*const X, const int incX)
+	inline float nrm2(const int n, const float*const X, const int incX)
+	{
+		return snrm2_(&n, X, &incX);
+	}
+	inline double nrm2(const int n, const double*const X, const int incX)
 	{
 		return dnrm2_(&n, X, &incX);
 	}
-	static inline double nrm2(const int n, const std::complex<double>*const X, const int incX)
+	inline float nrm2(const int n, const std::complex<float>*const X, const int incX)
+	{
+		return scnrm2_(&n, X, &incX);
+	}
+	inline double nrm2(const int n, const std::complex<double>*const X, const int incX)
 	{
 		return dznrm2_(&n, X, &incX);
 	}
 
+	// Vy = alpha * Vx + Vy
+	inline void axpy(const int &n, const float &alpha, const float*const X, const int &incX, float*const Y, const int &incY)
+	{
+		return saxpy_(&n, &alpha, X, &incX, Y, &incY);
+	}
+	inline void axpy(const int &n, const double &alpha, const double*const X, const int &incX, double*const Y, const int &incY)
+	{
+		return daxpy_(&n, &alpha, X, &incX, Y, &incY);
+	}
+	inline void axpy(const int &n, const std::complex<float> &alpha, const std::complex<float>*const X, const int &incX, std::complex<float>*const Y, const int &incY)
+	{
+		return caxpy_(&n, &alpha, X, &incX, Y, &incY);
+	}	
+	inline void axpy(const int &n, const std::complex<double> &alpha, const std::complex<double>*const X, const int &incX, std::complex<double>*const Y, const int &incY)
+	{
+		return zaxpy_(&n, &alpha, X, &incX, Y, &incY);
+	}	
+
 	// d = Vx * Vy
-	static inline double dot(const int n, const double*const X, const int incX, const double*const Y, const int incY)
+	inline float dot(const int n, const float*const X, const int incX, const float*const Y, const int incY)
+	{
+		return sdot_(&n, X, &incX, Y, &incY);
+	}
+	inline double dot(const int n, const double*const X, const int incX, const double*const Y, const int incY)
 	{
 		return ddot_(&n, X, &incX, Y, &incY);
 	}
 
 	// Vy = alpha * Ma.? * Vx + beta * Vy
-	static inline void gemv(const char transA, const int m, const int n,
+	inline void gemv(const char transA, const int m, const int n,
 		const double alpha, const double*const A, const int ldA, const double*const X, const int incX,
 		const double beta, double*const Y, const int incY)
 	{
@@ -60,7 +90,7 @@ namespace Blas_Interface
 	}
 
 	// Mc = alpha * Ma.? * Mb.? + beta * Mc
-	static inline void gemm(const char transA, const char transB, const int m, const int n, const int k,
+	inline void gemm(const char transA, const char transB, const int m, const int n, const int k,
 		const float alpha, const float*const A, const int ldA, const float*const B, const int ldB, 
 		const float beta, float*const C, const int ldC)
 	{
@@ -68,7 +98,7 @@ namespace Blas_Interface
 			&alpha, B, &ldB, A, &ldA, 
 			&beta, C, &ldC);
 	}
-	static inline void gemm(const char transA, const char transB, const int m, const int n, const int k,
+	inline void gemm(const char transA, const char transB, const int m, const int n, const int k,
 		const double alpha, const double*const A, const int ldA, const double*const B, const int ldB, 
 		const double beta, double*const C, const int ldC)
 	{
@@ -76,7 +106,7 @@ namespace Blas_Interface
 			&alpha, B, &ldB, A, &ldA, 
 			&beta, C, &ldC);
 	}
-	static inline void gemm(const char transA, const char transB, const int m, const int n, const int k,
+	inline void gemm(const char transA, const char transB, const int m, const int n, const int k,
 		const std::complex<float> alpha, const std::complex<float>*const A, const int ldA, const std::complex<float>*const B, const int ldB, 
 		const std::complex<float> beta, std::complex<float>*const C, const int ldC)
 	{
@@ -84,7 +114,7 @@ namespace Blas_Interface
 			&alpha, B, &ldB, A, &ldA, 
 			&beta, C, &ldC);
 	}
-	static inline void gemm(const char transA, const char transB, const int m, const int n, const int k,
+	inline void gemm(const char transA, const char transB, const int m, const int n, const int k,
 		const std::complex<double> alpha, const std::complex<double>*const A, const int ldA, const std::complex<double>*const B, const int ldB, 
 		const std::complex<double> beta, std::complex<double>*const C, const int ldC)
 	{
@@ -95,7 +125,7 @@ namespace Blas_Interface
 
 	// Mc = alpha * Ma   * Ma.T + beta * C
 	// Mc = alpha * Ma.T * Ma   + beta * C
-	static inline void syrk(const char uploC, const char transA, const int n, const int k,
+	inline void syrk(const char uploC, const char transA, const int n, const int k,
 		const double alpha, const double*const A, const int ldA,
 		const double beta, double*const C, const int ldC)
 	{

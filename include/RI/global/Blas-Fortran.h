@@ -10,14 +10,23 @@
 extern "C"
 {
 	// nrm2 = ||x||_2
+	float snrm2_(const int*const n, const float*const X, const int*const incX);
 	double dnrm2_(const int*const n, const double*const X, const int*const incX);
+	float scnrm2_(const int*const n, const std::complex<float>*const X, const int*const incX);
 	double dznrm2_(const int*const n, const std::complex<double>*const X, const int*const incX);
 
+	// Vy = alpha * Vx + Vy
+	void saxpy_(const int*const n, const float*const alpha, const float*const X, const int*const incX, float*const Y, const int*const incY);
+	void daxpy_(const int*const n, const double*const alpha, const double*const X, const int*const incX, double*const Y, const int*const incY);
+	void caxpy_(const int*const n, const std::complex<float>*const alpha, const std::complex<float>*const X, const int*const incX, std::complex<float>*const Y, const int*const incY);
+	void zaxpy_(const int*const n, const std::complex<double>*const alpha, const std::complex<double>*const X, const int*const incX, std::complex<double>*const Y, const int*const incY);
+
 	// d = Vx * Vy
+	float sdot_(const int*const n, const float*const X, const int*const incX, const float*const Y, const int*const incY);
 	double ddot_(const int*const n, const double*const X, const int*const incX, const double*const Y, const int*const incY);
 
 	// Vy = alpha * Ma.? * Vx + beta * Vy
-	double dgemv_(const char*const transA, const int*const m, const int*const n,
+	void dgemv_(const char*const transA, const int*const m, const int*const n,
 		const double*const alpha, const double*const A, const int*const ldA, const double*const X, const int*const incX,
 		const double*const beta, double*const Y, const int*const incY);
 

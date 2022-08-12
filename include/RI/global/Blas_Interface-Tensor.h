@@ -14,30 +14,37 @@ namespace Blas_Interface
 {
 	// nrm2 = ||x||_2
 	template<typename T>
-	static inline T nrm2(const Tensor<std::complex<T>> &X)
+	inline Global_Func::To_Real_t<T> nrm2(const Tensor<T> &X)
 	{
 		return nrm2(X.get_shape_all(), X.ptr());
 	}
+
+	// Vy = alpha * Vx + Vy
 	template<typename T>
-	static inline T nrm2(const Tensor<T> &X)
+	inline void axpy(const T &alpha, const Tensor<T> &X, Tensor<T> &Y)
 	{
-		return nrm2(X.get_shape_all(), X.ptr());
+		assert(X.get_shape_all() == Y.get_shape_all());
+		axpy(X.get_shape_all(), alpha, X.ptr(), Y.ptr());
+	}
+	template<typename T>
+	inline Tensor<T> axpy(const T &alpha, const Tensor<T> &X)
+	{
+		Tensor<T> Y(X.shape);
+		axpy(alpha, X, Y);
+		return Y;
 	}
 
 	// d = Vx * Vy
 	template<typename T>
-	static inline T dot(const Tensor<T> &X, const Tensor<T> &Y)
+	inline T dot(const Tensor<T> &X, const Tensor<T> &Y)
 	{
-		assert(X.shape.size()==1);
-		assert(Y.shape.size()==1);
-		assert(X.shape[0] == Y.shape[0]);
-
-		return dot(X.shape[0], X.ptr(), Y.ptr());
+		assert(X.get_shape_all() == Y.get_shape_all());
+		return dot(X.get_shape_all(), X.ptr(), Y.ptr());
 	}
 
 	// Vy = alpha * Ma.? * Vx + beta * Vy
 	template<typename T>
-	static inline void gemv(const char transA, 
+	inline void gemv(const char transA, 
 		const double alpha, const Tensor<T> &A, const Tensor<T> &X,
 		const double beta, Tensor<T> &Y)
 	{
@@ -65,7 +72,7 @@ namespace Blas_Interface
 	}
 	// Vy = alpha * Ma.? * Vx
 	template<typename T>
-	static inline Tensor<T> gemv(const char transA, 
+	inline Tensor<T> gemv(const char transA, 
 		const double alpha, const Tensor<T> &A, const Tensor<T> &X)
 	{
 		constexpr double beta = 0.0;
@@ -76,7 +83,7 @@ namespace Blas_Interface
 
 	// Mc = alpha * Ma.? * Mb.? + beta * Mc
 	template<typename T>
-	static inline void gemm(const char transA, const char transB,
+	inline void gemm(const char transA, const char transB,
 		const double alpha, const Tensor<T> &A, const Tensor<T> &B,
 		const double beta, Tensor<T> &C)
 	{
@@ -101,7 +108,10 @@ namespace Blas_Interface
 		const size_t k = (transA=='N') ? A.shape[1] : A.shape[0];
 
 		if(transB=='N')
+		{
+if(k!=B.shape[0]) IC(transA, transB, A.shape, B.shape, C.shape);
 			assert(k==B.shape[0]);
+		}
 		else
 			assert(k==B.shape[1]);
 			
@@ -111,7 +121,7 @@ namespace Blas_Interface
 	}
 	// Mc = alpha * Ma.? * Mb.?
 	template<typename T>
-	static inline Tensor<T> gemm(const char transA, const char transB,
+	inline Tensor<T> gemm(const char transA, const char transB,
 		const double alpha, const Tensor<T> &A, const Tensor<T> &B)
 	{
 		constexpr double beta = 0.0;
@@ -127,7 +137,7 @@ namespace Blas_Interface
 	// Mc = alpha * Ma   * Ma.T + beta * C
 	// Mc = alpha * Ma.T * Ma   + beta * C
 	template<typename T>
-	static inline void syrk(const char uploC, const char transA,
+	inline void syrk(const char uploC, const char transA,
 		const double alpha, const Tensor<T> &A,
 		const double beta, Tensor<T> &C)
 	{
@@ -150,7 +160,7 @@ namespace Blas_Interface
 	// Mc = alpha * Ma   * Ma.T
 	// Mc = alpha * Ma.T * Ma  
 	template<typename T>
-	static inline Tensor<T> syrk(const char uploC, const char transA,
+	inline Tensor<T> syrk(const char uploC, const char transA,
 		const double alpha, const Tensor<T> &A)
 	{
 		constexpr double beta = 0.0;
