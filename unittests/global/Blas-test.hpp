@@ -18,23 +18,38 @@
 
 namespace Blas_Test
 {
+	template<typename Tdata>
 	void nrm2()
 	{
-		const Tensor<double> v3 = Tensor_Test::init_vector(3);
+		const Tensor<Tdata> v3 = Tensor_Test::init_vector<Tdata>(3);
 		std::cout<<v3<<std::endl;
 		std::cout<<Blas_Interface::nrm2(v3)<<std::endl;
 		// 2.23607
 	}
 
-	void dot1()
+	template<typename Tdata>
+	void axpy()
 	{
-		std::vector<double> a = {1,2,3};
-		std::vector<double> b = {4,5,6};
+		const Tensor<Tdata> vx = Tensor_Test::init_vector<Tdata>(3);
+		Tensor<Tdata> vy = Tensor_Test::init_vector<Tdata>(3);
+		Blas_Interface::axpy(vx.shape[0], 2, vx.ptr(), 1, vy.ptr(), 1);
+		std::cout<<vy<<std::endl;
+		// 0, 3, 6
+		Tensor<Tdata> vz = Blas_Interface::axpy(Tdata(2), vx);
+		std::cout<<vz<<std::endl;
+		// 0, 2, 4
+	}
+
+	template<typename Tdata>
+	void dot_1()
+	{
+		std::vector<Tdata> a = {1,2,3};
+		std::vector<Tdata> b = {4,5,6};
 		std::cout<<Blas_Interface::dot(3, a.data(), 1, b.data(), 1)<<std::endl;
 		// 32
 	}
 
-	void dot2()
+	void dot_2()
 	{
 		const MKL_INT N=3, INC=1;
 		std::vector<double> a = {1,2,3};
@@ -43,13 +58,14 @@ namespace Blas_Test
 		// 32
 	}
 
+	template<typename Tdata>
 	void gemv()
 	{
-		const Tensor<double> m23 = Tensor_Test::init_matrix(2,3);
-		const Tensor<double> v2 = Tensor_Test::init_vector(2);
-		const Tensor<double> v3 = Tensor_Test::init_vector(3);
-		Tensor<double> vr2({2});
-		Tensor<double> vr3({3});
+		const Tensor<Tdata> m23 = Tensor_Test::init_matrix<Tdata>(2,3);
+		const Tensor<Tdata> v2 = Tensor_Test::init_vector<Tdata>(2);
+		const Tensor<Tdata> v3 = Tensor_Test::init_vector<Tdata>(3);
+		Tensor<Tdata> vr2({2});
+		Tensor<Tdata> vr3({3});
 
 		std::cout<<m23<<std::endl;
 		std::cout<<v3<<std::endl;
@@ -72,7 +88,7 @@ namespace Blas_Test
 
 	void syrk()
 	{
-		const Tensor<double> m = Tensor_Test::init_matrix(2,3);
+		const Tensor<double> m = Tensor_Test::init_matrix<double>(2,3);
 
 		std::cout<<m<<std::endl;
 		std::cout<<m.transpose()<<std::endl;
@@ -100,6 +116,19 @@ namespace Blas_Test
 		// 100 110 120
 		// 0   122 134
 		// 0   0   148
-
 	}
+
+	void test_all()
+	{
+		nrm2<float>();
+		nrm2<double>();
+		nrm2<std::complex<float>>();
+		nrm2<std::complex<double>>();
+		axpy<float>();
+		axpy<double>();
+		axpy<std::complex<float>>();
+		axpy<std::complex<double>>();
+		dot_1<float>();
+		dot_1<double>();
+	}	
 }
