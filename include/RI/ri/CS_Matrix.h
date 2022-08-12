@@ -19,6 +19,7 @@ public:
 	using TAC = std::pair<TA,TC>;
 
 	std::unordered_map<Label::ab_ab, Tdata> threshold;
+	CS_Matrix();
 	void set_threshold(const Tdata &threshold_in);
 	void set_threshold(const Label::ab_ab &label, const Tdata &threshold_in);
 	Tdata threshold_max = 0;

@@ -51,17 +51,17 @@ void CS_Matrix<TA,Tcell,Ndim,Tdata>::set_label_A(
 		return Global_Func::find(uplimits.at(label_ab), Aa, Ab);
 	};
 
-	step.label = label_in;
+	this->step.label = label_in;
 
 	const int index_a = Label::get_unused_a(step.label);
-	step.a_square = uplimits_square_tensor3[Label::ab::a][index_a][Aa01][Aa2];
-	step.a_norm = uplimits_norm_tensor3[Label::ab::a][index_a][Aa01][Aa2];
+	this->step.a_square = this->uplimits_square_tensor3[Label::ab::a][index_a][Aa01][Aa2];
+	this->step.a_norm   = this->uplimits_norm_tensor3  [Label::ab::a][index_a][Aa01][Aa2];
 	
 	const int index_b = get_unused_b(step.label);
-	step.b_square = uplimits_square_tensor3[Label::ab::b][index_b][Ab01.first][{Ab2.first, (Ab2.second-Ab01.second)%period}];
-	step.b_norm = uplimits_norm_tensor3[Label::ab::b][index_b][Ab01.first][{Ab2.first, (Ab2.second-Ab01.second)%period}];
+	this->step.b_square = this->uplimits_square_tensor3[Label::ab::b][index_b][Ab01.first][{Ab2.first, (Ab2.second-Ab01.second)%period}];
+	this->step.b_norm   = this->uplimits_norm_tensor3  [Label::ab::b][index_b][Ab01.first][{Ab2.first, (Ab2.second-Ab01.second)%period}];
 	
 	const std::pair<Label::ab, Label::ab> label_split_tmp = CS_Matrix_Tools::split_label(step.label);
-	step.first_square = get_uplimit(uplimits_square_tensor2, label_split_tmp.first);
-	step.second_square = get_uplimit(uplimits_square_tensor2, label_split_tmp.second);
+	this->step.first_square  = get_uplimit(uplimits_square_tensor2, label_split_tmp.first);
+	this->step.second_square = get_uplimit(uplimits_square_tensor2, label_split_tmp.second);
 }

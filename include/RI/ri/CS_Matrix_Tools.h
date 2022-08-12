@@ -18,7 +18,7 @@ namespace CS_Matrix_Tools
 		square_three_2,		norm_three_2
 	};
 	
-	std::pair<Label::ab, Label::ab> split_label(const Label::ab_ab &label);
+	inline std::pair<Label::ab, Label::ab> split_label(const Label::ab_ab &label);
 
 	template<typename Tkey, typename Tvalue>
 	auto cal_uplimit(
