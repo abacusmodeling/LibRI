@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "../ri/LRI.h"
-#include "../global/Tensor.h"
 #include "../global/Global_Func-2.h"
+#include "../global/Tensor.h"
+#include "../ri/LRI.h"
 
 #include <mpi.h>
 #include <array>
@@ -21,9 +21,8 @@ public:
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
 	using TatomR = std::array<double,Ndim>;		// tmp
 
-	Exx(const MPI_Comm &mpi_comm):lri(mpi_comm){}
-
-	void set_stru(
+	void set_parallel(
+		const MPI_Comm &mpi_comm,
 		const std::map<TA,TatomR> &atomsR,
 		const std::array<TatomR,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period);

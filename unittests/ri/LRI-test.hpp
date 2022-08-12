@@ -81,9 +81,9 @@ namespace LRI_Test
 		Ds_ab[Label::ab::a2b2][Aa2][{Ab2,{0}}] = init_tensor<Tdata>({Na2,Nb2});
 
 		constexpr size_t Ndim = 1;
-		LRI<int,int,Ndim,Tdata> lri(MPI_COMM_WORLD);
+		LRI<int,int,Ndim,Tdata> lri;
 		lri.parallel = std::make_shared<Parallel_LRI_test<int,int,Ndim,Tdata>>();
-		lri.set_parallel({}, {}, {1});
+		lri.set_parallel(MPI_COMM_WORLD, {}, {}, {1});
 
 		lri.csm.set_threshold(0);
 

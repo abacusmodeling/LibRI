@@ -20,6 +20,7 @@
 #include <memory>
 #include <functional>
 
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 class LRI
 {
@@ -29,10 +30,11 @@ public:
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
 	using TatomR = std::array<double,Ndim>;		// tmp
 	
-	LRI(const MPI_Comm &mpi_comm_in);
+	LRI();
 
 	//template<typename TatomR>
 	void set_parallel(
+		const MPI_Comm &mpi_comm_in,
 		const std::map<TA,TatomR> &atomsR,
 		const std::array<TatomR,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period_in);	
@@ -57,7 +59,7 @@ public:
 // private:
 public:
 	std::array<Tcell,Ndim> period;
-	const MPI_Comm mpi_comm;
+	MPI_Comm mpi_comm;
 	
 	std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_ab;
 };

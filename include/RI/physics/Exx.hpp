@@ -11,12 +11,13 @@
 #include <cassert>
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-void Exx<TA,Tcell,Ndim,Tdata>::set_stru(
+void Exx<TA,Tcell,Ndim,Tdata>::set_parallel(
+	const MPI_Comm &mpi_comm,
 	const std::map<TA,TatomR> &atomsR,
 	const std::array<TatomR,Ndim> &latvec,
 	const std::array<Tcell,Ndim> &period)
 {
-	this->lri.set_parallel(atomsR, latvec, period);
+	this->lri.set_parallel(mpi_comm, atomsR, latvec, period);
 	this->flag_finish.stru = true;
 }
 

@@ -10,8 +10,7 @@
 #include <limits>
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-LRI<TA,Tcell,Ndim,Tdata>::LRI(const MPI_Comm &mpi_comm_in)
-	:mpi_comm(mpi_comm_in)
+LRI<TA,Tcell,Ndim,Tdata>::LRI()
 {
 	Ds_ab.reserve(Label::array_ab.size());
 

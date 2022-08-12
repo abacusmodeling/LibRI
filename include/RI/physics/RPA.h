@@ -21,9 +21,8 @@ public:
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
 	using TatomR = std::array<double,Ndim>;		// tmp
 
-	RPA(const MPI_Comm &mpi_comm):lri(mpi_comm){}
-
-	void set_stru(
+	void set_parallel(
+		const MPI_Comm &mpi_comm,
 		const std::map<TA,TatomR> &atomsR,
 		const std::array<TatomR,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period);
