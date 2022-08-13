@@ -8,21 +8,21 @@
 #include "CS_Matrix.h"
 #include "CS_Matrix_Tools.h"
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-CS_Matrix<TA,Tcell,Ndim,Tdata>::CS_Matrix()
+template<typename TA, typename TC, typename Tdata>
+CS_Matrix<TA,TC,Tdata>::CS_Matrix()
 {
 	this->set_threshold(0);
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-void CS_Matrix<TA,Tcell,Ndim,Tdata>::set_threshold(const Tdata &threshold_in)
+template<typename TA, typename TC, typename Tdata>
+void CS_Matrix<TA,TC,Tdata>::set_threshold(const Tdata &threshold_in)
 {
 	for(const Label::ab_ab &label : Label::array_ab_ab)
 		this->threshold[label] = threshold_in;
 	this->threshold_max = threshold_in;
 }
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-void CS_Matrix<TA,Tcell,Ndim,Tdata>::set_threshold(const Label::ab_ab &label, const Tdata &threshold_in)
+template<typename TA, typename TC, typename Tdata>
+void CS_Matrix<TA,TC,Tdata>::set_threshold(const Label::ab_ab &label, const Tdata &threshold_in)
 {
 	this->threshold[label] = threshold_in;
 	this->threshold_max = 0;
@@ -32,8 +32,8 @@ void CS_Matrix<TA,Tcell,Ndim,Tdata>::set_threshold(const Label::ab_ab &label, co
 }
 
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata> template<typename T>
-void CS_Matrix<TA,Tcell,Ndim,Tdata>::set_tensor(
+template<typename TA, typename TC, typename Tdata> template<typename T>
+void CS_Matrix<TA,TC,Tdata>::set_tensor(
 	const Label::ab &label,
 	const T &Ds)
 {

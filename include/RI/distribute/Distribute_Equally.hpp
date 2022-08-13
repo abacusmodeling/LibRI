@@ -59,7 +59,6 @@ namespace Distribute_Equally
 			Ns[i] = 
 				atoms.size()
 				* std::accumulate( period.begin(), period.end(), 1, std::multiplies<Tcell>() );
-IC(Ns);
 		const std::vector<std::tuple<MPI_Comm,int,int>> comm_color_sizes = Split_Processes::split_all(mpi_comm, Ns);
 
 		std::pair<std::vector<TA>, std::vector<std::vector<TAC>>> atoms_split_list;

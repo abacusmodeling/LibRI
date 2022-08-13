@@ -108,10 +108,7 @@ namespace Blas_Interface
 		const size_t k = (transA=='N') ? A.shape[1] : A.shape[0];
 
 		if(transB=='N')
-		{
-if(k!=B.shape[0]) IC(transA, transB, A.shape, B.shape, C.shape);
 			assert(k==B.shape[0]);
-		}
 		else
 			assert(k==B.shape[1]);
 			

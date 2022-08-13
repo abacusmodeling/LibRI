@@ -13,8 +13,6 @@
 #include <string>
 #include <stdexcept>
 
-#include "/public/home/linpz/ABACUS/LibRI/lib/icecream-cpp/icecream.hpp"
-
 #define MPI_CHECK(x) if((x)!=MPI_SUCCESS)	throw std::runtime_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 
 namespace Split_Processes
@@ -25,7 +23,6 @@ namespace Split_Processes
 		assert(group_size>0);
 		const int rank_mine = MPI_Wrapper::mpi_get_rank(mpi_comm);
 		const int rank_size = MPI_Wrapper::mpi_get_size(mpi_comm);
-IC(rank_size, group_size);
 		assert(rank_size>=group_size);
 
 		std::vector<int> num(group_size);			// sum(num) = rank_size
@@ -60,12 +57,10 @@ IC(rank_size, group_size);
 		assert(Ns.size()>=1);
 		const int rank_size = MPI_Wrapper::mpi_get_size(mpi_comm);
 		const double N_product = std::accumulate( Ns.begin(), Ns.end(), double(1.0), std::multiplies<double>() );		// double for numerical range
-IC(Ns, N_product, rank_size);
 		if(N_product>=rank_size)
 		{
 			const double num_average = std::pow(static_cast<double>(N_product)/rank_size, 1.0/Ns.size());
 			const int group_size = std::max(1, static_cast<int>(std::round(Ns[0]/num_average)));
-IC(num_average, group_size);
 			const std::tuple<MPI_Comm,int> comm_color = split(mpi_comm, group_size);
 			return std::make_tuple(std::get<0>(comm_color), std::get<1>(comm_color), group_size);
 		}
@@ -87,7 +82,6 @@ IC(num_average, group_size);
 	// vector<comm_color_size>
 	static std::vector<std::tuple<MPI_Comm,int,int>> split_all(const MPI_Comm &mpi_comm, const std::vector<int> &Ns)
 	{
-IC(Ns);
 		std::vector<std::tuple<MPI_Comm,int,int>> comm_color_sizes(Ns.size()+1);
 		comm_color_sizes[0] = std::make_tuple(mpi_comm, 0, 1);
 		for(int m=0; m<Ns.size(); ++m)

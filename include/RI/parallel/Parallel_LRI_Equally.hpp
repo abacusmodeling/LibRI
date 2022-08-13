@@ -27,10 +27,10 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel(
 		atoms_split_list = Distribute_Equally::distribute_atoms_periods(
 			mpi_comm, atoms_vec, period, num_index);
 			
-	this->list_Aa01 = Global_Func::to_set(atoms_split_list.first);
-	this->list_Aa2  = Global_Func::to_set(atoms_split_list.second[0]);
-	this->list_Ab01 = Global_Func::to_set(atoms_split_list.second[1]);
-	this->list_Ab2  = Global_Func::to_set(atoms_split_list.second[2]);
+	this->list_Aa01 = atoms_split_list.first;
+	this->list_Aa2  = atoms_split_list.second[0];
+	this->list_Ab01 = atoms_split_list.second[1];
+	this->list_Ab2  = atoms_split_list.second[2];
 }
 
 
@@ -43,19 +43,19 @@ auto Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::comm_tensors_map2(
 	switch(label)
 	{
 		case Label::ab::a:
-			return Communicate_Tensors_Map_Judge::comm_map2(this->mpi_comm, Ds, this->list_Aa01, this->list_Aa2);
+			return Communicate_Tensors_Map_Judge::comm_map2(this->mpi_comm, Ds, Global_Func::to_set(this->list_Aa01), Global_Func::to_set(this->list_Aa2));
 		case Label::ab::b:
-			return Communicate_Tensors_Map_Judge::comm_map2_period(this->mpi_comm, Ds, this->list_Ab01, this->list_Ab2, this->period);
+			return Communicate_Tensors_Map_Judge::comm_map2_period(this->mpi_comm, Ds, Global_Func::to_set(this->list_Ab01), Global_Func::to_set(this->list_Ab2), this->period);
 		case Label::ab::a0b0:	case Label::ab::a0b1:
 		case Label::ab::a1b0:	case Label::ab::a1b1:
-			return Communicate_Tensors_Map_Judge::comm_map2(this->mpi_comm, Ds, this->list_Aa01, this->list_Ab01);
+			return Communicate_Tensors_Map_Judge::comm_map2(this->mpi_comm, Ds, Global_Func::to_set(this->list_Aa01), Global_Func::to_set(this->list_Ab01));
 		case Label::ab::a0b2:
 		case Label::ab::a1b2:
-			return Communicate_Tensors_Map_Judge::comm_map2(this->mpi_comm, Ds, this->list_Aa01, this->list_Ab2);
+			return Communicate_Tensors_Map_Judge::comm_map2(this->mpi_comm, Ds, Global_Func::to_set(this->list_Aa01), Global_Func::to_set(this->list_Ab2));
 		case Label::ab::a2b0:	case Label::ab::a2b1:
-			return Communicate_Tensors_Map_Judge::comm_map2_period(this->mpi_comm, Ds, this->list_Aa2, this->list_Ab01, this->period);
+			return Communicate_Tensors_Map_Judge::comm_map2_period(this->mpi_comm, Ds, Global_Func::to_set(this->list_Aa2), Global_Func::to_set(this->list_Ab01), this->period);
 		case Label::ab::a2b2:
-			return Communicate_Tensors_Map_Judge::comm_map2_period(this->mpi_comm, Ds, this->list_Aa2, this->list_Ab2, this->period);
+			return Communicate_Tensors_Map_Judge::comm_map2_period(this->mpi_comm, Ds, Global_Func::to_set(this->list_Aa2), Global_Func::to_set(this->list_Ab2), this->period);
 		default:
 			throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 	}
