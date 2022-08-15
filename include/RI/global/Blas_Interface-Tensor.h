@@ -45,8 +45,8 @@ namespace Blas_Interface
 	// Vy = alpha * Ma.? * Vx + beta * Vy
 	template<typename T>
 	inline void gemv(const char transA, 
-		const double alpha, const Tensor<T> &A, const Tensor<T> &X,
-		const double beta, Tensor<T> &Y)
+		const T alpha, const Tensor<T> &A, const Tensor<T> &X,
+		const T beta, Tensor<T> &Y)
 	{
 		assert(A.shape.size()==2);
 		assert(X.shape.size()==1);
@@ -73,10 +73,10 @@ namespace Blas_Interface
 	// Vy = alpha * Ma.? * Vx
 	template<typename T>
 	inline Tensor<T> gemv(const char transA, 
-		const double alpha, const Tensor<T> &A, const Tensor<T> &X)
+		const T alpha, const Tensor<T> &A, const Tensor<T> &X)
 	{
-		constexpr double beta = 0.0;
-		Tensor<double> Y({(transA=='N') ? A.shape[0] : A.shape[1]});
+		constexpr T beta = 0.0;
+		Tensor<T> Y({(transA=='N') ? A.shape[0] : A.shape[1]});
 		gemv(transA, alpha, A, X, beta, Y);
 		return Y;
 	}
@@ -84,8 +84,8 @@ namespace Blas_Interface
 	// Mc = alpha * Ma.? * Mb.? + beta * Mc
 	template<typename T>
 	inline void gemm(const char transA, const char transB,
-		const double alpha, const Tensor<T> &A, const Tensor<T> &B,
-		const double beta, Tensor<T> &C)
+		const T alpha, const Tensor<T> &A, const Tensor<T> &B,
+		const T beta, Tensor<T> &C)
 	{
 		assert(A.shape.size()==2);
 		assert(B.shape.size()==2);
@@ -119,9 +119,9 @@ namespace Blas_Interface
 	// Mc = alpha * Ma.? * Mb.?
 	template<typename T>
 	inline Tensor<T> gemm(const char transA, const char transB,
-		const double alpha, const Tensor<T> &A, const Tensor<T> &B)
+		const T alpha, const Tensor<T> &A, const Tensor<T> &B)
 	{
-		constexpr double beta = 0.0;
+		constexpr T beta = 0.0;
 		Tensor<T> C({
 			(transA=='N') ? A.shape[0] : A.shape[1],
 			(transB=='N') ? B.shape[1] : B.shape[0] });

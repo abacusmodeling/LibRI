@@ -71,19 +71,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 		Macro_Begin;
 		// D_mul2(ia1,ia2,ib0) = D_a(ia0,ia1,ia2) * D_ab(ia0,ib0)
 		Macro_D_mul2 = Blas_Interface::gemm(
-			'T', 'N', 1.0,
+			'T', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_a,false),
 			D_ab_first
 			).reshape({D_a.shape[1], D_a.shape[2], D_b.shape[0]});
 		// D_mul3(ia2,ib0,ib1) = D_mul2(ia1,ia2,ib0) * D_ab(ia1,ib1)
 		Macro_D_mul3 = Blas_Interface::gemm(
-			'T', 'N', 1.0,
+			'T', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul2,false),
 			D_ab_second
 			).reshape({D_a.shape[2], D_b.shape[0], D_b.shape[1]});
 		// D_mul4(ia2,ib2) = D_mul3(ia2,ib0,ib1) * D_b(ib0,ib1,ib2)
 		Macro_D_mul4 = Blas_Interface::gemm(
-			'N', 'N', 1.0,
+			'N', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_b,true));
 		Macro_D_result = tools.get_D_result(Aa2, Ab2);
@@ -103,19 +103,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 		Macro_Begin;
 		// D_mul2(ia0,ia2,ib0) = D_a(ia0,ia1,ia2) * D_ab(ia1,ib0)
 		Macro_D_mul2 = Blas_Interface::gemm(
-			'T', 'N', 1.0,
+			'T', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(LRI_Cal_Aux::tensor3_transpose(D_a),false),
 			D_ab_first
 			).reshape({D_a.shape[0], D_a.shape[2], D_b.shape[0]});
 		// D_mul3(ia2,ib0,ib1) = D_mul2(ia0,ia2,ib0) * D_ab(ia0,ib1)
 		Macro_D_mul3 = Blas_Interface::gemm(
-			'T', 'N', 1.0,
+			'T', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul2,false),
 			D_ab_second
 			).reshape({D_a.shape[2], D_b.shape[0], D_b.shape[1]});
 		// D_mul4(ia2,ib2) = D_mul3(ia2,ib0,ib1) * D_b(ib0,ib1,ib2)
 		Macro_D_mul4 = Blas_Interface::gemm(
-			'N', 'N', 1.0,
+			'N', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_b,true));
 		Macro_D_result = tools.get_D_result(Aa2, Ab2);
@@ -135,19 +135,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 		Macro_Begin;
 		// D_mul2(ib0,ia1,ia2) = D_ab(ia0,ib0) * D_a(ia0,ia1,ia2)
 		Macro_D_mul2 = Blas_Interface::gemm(
-			'T', 'N', 1.0,
+			'T', 'N', Tdata(1),
 			D_ab_first,
 			LRI_Cal_Aux::tensor3_merge(D_a,false)
 			).reshape({D_b.shape[0], D_a.shape[1], D_a.shape[2]});
 		// D_mul3(ia1,ib0,ib1) = D_mul2(ib0,ia1,ia2) * D_ab(ia2,ib1)
 		Macro_D_mul3 = Blas_Interface::gemm(
-			'N', 'N', 1.0,
+			'N', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(LRI_Cal_Aux::tensor3_transpose(D_mul2),true),
 			D_ab_second
 			).reshape({D_a.shape[1], D_b.shape[0], D_b.shape[1]});
 		// D_mul4(ia1,ib2) = D_mul3(ia1,ib0,ib1) * D_b(ib0,ib1,ib2)
 		Macro_D_mul4 = Blas_Interface::gemm(
-			'N', 'N', 1.0,
+			'N', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_b,true));
 		Macro_D_result = tools.get_D_result(Aa01, Ab2);
@@ -167,19 +167,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 		Macro_Begin;
 		// D_mul2(ia0,ia1,ib0) = D_a(ia0,ia1,ia2) * D_ab(ia2,ib0)
 		Macro_D_mul2 = Blas_Interface::gemm(
-			'N', 'N', 1.0,
+			'N', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_a,true),
 			D_ab_first
 			).reshape({D_a.shape[0], D_a.shape[1], D_b.shape[0]});
 		// D_mul3(ia1,ib0,ib1) = D_mul2(ia0,ia1,ib0) * D_ab(ia0,ib1)
 		Macro_D_mul3 = Blas_Interface::gemm(
-			'T', 'N', 1.0,
+			'T', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul2,false),
 			D_ab_second
 			).reshape({D_a.shape[1], D_b.shape[0], D_b.shape[1]});
 		// D_mul4(ia1,ib2) = D_mul3(ia1,ib0,ib1) * D_b(ib0,ib1,ib2)
 		Macro_D_mul4 = Blas_Interface::gemm(
-			'N', 'N', 1.0,
+			'N', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_b,true));
 		Macro_D_result = tools.get_D_result(Aa01, Ab2);
@@ -199,19 +199,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 		Macro_Begin;
 		// D_mul2(ib1,ia0,ia1) = D_ab(ia2,ib1) * D_a(ia0,ia1,ia2)
 		Macro_D_mul2 = Blas_Interface::gemm(
-			'T', 'T', 1.0,
+			'T', 'T', Tdata(1),
 			D_ab_first,
 			LRI_Cal_Aux::tensor3_merge(D_a,true)
 			).reshape({D_b.shape[1], D_a.shape[0], D_a.shape[1]});
 		// D_mul3(ib0,ib1,ia0) = D_ab(ia1,ib0) * D_mul2(ib1,ia0,ia1)
 		Macro_D_mul3 = Blas_Interface::gemm(
-			'T', 'T', 1.0,
+			'T', 'T', Tdata(1),
 			D_ab_second,
 			LRI_Cal_Aux::tensor3_merge(D_mul2,true)
 			).reshape({D_b.shape[0], D_b.shape[1], D_a.shape[0]});
 		// D_mul4(ia0,ib2) = D_mul3(ib0,ib1,ia0) * D_b(ib0,ib1,ib2)
 		Macro_D_mul4 = Blas_Interface::gemm(
-			'T', 'N', 1.0,
+			'T', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,true),
 			LRI_Cal_Aux::tensor3_merge(D_b,true));
 		Macro_D_result = tools.get_D_result(Aa01, Ab2);
@@ -231,19 +231,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 		Macro_Begin;
 		// D_mul2(ib0,ia0,ia1) = D_ab(ia2,ib0) * D_a(ia0,ia1,ia2)
 		Macro_D_mul2 = Blas_Interface::gemm(
-			'T', 'T', 1.0,
+			'T', 'T', Tdata(1),
 			D_ab_first,
 			LRI_Cal_Aux::tensor3_merge(D_a,true)
 			).reshape({D_b.shape[0], D_a.shape[0], D_a.shape[1]});
 		// D_mul3(ia0,ib0,ib1) = D_mul2(ib0,ia0,ia1) * D_ab(ia1,ib1)
 		Macro_D_mul3 = Blas_Interface::gemm(
-			'N', 'N', 1.0,
+			'N', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(LRI_Cal_Aux::tensor3_transpose(D_mul2),true),
 			D_ab_second
 			).reshape({D_a.shape[0], D_b.shape[0], D_b.shape[1]});
 		// D_mul4(ia0,ib2) = D_mul3(ia0,ib0,ib1) * D_b(ib0,ib1,ib2)
 		Macro_D_mul4 = Blas_Interface::gemm(
-			'N', 'N', 1.0,
+			'N', 'N', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_b,true));
 		Macro_D_result = tools.get_D_result(Aa01, Ab2);

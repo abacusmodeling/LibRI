@@ -108,7 +108,7 @@ namespace CS_Matrix_Tools
 
 		auto square = [](const Tensor<Tdata> &D) -> Tlim
 		{
-			return std::sqrt(Blas_Interface::gemm('C', 'N', 1.0, D, D).norm(2));
+			return std::sqrt(Blas_Interface::gemm('C', 'N', Tdata(1), D, D).norm(2));
 		};
 
 		switch(uplimit_type)

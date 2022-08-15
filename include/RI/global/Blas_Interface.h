@@ -80,6 +80,15 @@ namespace Blas_Interface
 
 	// Vy = alpha * Ma.? * Vx + beta * Vy
 	inline void gemv(const char transA, const int m, const int n,
+		const float alpha, const float*const A, const int ldA, const float*const X, const int incX,
+		const float beta, float*const Y, const int incY)
+	{
+		const char transA_changed = change_trans_NT(transA);
+		sgemv_(&transA_changed, &n, &m,
+			&alpha, A, &ldA, X, &incX,
+			&beta, Y, &incY);
+	}
+	inline void gemv(const char transA, const int m, const int n,
 		const double alpha, const double*const A, const int ldA, const double*const X, const int incX,
 		const double beta, double*const Y, const int incY)
 	{
@@ -88,6 +97,24 @@ namespace Blas_Interface
 			&alpha, A, &ldA, X, &incX,
 			&beta, Y, &incY);
 	}
+	inline void gemv(const char transA, const int m, const int n,
+		const std::complex<float> alpha, const std::complex<float>*const A, const int ldA, const std::complex<float>*const X, const int incX,
+		const std::complex<float> beta, std::complex<float>*const Y, const int incY)
+	{
+		const char transA_changed = change_trans_NT(transA);
+		cgemv_(&transA_changed, &n, &m,
+			&alpha, A, &ldA, X, &incX,
+			&beta, Y, &incY);
+	}	
+	inline void gemv(const char transA, const int m, const int n,
+		const std::complex<double> alpha, const std::complex<double>*const A, const int ldA, const std::complex<double>*const X, const int incX,
+		const std::complex<double> beta, std::complex<double>*const Y, const int incY)
+	{
+		const char transA_changed = change_trans_NT(transA);
+		zgemv_(&transA_changed, &n, &m,
+			&alpha, A, &ldA, X, &incX,
+			&beta, Y, &incY);
+	}	
 
 	// Mc = alpha * Ma.? * Mb.? + beta * Mc
 	inline void gemm(const char transA, const char transB, const int m, const int n, const int k,

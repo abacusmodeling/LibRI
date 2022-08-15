@@ -86,6 +86,20 @@ namespace Blas_Test
 		// 10 11 12
 	}
 
+	template<typename Tdata>
+	void gemv_complex()
+	{
+		const Tensor<Tdata> m23 = Tensor_Test::init_matrix<Tdata>(2,3);
+		const Tensor<Tdata> v3 = Tensor_Test::init_vector<Tdata>(3);
+		Tensor<Tdata> vr2 = Tensor_Test::init_vector<Tdata>(2);
+		std::cout<<m23<<std::endl;
+		std::cout<<v3<<std::endl;
+		std::cout<<vr2<<std::endl;
+		Blas_Interface::gemv('N', Tdata{1.0,2.0}, m23, v3, Tdata{3,-4}, vr2);
+		std::cout<<vr2<<std::endl;
+		// (5,10)	(38,66)
+	}
+
 	void syrk()
 	{
 		const Tensor<double> m = Tensor_Test::init_matrix<double>(2,3);

@@ -39,8 +39,8 @@ namespace Blas_Interface
 	// Vy = alpha * Ma.? * Vx + beta * Vy
 	template<typename T>
 	inline void gemv(const char transA, const int m, const int n,
-		const double alpha, const T*const A, const T*const X,
-		const double beta, T*const Y)
+		const T alpha, const T*const A, const T*const X,
+		const T beta, T*const Y)
 	{
 		const int ldA = n;
 		constexpr int incX = 1;
@@ -53,8 +53,8 @@ namespace Blas_Interface
 	// Mc = alpha * Ma.? * Mb.? + beta * Mc
 	template<typename T>
 	inline void gemm(const char transA, const char transB, const int m, const int n, const int k,
-		const double alpha, const T*const A, const T*const B,
-		const double beta, T*const C)
+		const T alpha, const T*const A, const T*const B,
+		const T beta, T*const C)
 	{
 		const int ldA = (transA=='N') ? k : m;
 		const int ldB = (transB=='N') ? n : k;
