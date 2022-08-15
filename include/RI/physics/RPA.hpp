@@ -56,18 +56,22 @@ void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
 		this->lri.set_tensors_map2( Gs, Label::ab::a2b2, threshold_G );
 	};
 
+	this->chi0s.clear();
+
 	set_Gs_a1(Gs_tau_positive);
 	set_Gs_a2(Gs_tau_negative);
-	this->chi0s = this->lri.cal({
+	this->lri.cal({
 		Label::ab_ab::a1b1_a2b2,
-		Label::ab_ab::a1b2_a2b1});
+		Label::ab_ab::a1b2_a2b1},
+		this->chi0s);
 
 	set_Gs_a1(Gs_tau_negative);			// tmp
 	set_Gs_a2(Gs_tau_positive);			// tmp
 	//set_Gs_a1(conj(Gs_tau_negative));
 	//set_Gs_a2(conj(Gs_tau_positive));
-	this->chi0s = this->chi0s + this->lri.cal({
+	this->lri.cal({
 		Label::ab_ab::a1b1_a2b2,
-		Label::ab_ab::a1b2_a2b1});
+		Label::ab_ab::a1b2_a2b1},
+		this->chi0s);
 }
 

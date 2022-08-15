@@ -15,13 +15,12 @@
 #endif
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-auto LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
--> std::map<TA, std::map<TAC, Tensor<Tdata>>>
+void LRI<TA,Tcell,Ndim,Tdata>::cal(
+	const std::vector<Label::ab_ab> &labels,
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result)
 {
 	using namespace Array_Operator;
 	using namespace Map_Operator;
-
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_result;
 
 	const bool flag_D_b_transpose = [&labels]() -> bool
 	{
@@ -89,15 +88,14 @@ auto LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
 								Ds_b01, Ds_b01_csm,
 								tools);
 						}
-
-						if( !Ds_result_thread.empty() && omp_test_lock(&lock_Ds_result_add) )
-						{
-							Ds_result = Ds_result + Ds_result_thread;		// tmp
-							Ds_result_thread.clear();
-							omp_unset_lock(&lock_Ds_result_add);
-						}
-
 					} // end for ib2
+
+					if( !Ds_result_thread.empty() && omp_test_lock(&lock_Ds_result_add) )
+					{
+						Ds_result = Ds_result + Ds_result_thread;		// tmp
+						Ds_result_thread.clear();
+						omp_unset_lock(&lock_Ds_result_add);
+					}
 				} // end for ib01
 			}// end for ia2
 		}// end for ia01
@@ -111,12 +109,10 @@ auto LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
 		}
 	} // end #pragma omp parallel
 
-
+	omp_destroy_lock(&lock_Ds_result_add);
 #ifdef __MKL
     mkl_set_num_threads(mkl_threads);
 #endif
-
-	return Ds_result;
 }
 
 

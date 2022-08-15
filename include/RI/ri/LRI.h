@@ -49,7 +49,9 @@ public:
 	//	const std::string &label,
 	//	const Tdata &threshold);
 
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> cal(const std::vector<Label::ab_ab> &lables);
+	void cal(
+		const std::vector<Label::ab_ab> &lables,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result);
 
 public:
 	std::shared_ptr<Parallel_LRI<TA,Tcell,Ndim,Tdata>>

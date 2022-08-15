@@ -60,9 +60,11 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs()
 	assert(this->flag_finish.V);
 	assert(this->flag_finish.D);
 
-	this->Hs = this->lri.cal({
+	this->Hs.clear();
+	this->lri.cal({
 		Label::ab_ab::a0b0_a1b1,
 		Label::ab_ab::a0b0_a1b2,
 		Label::ab_ab::a0b0_a2b1,
-		Label::ab_ab::a0b0_a2b2});
+		Label::ab_ab::a0b0_a2b2},
+		this->Hs);
 }
