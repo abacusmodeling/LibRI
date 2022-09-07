@@ -78,6 +78,50 @@ namespace Blas_Interface
 		return ddot_(&n, X, &incX, Y, &incY);
 	}
 
+	// d = Vx * Vy
+	inline float dotu(const int n, const float*const X, const int incX, const float*const Y, const int incY)
+	{
+		return sdot_(&n, X, &incX, Y, &incY);
+	}
+	inline double dotu(const int n, const double*const X, const int incX, const double*const Y, const int incY)
+	{
+		return ddot_(&n, X, &incX, Y, &incY);
+	}
+	inline std::complex<float> dotu(const int n, const std::complex<float>*const X, const int incX, const std::complex<float>*const Y, const int incY)
+	{
+		std::complex<float> result;
+		cdotu_(&result, &n, X, &incX, Y, &incY);
+		return result;
+	}
+	inline std::complex<double> dotu(const int n, const std::complex<double>*const X, const int incX, const std::complex<double>*const Y, const int incY)
+	{
+		std::complex<double> result;
+		zdotu_(&result, &n, X, &incX, Y, &incY);
+		return result;
+	}
+
+	// d = Vx.conj() * Vy
+	inline float dotc(const int n, const float*const X, const int incX, const float*const Y, const int incY)
+	{
+		return sdot_(&n, X, &incX, Y, &incY);
+	}
+	inline double dotc(const int n, const double*const X, const int incX, const double*const Y, const int incY)
+	{
+		return ddot_(&n, X, &incX, Y, &incY);
+	}
+	inline std::complex<float> dotc(const int n, const std::complex<float>*const X, const int incX, const std::complex<float>*const Y, const int incY)
+	{
+		std::complex<float> result;
+		cdotc_(&result, &n, X, &incX, Y, &incY);
+		return result;
+	}
+	inline std::complex<double> dotc(const int n, const std::complex<double>*const X, const int incX, const std::complex<double>*const Y, const int incY)
+	{
+		std::complex<double> result;
+		zdotc_(&result, &n, X, &incX, Y, &incY);
+		return result;
+	}
+
 	// Vy = alpha * Ma.? * Vx + beta * Vy
 	inline void gemv(const char transA, const int m, const int n,
 		const float alpha, const float*const A, const int ldA, const float*const X, const int incX,

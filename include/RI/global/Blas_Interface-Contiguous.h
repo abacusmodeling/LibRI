@@ -36,6 +36,24 @@ namespace Blas_Interface
 		return dot(n, X, incX, Y, incY);
 	}
 
+	// d = Vx * Vy
+	template<typename T>
+	inline T dotu(const int n, const T*const X, const T*const Y)
+	{
+		constexpr int incX = 1;
+		constexpr int incY = 1;
+		return dotu(n, X, incX, Y, incY);
+	}
+
+	// d = Vx * Vy
+	template<typename T>
+	inline T dotc(const int n, const T*const X, const T*const Y)
+	{
+		constexpr int incX = 1;
+		constexpr int incY = 1;
+		return dotc(n, X, incX, Y, incY);
+	}
+
 	// Vy = alpha * Ma.? * Vx + beta * Vy
 	template<typename T>
 	inline void gemv(const char transA, const int m, const int n,

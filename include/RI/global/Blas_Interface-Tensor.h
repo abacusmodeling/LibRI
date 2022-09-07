@@ -42,6 +42,22 @@ namespace Blas_Interface
 		return dot(X.get_shape_all(), X.ptr(), Y.ptr());
 	}
 
+	// d = Vx * Vy
+	template<typename T>
+	inline T dotu(const Tensor<T> &X, const Tensor<T> &Y)
+	{
+		assert(X.get_shape_all() == Y.get_shape_all());
+		return dotu(X.get_shape_all(), X.ptr(), Y.ptr());
+	}
+
+	// d = Vx * Vy
+	template<typename T>
+	inline T dotc(const Tensor<T> &X, const Tensor<T> &Y)
+	{
+		assert(X.get_shape_all() == Y.get_shape_all());
+		return dotc(X.get_shape_all(), X.ptr(), Y.ptr());
+	}
+
 	// Vy = alpha * Ma.? * Vx + beta * Vy
 	template<typename T>
 	inline void gemv(const char transA, 
