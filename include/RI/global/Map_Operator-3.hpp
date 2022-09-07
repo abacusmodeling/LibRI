@@ -73,7 +73,31 @@ namespace Map_Operator
 			func_prototype = [&func](Tvalue1& v)
 			{ return for_each(v, func); };
 		for_each_prototype(m, func_prototype);
-	}	
+	}
+
+	template<typename Tkey, typename Tdata>
+	Tdata reduce(
+		const std::map<Tkey,Tdata> &m,
+		const Tdata &data_init,
+		const std::function<Tdata(const Tdata&, const Tdata&)> &func)
+	{
+		Tdata data = data_init;
+		for(const auto &item : m)
+			data = func(item.second, data);
+		return data;
+	}
+
+	template<typename TkeyA, typename TkeyB, typename Tvalue, typename Tdata>
+	Tdata reduce(
+		const std::map<TkeyA,std::map<TkeyB,Tvalue>> &m,
+		const Tdata &data_init,
+		const std::function<Tdata(const Tdata&, const Tdata&)> &func)
+	{
+		Tdata data = data_init;
+		for(const auto &item : m)
+			data = reduce(item.second, data, func);
+		return data;
+	}
 }
 
 #include "Map_Operator-2.hpp"

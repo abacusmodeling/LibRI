@@ -67,19 +67,14 @@ namespace Map_Operator
 		return zip_union_prototype(m1, m2, func_prototype);
 	}
 
-	template<typename Tkey, typename Tvalue, typename Tdata>
-	std::map<Tkey,Tvalue> zip_intersection(
-		const std::map<Tkey,Tvalue> &m1,
-		const std::map<Tkey,Tvalue> &m2,
-		const std::function<Tdata(const Tdata&,const Tdata&)> &func);
 
-	template<typename Tkey, typename Tvalue>
-	std::map<Tkey,Tvalue> zip_intersection_prototype(
-		const std::map<Tkey,Tvalue> &m1,
-		const std::map<Tkey,Tvalue> &m2,
-		const std::function<Tvalue(const Tvalue&,const Tvalue&)> &func_prototype)
+	template<typename Tkey, typename Tvalue1, typename Tvalue2, typename Tvalue_return>
+	std::map<Tkey,Tvalue_return> zip_intersection_prototype(
+		const std::map<Tkey,Tvalue1> &m1,
+		const std::map<Tkey,Tvalue2> &m2,
+		const std::function<Tvalue_return(const Tvalue1&,const Tvalue2&)> &func_prototype)
 	{
-		std::map<Tkey,Tvalue> m;
+		std::map<Tkey,Tvalue_return> m;
 		if(m1.size()<m2.size())
 		{
 			for(const auto &i1 : m1)
@@ -101,28 +96,37 @@ namespace Map_Operator
 		return m;
 	}
 
-	template<typename Tkey, typename Tdata>
-	std::map<Tkey,Tdata> zip_intersection(
-		const std::map<Tkey,Tdata> &m1,
-		const std::map<Tkey,Tdata> &m2,
-		const std::function<Tdata(const Tdata&,const Tdata&)> &func)
+	template<typename Tkey, typename Tdata1, typename Tdata2, typename Tdata_return>
+	std::map<Tkey,Tdata_return> zip_intersection(
+		const std::map<Tkey,Tdata1> &m1,
+		const std::map<Tkey,Tdata2> &m2,
+		const std::function<Tdata_return(const Tdata1&,const Tdata2&)> &func)
 	{
-		const std::function<Tdata(const Tdata&, const Tdata&)> 
-			func_prototype = [&func](const Tdata& v1, const Tdata &v2)->Tdata
+		const std::function<Tdata_return(const Tdata1&, const Tdata2&)> 
+			func_prototype = [&func](const Tdata1 &v1, const Tdata2 &v2) -> Tdata_return
 			{ return func(v1, v2); };
 		return zip_intersection_prototype(m1, m2, func_prototype);
 	}
 
-	template<typename Tkey1, typename Tkey2, typename Tvalue, typename Tdata>
-	std::map<Tkey1,std::map<Tkey2,Tvalue>> zip_intersection(
-		const std::map<Tkey1,std::map<Tkey2,Tvalue>> &m1,
-		const std::map<Tkey1,std::map<Tkey2,Tvalue>> &m2,
-		const std::function<Tdata(const Tdata&,const Tdata&)> &func)
+	template<typename TkeyA, typename TkeyB,
+		typename Tvalue1, typename Tvalue2,
+		typename Tdata1, typename Tdata2, typename Tdata_return>
+	auto zip_intersection(
+		const std::map<TkeyA,std::map<TkeyB,Tvalue1>> &m1,
+		const std::map<TkeyA,std::map<TkeyB,Tvalue2>> &m2,
+		const std::function<Tdata_return(const Tdata1&,const Tdata2&)> &func)
+	-> decltype(zip_intersection_prototype(
+			m1, m2,
+			std::function<
+				decltype(zip_intersection(m1.begin()->second, m2.begin()->second, func))
+				(const std::map<TkeyB,Tvalue1>&, const std::map<TkeyB,Tvalue2>&)>() ))
 	{
-		using Tvalue1 = std::map<Tkey2,Tvalue>;
-		const std::function<Tvalue1(const Tvalue1&, const Tvalue1&)> 
-			func_prototype = [&func](const Tvalue1& v1, const Tvalue1 &v2)
+		using TvalueA1 = std::map<TkeyB,Tvalue1>;
+		using TvalueA2 = std::map<TkeyB,Tvalue2>;
+		using TvalueA_return = decltype(zip_intersection(m1.begin()->second, m2.begin()->second, func));
+		const std::function<TvalueA_return(const TvalueA1&, const TvalueA2&)> 
+			func_prototype = [&func](const TvalueA1 &v1, const TvalueA2 &v2) -> TvalueA_return
 			{ return zip_intersection(v1, v2, func); };
 		return zip_intersection_prototype(m1, m2, func_prototype);
-	}		
+	}	
 } // namespace Map_Operator
