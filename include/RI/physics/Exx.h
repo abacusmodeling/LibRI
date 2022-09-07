@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "Exx_Post_2D.h"
 #include "../global/Global_Func-2.h"
 #include "../global/Tensor.h"
 #include "../ri/LRI.h"
@@ -17,14 +18,15 @@ template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 class Exx
 {
 public:
-	using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
+	using TC = std::array<Tcell,Ndim>;
+	using TAC = std::pair<TA,TC>;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
-	using TatomR = std::array<double,Ndim>;		// tmp
+	using Tatom_pos = std::array<double,Ndim>;		// tmp
 
 	void set_parallel(
 		const MPI_Comm &mpi_comm,
-		const std::map<TA,TatomR> &atomsR,
-		const std::array<TatomR,Ndim> &latvec,
+		const std::map<TA,Tatom_pos> &atoms_pos,
+		const std::array<Tatom_pos,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period);
 	
 	void set_Cs(
@@ -41,6 +43,8 @@ public:
 	void cal_Hs();
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Hs;
+
+	Exx_Post_2D<TA,TC,Tdata> post_2D;
 
 public:
 	LRI<TA,Tcell,Ndim,Tdata> lri;

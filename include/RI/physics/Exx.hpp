@@ -13,12 +13,14 @@
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm,
-	const std::map<TA,TatomR> &atomsR,
-	const std::array<TatomR,Ndim> &latvec,
+	const std::map<TA,Tatom_pos> &atoms_pos,
+	const std::array<Tatom_pos,Ndim> &latvec,
 	const std::array<Tcell,Ndim> &period)
 {
-	this->lri.set_parallel(mpi_comm, atomsR, latvec, period);
+	this->lri.set_parallel(mpi_comm, atoms_pos, latvec, period);
 	this->flag_finish.stru = true;
+	//if()
+		this->post_2D.set_parallel(mpi_comm, atoms_pos, period);
 }
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
@@ -50,6 +52,9 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 	this->lri.set_tensors_map2( Ds, Label::ab::a2b1, threshold_D );
 	this->lri.set_tensors_map2( Ds, Label::ab::a2b2, threshold_D );
 	this->flag_finish.D = true;
+
+	//if()
+		this->post_2D.Ds = this->post_2D.set_tensors_map2(Ds);
 }
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
@@ -67,4 +72,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs()
 		Label::ab_ab::a0b0_a2b1,
 		Label::ab_ab::a0b0_a2b2},
 		this->Hs);
+
+	//if()
+		this->post_2D.Hs = this->post_2D.set_tensors_map2(this->Hs);
+		this->post_2D.energy = this->post_2D.cal_energy();
 }

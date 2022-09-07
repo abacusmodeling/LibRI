@@ -16,7 +16,7 @@ namespace Exx_Test
 		int mpi_init_provide;
 		MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 
-		Exx<int,int,1,std::complex<double>> exx;
+		Exx<int,int,1,Tdata> exx;
 		exx.set_parallel(MPI_COMM_WORLD, {{1,{0}},{2,{4}}}, {}, {1});
 		exx.set_Cs({}, 0);
 		exx.set_Vs({}, 0);

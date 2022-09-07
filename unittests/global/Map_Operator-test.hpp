@@ -60,6 +60,19 @@ namespace Map_Operator_Test
 		}*/
 	}
 	
+	void test_intersection_map3()
+	{
+		std::map<int,std::map<std::string,double>> m1;
+		std::map<int,std::map<std::string,std::string>> m2;
+		m1[2]["a"]=2;	m1[1]["b"]=1;
+		m2[0]["c"]="0";	m2[1]["b"]="10";	m2[1]["c"]="20";	
+		const std::function<std::string(const double&, const std::string&)> plus = [](const double &d1, const std::string &d2) -> std::string	{ return std::to_string(d1+std::stod(d2))+"a"; };
+		std::cout<<Map_Operator::zip_intersection(m1,m2,plus)<<std::endl;
+		/*{
+			1: {"b":"11a"}
+		}*/
+	}
+	
 	void test_transform_map()
 	{
 		std::map<int,std::map<std::string,double>> m;
