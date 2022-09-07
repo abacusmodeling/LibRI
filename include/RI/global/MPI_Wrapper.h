@@ -30,7 +30,63 @@ namespace MPI_Wrapper
 		int count;
 		MPI_CHECK( MPI_Get_count(status, datatype, &count) );
 		return count;
-	}	
+	}
+
+	inline void mpi_reduce(const float*const sendbuf, float*const recvbuf, const int count,
+		const MPI_Op op, const int root, const MPI_Comm &mpi_comm)
+	{
+		MPI_CHECK( MPI_Reduce( sendbuf, recvbuf, count, MPI_FLOAT, op, root, mpi_comm ) );
+	}
+	inline void mpi_reduce(const double*const sendbuf, double*const recvbuf, const int count,
+		const MPI_Op op, const int root, const MPI_Comm &mpi_comm)
+	{
+		MPI_CHECK( MPI_Reduce( sendbuf, recvbuf, count, MPI_DOUBLE, op, root, mpi_comm ) );
+	}
+	inline void mpi_reduce(const std::complex<float>*const sendbuf, std::complex<float>*const recvbuf, const int count,
+		const MPI_Op op, const int root, const MPI_Comm &mpi_comm)
+	{
+		MPI_CHECK( MPI_Reduce( sendbuf, recvbuf, count, MPI_COMPLEX, op, root, mpi_comm ) );
+	}
+	inline void mpi_reduce(const std::complex<double>*const sendbuf, std::complex<double>*const recvbuf, const int count,
+		const MPI_Op op, const int root, const MPI_Comm &mpi_comm)
+	{
+		MPI_CHECK( MPI_Reduce( sendbuf, recvbuf, count, MPI_DOUBLE_COMPLEX, op, root, mpi_comm ) );
+	}
+	template<typename T>
+	inline void mpi_reduce(T &data, const MPI_Op op, const int root, const MPI_Comm &mpi_comm)
+	{
+		T data_tmp;
+		mpi_reduce(&data, &data_tmp, 1, op, root, mpi_comm);
+		data = data_tmp;
+	}
+
+	inline void mpi_allreduce(const float*const sendbuf, float*const recvbuf, const int count,
+		const MPI_Op op, const MPI_Comm &mpi_comm)
+	{
+		MPI_CHECK( MPI_Allreduce( sendbuf, recvbuf, count, MPI_FLOAT, op, mpi_comm ) );
+	}
+	inline void mpi_allreduce(const double*const sendbuf, double*const recvbuf, const int count,
+		const MPI_Op op, const MPI_Comm &mpi_comm)
+	{
+		MPI_CHECK( MPI_Allreduce( sendbuf, recvbuf, count, MPI_DOUBLE, op, mpi_comm ) );
+	}
+	inline void mpi_allreduce(const std::complex<float>*const sendbuf, std::complex<float>*const recvbuf, const int count,
+		const MPI_Op op, const MPI_Comm &mpi_comm)
+	{
+		MPI_CHECK( MPI_Allreduce( sendbuf, recvbuf, count, MPI_COMPLEX, op, mpi_comm ) );
+	}
+	inline void mpi_allreduce(const std::complex<double>*const sendbuf, std::complex<double>*const recvbuf, const int count,
+		const MPI_Op op, const MPI_Comm &mpi_comm)
+	{
+		MPI_CHECK( MPI_Allreduce( sendbuf, recvbuf, count, MPI_DOUBLE_COMPLEX, op, mpi_comm ) );
+	}
+	template<typename T>
+	inline void mpi_allreduce(T &data, const MPI_Op op, const MPI_Comm &mpi_comm)
+	{
+		T data_tmp;
+		mpi_allreduce(&data, &data_tmp, 1, op, mpi_comm);
+		data = data_tmp;
+	}
 }
 
 #undef MPI_CHECK

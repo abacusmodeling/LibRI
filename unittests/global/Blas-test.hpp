@@ -59,6 +59,18 @@ namespace Blas_Test
 	}
 
 	template<typename Tdata>
+	void dot_complex()
+	{
+		const std::vector<Tdata> a = {{1,2},{3,4}};
+		const std::vector<Tdata> b = {{5,6},{7,8}};
+//		std::cout<<a<<std::endl<<b<<std::endl;
+		std::cout<<Blas_Interface::dotu(a.size(), a.data(), 1, b.data(), 1)<<std::endl;
+		/* -18+68i */
+		std::cout<<Blas_Interface::dotc(a.size(), a.data(), 1, b.data(), 1)<<std::endl;
+		/* 70-8i */
+	}
+
+	template<typename Tdata>
 	void gemv()
 	{
 		const Tensor<Tdata> m23 = Tensor_Test::init_matrix<Tdata>(2,3);
