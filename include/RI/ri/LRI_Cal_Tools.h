@@ -10,6 +10,9 @@
 #include "RI/global/Global_Func-1.h"
 #include "RI/global/Array_Operator.h"
 
+#include <map>
+#include <unordered_map>
+
 template<typename TA, typename TC, typename Tdata>
 class LRI_Cal_Tools
 {

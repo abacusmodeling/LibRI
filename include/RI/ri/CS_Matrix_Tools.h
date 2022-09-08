@@ -8,6 +8,8 @@
 #include "../global/Global_Func-2.h"
 #include "../global/Tensor.h"
 
+#include <map>
+
 namespace CS_Matrix_Tools
 {
 	enum class Uplimit_Type
