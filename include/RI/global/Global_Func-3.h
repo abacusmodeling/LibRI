@@ -11,7 +11,7 @@
 
 namespace Global_Func
 {
-	template<typename Tcell, size_t Ndim>
+	template<typename Tcell, std::size_t Ndim>
 	std::vector<std::array<Tcell, Ndim>> mod_period(
 		const std::vector<std::array<Tcell, Ndim>> &cells_origin,
 		const std::array<Tcell,Ndim> &period)

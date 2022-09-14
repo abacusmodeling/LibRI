@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Global_Func-2.h"
-#include "../global/Tensor.h"
+#include "Tensor.h"
 
 #include <complex>
 #include <type_traits>

@@ -7,8 +7,8 @@
 
 #include "Tensor.h"
 
-#include "../global/Blas_Interface-Tensor.h"
-#include "../global/Global_Func-2.h"
+#include "Blas_Interface-Tensor.h"
+#include "Global_Func-2.h"
 
 #include <cassert>
 #include <stdexcept>

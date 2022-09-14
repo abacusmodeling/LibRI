@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "Label.h"
 #include "../global/Global_Func-2.h"
 #include "../global/Tensor.h"
 

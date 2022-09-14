@@ -6,6 +6,7 @@
 #pragma once
 
 #include <mpi.h>
+#include <complex>
 
 #define MPI_CHECK(x) if((x)!=MPI_SUCCESS)	throw std::runtime_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 
