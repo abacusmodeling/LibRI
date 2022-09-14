@@ -6,6 +6,7 @@
 #pragma once
 
 #include "RI/global/Tensor.h"
+#include "Label.h"
 
 #include <memory.h>
 #include <cassert>

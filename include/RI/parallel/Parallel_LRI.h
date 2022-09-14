@@ -6,6 +6,7 @@
 #pragma once
 
 #include "../global/Tensor.h"
+#include "../ri/Label.h"
 
 #include <mpi.h>
 #include <vector>

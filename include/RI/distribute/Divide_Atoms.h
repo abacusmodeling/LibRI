@@ -23,7 +23,7 @@ namespace Divide_Atoms
 	// 	[0,1]  [2]
 	// with all period
 	// 	[{0,0},{0,1},{1,0},{1,1}]  [{2,0},{2,1}]
-    template<typename TA, typename Tcell, size_t Ndim>
+    template<typename TA, typename Tcell, std::size_t Ndim>
 	extern std::vector<std::pair<TA,std::array<Tcell,Ndim>>> divide_atoms(
 		const int group_rank,
 		const int group_size,
@@ -32,7 +32,7 @@ namespace Divide_Atoms
 
 	// equally divide atoms and periods:
 	// 	[{0,0},{0,1},{1,0}]  [{1,1},{2,0},{2,1}]  [{3,0},{3,1}]
-	template<typename TA, typename Tcell, size_t Ndim>
+	template<typename TA, typename Tcell, std::size_t Ndim>
 	std::vector<std::pair<TA,std::array<Tcell,Ndim>>> divide_atoms_periods(
 		const int group_rank,
 		const int group_size,
