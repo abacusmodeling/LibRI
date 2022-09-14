@@ -19,8 +19,8 @@ namespace Distribute_Equally
 
 	// 全部维按照atoms，尽可能均分
 	template<typename TA, typename Tcell, size_t Ndim>
-	std::pair<std::vector<TA>,
-	          std::vector<std::vector<std::pair<TA,std::array<Tcell,Ndim>>>>>
+	extern std::pair<std::vector<TA>,
+	                 std::vector<std::vector<std::pair<TA,std::array<Tcell,Ndim>>>>>
 	distribute_atoms(
 		const MPI_Comm &mpi_comm,
 		const std::vector<TA> &atoms,
@@ -29,8 +29,8 @@ namespace Distribute_Equally
 
 	// 第0维按照atoms、剩余维按照{atom,period}，尽可能均分。
 	template<typename TA, typename Tcell, size_t Ndim>
-	std::pair<std::vector<TA>,
-	          std::vector<std::vector<std::pair<TA,std::array<Tcell,Ndim>>>>>
+	extern std::pair<std::vector<TA>,
+	                 std::vector<std::vector<std::pair<TA,std::array<Tcell,Ndim>>>>>
 	distribute_atoms_periods(
 		const MPI_Comm &mpi_comm,
 		const std::vector<TA> &atoms,

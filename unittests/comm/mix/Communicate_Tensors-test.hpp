@@ -3,6 +3,8 @@
 // DATE :   2022-07-20
 //=======================
 
+#pragma once
+
 #include "RI/comm/mix/Communicate_Tensors_Map_Judge.h"
 #include "RI/global/MPI_Wrapper.h"
 #include "unittests/print_stl.h"
@@ -12,8 +14,6 @@
 #include <map>
 #include <set>
 #include <fstream>
-
-#pragma once
 
 namespace Communicate_Tensors_Test
 {

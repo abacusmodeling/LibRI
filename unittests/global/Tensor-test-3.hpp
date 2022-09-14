@@ -102,4 +102,26 @@ namespace Tensor_Test
 		std::cout<<tc.norm(3)<<std::endl;									// 10.400419115259519
 		std::cout<<tc.norm(std::numeric_limits<double>::max())<<std::endl;	// 10
 	}
+
+	static void test_operator_all_3()
+	{
+		test_property<float>();
+		test_property<double>();
+		test_property<std::complex<float>>();
+		test_property<std::complex<double>>();
+		test_add<float>();
+		test_add<double>();
+		test_add<std::complex<float>>();
+		test_add<std::complex<double>>();
+		test_multiply<float>();
+		test_multiply<double>();
+		test_multiply<std::complex<float>>();
+		test_multiply<std::complex<double>>();
+		test_norm<float>();
+		test_norm<double>();
+		test_norm<std::complex<float>>();
+		test_norm<std::complex<double>>();
+		test_norm_complex<float>();		
+		test_norm_complex<double>();		
+	}
 }

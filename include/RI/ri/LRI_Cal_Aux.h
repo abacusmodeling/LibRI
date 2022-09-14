@@ -21,7 +21,7 @@ namespace LRI_Cal_Aux
 			return Tensor<Tdata>( {D.shape[0]*D.shape[1], D.shape[2]}, D.data );
 		else
 			return Tensor<Tdata>( {D.shape[0], D.shape[1]*D.shape[2]}, D.data );
-	};
+	}
 
 	template<typename Tdata>
 	Tensor<Tdata> tensor3_transpose(const Tensor<Tdata> &D)
@@ -37,7 +37,7 @@ namespace LRI_Cal_Aux
 					D.shape[2]*sizeof(Tdata));
 			}
 		return D_new;
-	};
+	}
 
 	template<typename Tdata>
 	inline void add_D(const Tensor<Tdata> &D_add, Tensor<Tdata> &D_result)
@@ -46,7 +46,7 @@ namespace LRI_Cal_Aux
 			D_result = D_add;
 		else
 			D_result = D_result + D_add;
-	};
+	}
 
 	inline int judge_x(const Label::ab_ab &label)
 	{
@@ -63,7 +63,7 @@ namespace LRI_Cal_Aux
 			default:
 				return -1;
 		}
-	};
+	}
 
 	inline Label::ab get_abx(const Label::ab_ab &label)
 	{
@@ -77,5 +77,5 @@ namespace LRI_Cal_Aux
 			case Label::ab_ab::a0b2_a2b1:	case Label::ab_ab::a1b2_a2b1:	return Label::ab::a2b1;
 			default:	throw std::invalid_argument("get_abx");
 		}
-	};	
+	}
 }

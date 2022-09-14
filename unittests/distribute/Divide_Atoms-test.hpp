@@ -1,3 +1,8 @@
+// ===================
+//  Author: Peize Lin
+//  date: 2022.07.13
+// ===================
+
 #pragma once
 
 #include "RI/distribute/Divide_Atoms.h"

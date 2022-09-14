@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 template<typename TA, typename TC, typename Tdata>
-CS_Matrix<TA,TC,Tdata>::Step CS_Matrix<TA,TC,Tdata>::set_label_A(
+typename CS_Matrix<TA,TC,Tdata>::Step CS_Matrix<TA,TC,Tdata>::set_label_A(
 	const Label::ab_ab &label_in,
 	const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2,
 	const TC &period) const

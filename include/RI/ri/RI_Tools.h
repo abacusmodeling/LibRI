@@ -18,13 +18,13 @@ namespace RI_Tools
 			const Global_Func::To_Real_t<Tdata> &threshold)>;
 
 	template<typename TA, typename TAC, typename Tdata>
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> filter(
+	extern std::map<TA, std::map<TAC, Tensor<Tdata>>> filter(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
 		const T_filter_func<Tdata> &filter_func,
 		const Global_Func::To_Real_t<Tdata> &threshold);
 
 	template<typename TA, typename TC, typename Tdata>
-	std::map<TA, std::map<std::pair<TA,TC>, Tensor<Tdata>>> cal_period(
+	extern std::map<TA, std::map<std::pair<TA,TC>, Tensor<Tdata>>> cal_period(
 		const std::map<TA, std::map<std::pair<TA,TC>, Tensor<Tdata>>> &Ds,
 		const TC &period);		
 }

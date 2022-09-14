@@ -81,20 +81,20 @@ namespace Blas_Test
 
 		std::cout<<m23<<std::endl;
 		std::cout<<v3<<std::endl;
-		Blas_Interface::gemv('N', m23.shape[0], m23.shape[1], 1.0, m23.ptr(), v3.ptr(), 0.0, vr2.ptr());
+		Blas_Interface::gemv('N', m23.shape[0], m23.shape[1], Tdata{1.0}, m23.ptr(), v3.ptr(), Tdata{0.0}, vr2.ptr());
 		std::cout<<vr2<<std::endl;
-		Blas_Interface::gemv('N', 1.0, m23, v3, 0.0, vr2);
+		Blas_Interface::gemv('N', Tdata{1.0}, m23, v3, Tdata{0.0}, vr2);
 		std::cout<<vr2<<std::endl;
-		std::cout<<Blas_Interface::gemv('N', 1.0, m23, v3)<<std::endl;
+		std::cout<<Blas_Interface::gemv('N', Tdata{1.0}, m23, v3)<<std::endl;
 		// 5 35
 
 		std::cout<<m23.transpose()<<std::endl;
 		std::cout<<v2<<std::endl;
-		Blas_Interface::gemv('T', m23.shape[0], m23.shape[1], 1.0, m23.ptr(), v2.ptr(), 0.0, vr3.ptr());
+		Blas_Interface::gemv('T', m23.shape[0], m23.shape[1], Tdata{1.0}, m23.ptr(), v2.ptr(), Tdata{0.0}, vr3.ptr());
 		std::cout<<vr3<<std::endl;
-		Blas_Interface::gemv('T', 1.0, m23, v2, 0.0, vr3);
+		Blas_Interface::gemv('T', Tdata{1.0}, m23, v2, Tdata{0.0}, vr3);
 		std::cout<<vr3<<std::endl;
-		std::cout<<Blas_Interface::gemv('T', 1.0, m23, v2)<<std::endl;
+		std::cout<<Blas_Interface::gemv('T', Tdata{1.0}, m23, v2)<<std::endl;
 		// 10 11 12
 	}
 
@@ -156,5 +156,15 @@ namespace Blas_Test
 		axpy<std::complex<double>>();
 		dot_1<float>();
 		dot_1<double>();
+		dot_2();
+		dot_complex<std::complex<float>>();
+		dot_complex<std::complex<double>>();
+		gemv<float>();
+		gemv<double>();
+		gemv<std::complex<float>>();
+		gemv<std::complex<double>>();
+		gemv_complex<std::complex<float>>();
+		gemv_complex<std::complex<double>>();
+		syrk();
 	}	
 }

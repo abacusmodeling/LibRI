@@ -20,15 +20,16 @@ namespace CS_Matrix_Tools
 		square_three_2,		norm_three_2
 	};
 	
-	inline std::pair<Label::ab, Label::ab> split_label(const Label::ab_ab &label);
+	extern inline std::pair<Label::ab, Label::ab> split_label(const Label::ab_ab &label);
 
 	template<typename Tkey, typename Tvalue>
-	auto cal_uplimit(
+	extern auto cal_uplimit(
 		const Uplimit_Type &uplimit_type,
 		const std::map<Tkey,Tvalue> &Ds)
 	-> std::map<Tkey, decltype(cal_uplimit(uplimit_type,Ds.begin()->second))>;
+	
 	template<typename Tdata>
-	Global_Func::To_Real_t<Tdata> cal_uplimit(
+	extern Global_Func::To_Real_t<Tdata> cal_uplimit(
 		const Uplimit_Type &uplimit_type,
 		const Tensor<Tdata> &D);
 }
