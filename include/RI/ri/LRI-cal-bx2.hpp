@@ -7,11 +7,12 @@
 
 #include "LRI.h"
 #include "LRI_Cal_Aux.h"
+#include "CS_Matrix_Tools.h"
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 {
-	#define Macro_cal_func_bx2(D_ab_first_in, D_ab_second_in, D_mul2_in, D_mul3_in, D_mul4_in, D_result_in)	\
+	#define Macro_cal_func_bx2(D_ab_first_in, D_ab_second_in, D_mul2_in, D_mul3_in, D_mul4_in, unused_a_in, D_result_in)	\
 	[this](	\
 		const Label::ab_ab &label,	\
 		const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2,	\
@@ -20,6 +21,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 		std::unordered_map<Label::ab_ab, Tdata_real> &Ds_b01_csm,	\
 		LRI_Cal_Tools<TA,TC,Tdata> &tools)	\
 	{	\
+		constexpr CS_Matrix_Tools::Uplimit_Type uplimit_type[3] = {	\
+			CS_Matrix_Tools::Uplimit_Type::norm_three_0,	\
+			CS_Matrix_Tools::Uplimit_Type::norm_three_1,	\
+			CS_Matrix_Tools::Uplimit_Type::norm_three_2};	\
 		const Tensor<Tdata> &D_ab_first  = D_ab_first_in;	\
 		const Tensor<Tdata> &D_ab_second = D_ab_second_in;	\
 		if(!D_ab_first)		return;	\
@@ -39,7 +44,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			Ds_b01[label] = D_mul2_in;	\
 			\
 			if(this->csm.threshold.at(label))	\
-				Ds_b01_csm[label] = Ds_b01[label].norm(2);	\
+				Ds_b01_csm[label] = CS_Matrix_Tools::cal_uplimit(uplimit_type[unused_a_in], Ds_b01[label]);	\
 		}	\
 		if(this->csm.threshold.at(label))	\
 			if(this->csm.filter_3(csm_step, Ds_b01_csm[label]))	\
@@ -49,14 +54,14 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 		\
 		if(this->csm.threshold.at(label))	\
 		{	\
-			const Tdata_real D_mul3_csm = D_mul3.norm(2);	\
+			const Tdata_real D_mul3_csm = CS_Matrix_Tools::cal_uplimit(uplimit_type[unused_a_in], D_mul3);	\
 			if(this->csm.filter_2(csm_step, D_mul3_csm))	return;	\
 		}	\
 		const Tensor<Tdata> D_mul4 = D_mul4_in;	\
 		\
 		if(this->csm.threshold.at(label))	\
 		{	\
-			const Tdata_real D_mul4_csm = D_mul4.norm(2);	\
+			const Tdata_real D_mul4_csm = D_mul4.norm(std::numeric_limits<double>::max());	\
 			if(this->csm.filter_1(csm_step, D_mul4_csm)) return;	\
 		}	\
 		Tensor<Tdata> &D_result = D_result_in;	\
@@ -84,6 +89,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			'N', 'T', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
+		2,
 		tools.get_D_result(Aa2, Ab01));				
 
 	this->cal_funcs[Label::ab_ab::a0b2_a1b0] = this->cal_funcs[Label::ab_ab::a0b2_a1b1] = Macro_cal_func_bx2(
@@ -106,6 +112,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			'N', 'T', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
+		2,
 		tools.get_D_result(Aa2, Ab01));
 
 	this->cal_funcs[Label::ab_ab::a0b0_a2b2] = this->cal_funcs[Label::ab_ab::a0b1_a2b2] = Macro_cal_func_bx2(
@@ -128,6 +135,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			'N', 'T', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
+		1,
 		tools.get_D_result(Aa01, Ab01));
 
 	this->cal_funcs[Label::ab_ab::a0b2_a2b0] = this->cal_funcs[Label::ab_ab::a0b2_a2b1] = Macro_cal_func_bx2(
@@ -150,6 +158,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			'N', 'T', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
+		1,
 		tools.get_D_result(Aa01, Ab01));
 	
 	this->cal_funcs[Label::ab_ab::a1b0_a2b2] = this->cal_funcs[Label::ab_ab::a1b1_a2b2] = Macro_cal_func_bx2(
@@ -172,6 +181,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			'N', 'T', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
+		0,
 		tools.get_D_result(Aa01, Ab01));
 
 	this->cal_funcs[Label::ab_ab::a1b2_a2b0] = this->cal_funcs[Label::ab_ab::a1b2_a2b1] = Macro_cal_func_bx2(
@@ -194,6 +204,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			'N', 'T', Tdata(1),
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
+		0,
 		tools.get_D_result(Aa01, Ab01));
 	
 	
