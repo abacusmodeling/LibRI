@@ -7,6 +7,8 @@
 
 #include <mpi.h>
 #include <complex>
+#include <stdexcept>
+#include <string>
 
 #define MPI_CHECK(x) if((x)!=MPI_SUCCESS)	throw std::runtime_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 
@@ -26,12 +28,12 @@ namespace MPI_Wrapper
 		return rank_size;
 	}
 
-	inline int mpi_get_count(MPI_Status* status, const MPI_Datatype &datatype)
-	{
-		int count;
-		MPI_CHECK( MPI_Get_count(status, datatype, &count) );
-		return count;
-	}
+	//inline int mpi_get_count(const MPI_Status &status, const MPI_Datatype &datatype)
+	//{
+	//	int count;
+	//	MPI_CHECK( MPI_Get_count(&status, datatype, &count) );
+	//	return count;
+	//}
 
 	inline void mpi_reduce(const float*const sendbuf, float*const recvbuf, const int count,
 		const MPI_Op op, const int root, const MPI_Comm &mpi_comm)

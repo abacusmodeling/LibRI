@@ -43,9 +43,9 @@ namespace Communicate_Tensors_Test
 		rank 4:
 	*/
 
-	void test_comm_judge_map()
+	void test_comm_judge_map(int argc, char *argv[])
 	{
-		int mpi_init_provide;	MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
 		std::map<int,Tensor<double>> Ds_in;
 		std::set<int> s;
@@ -76,9 +76,9 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 
-	void test_comm_judge_map2()
+	void test_comm_judge_map2(int argc, char *argv[])
 	{
-		int mpi_init_provide;	MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
 		using TAC = std::pair<int,std::array<int,1>>;
 		std::map<int,std::map<TAC,Tensor<double>>> Ds_in;
@@ -113,9 +113,9 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 	
-	void test_comm_judge_map3()
+	void test_comm_judge_map3(int argc, char *argv[])
 	{
-		int mpi_init_provide;	MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
 		using TAC = std::pair<int,std::array<int,1>>;
 		std::map<int,std::map<TAC,std::map<TAC,Tensor<double>>>> Ds_in;
@@ -151,9 +151,9 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 
-	void test_comm_judge_map2_first()
+	void test_comm_judge_map2_first(int argc, char *argv[])
 	{
-		int mpi_init_provide;	MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
 		using TAC = std::pair<int,std::array<int,1>>;
 		std::map<int,std::map<TAC,Tensor<double>>> Ds_in;
@@ -186,9 +186,9 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}	
 
-	void test_comm_judge_map3_first()
+	void test_comm_judge_map3_first(int argc, char *argv[])
 	{
-		int mpi_init_provide;	MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
 		using TAC = std::pair<int,std::array<int,1>>;
 		std::map<int,std::map<TAC,std::map<TAC,Tensor<double>>>> Ds_in;
@@ -222,9 +222,9 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}	
 
-	void test_comm_judge_map2_period()
+	void test_comm_judge_map2_period(int argc, char *argv[])
 	{
-		int mpi_init_provide;	MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
 		using TAC = std::pair<int,std::array<int,1>>;
 		std::map<int,std::map<TAC,Tensor<double>>> Ds_in;
@@ -262,9 +262,9 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 
-	void test_comm_judge_map3_period()
+	void test_comm_judge_map3_period(int argc, char *argv[])
 	{
-		int mpi_init_provide;	MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
 		using TAC = std::pair<int,std::array<int,1>>;
 		std::map<int,std::map<TAC,std::map<TAC,Tensor<double>>>> Ds_in;

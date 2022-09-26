@@ -58,10 +58,10 @@ namespace LRI_Test
 	}
 
 	template<typename Tdata>
-	void main()
+	void main(int argc, char *argv[])
 	{
 		int mpi_init_provide;
-		MPI_Init_thread(NULL,NULL, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 
 		if(MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD)!=0)
 		{
@@ -333,3 +333,5 @@ namespace LRI_Test
 	}
 
 }
+
+#undef FOR_ia012_ib012

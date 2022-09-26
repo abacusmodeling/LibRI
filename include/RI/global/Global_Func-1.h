@@ -87,4 +87,9 @@ namespace Global_Func
 	{
 		return std::set<T>(v.begin(), v.end());
 	}
+	template<typename T, std::size_t N>
+	std::vector<T> to_vector(const std::array<T,N> &v)
+	{
+		return std::vector<T>(v.begin(), v.end());
+	}
 }

@@ -13,9 +13,9 @@
 
 namespace Distribute_Equally_Test
 {
-	void test_distribute_atoms()
+	void test_distribute_atoms(int argc, char *argv[])
 	{
-		MPI_Init(NULL,NULL);
+		MPI_Init(&argc, &argv);
 
 		const std::vector<int> atoms = {0,1,2,3,4};
 		const std::array<int,1> period = {2};
@@ -57,9 +57,9 @@ namespace Distribute_Equally_Test
 			{ 3, 0	 }|	{ 3, 1	 }|	{ 4, 0	 }|	{ 4, 1	 }|	
 	*/
 
-	void test_distribute_atoms_periods()
+	void test_distribute_atoms_periods(int argc, char *argv[])
 	{
-		MPI_Init(NULL,NULL);
+		MPI_Init(&argc, &argv);
 
 		const std::vector<int> atoms = {0,1,2,3,4};
 		const std::array<int,1> period = {2};

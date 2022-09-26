@@ -1,0 +1,99 @@
+// ===================
+//  Author: Peize Lin
+//  date: 2022.09.21
+// ===================
+
+#pragma once
+
+#include"RI/ri/Label.h"
+#include"RI/ri/LRI.h"
+#include"RI/global/MPI_Wrapper.h"
+#include"RI/global/Global_Func-1.h"
+
+#include<array>
+#include<map>
+#include<unordered_map>
+#include<iostream>
+#include<mpi.h>
+#include<sys/time.h>
+
+namespace LRI_Speed_Test
+{
+	template<typename Tdata>
+	static Tensor<Tdata> init_tensor(const std::vector<size_t> &shape)
+	{
+		Tensor<Tdata> D(shape);
+		for(size_t i=0; i<D.data->size(); ++i)
+			(*D.data)[i] = i;
+		return D;
+	}
+
+	static double time_during(const timeval &t_begin)
+	{
+		timeval t_end;
+		gettimeofday(&t_end, NULL);
+		return (double)(t_end.tv_sec-t_begin.tv_sec) + (double)(t_end.tv_usec-t_begin.tv_usec)/1000000.0;
+	}
+
+
+	template<typename Tdata>
+	void test_speed(int argc, char *argv[], const int NA, const size_t Ni)
+	{
+
+		int mpi_init_provide;
+		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
+
+		constexpr size_t Ndim = 1;
+		//const size_t Na0=20, Nb0=30, Na1=40, Nb1=50, Na2=60, Nb2=70;
+		const size_t Na0=Ni, Nb0=Ni, Na1=Ni, Nb1=Ni, Na2=Ni, Nb2=Ni;
+
+		using T_Ds = std::map<int, std::map<std::pair<int,std::array<int,Ndim>>, Tensor<Tdata>>>;
+		std::unordered_map<Label::ab, T_Ds> Ds_ab;
+		Ds_ab.reserve(11);
+		auto init_Ds = [&Ds_ab, NA](const Label::ab &label, const std::vector<size_t> &shape)
+		{
+			const int rank_mine = MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
+			const int rank_size = MPI_Wrapper::mpi_get_size(MPI_COMM_WORLD);
+			const Tensor<Tdata> D = init_tensor<Tdata>(shape);
+			for(int iAx=0; iAx<NA; ++iAx)
+			{
+				if(iAx%rank_size!=rank_mine)	continue;
+				for(int iAy=0; iAy<NA; ++iAy)
+					Ds_ab[label][iAx][{iAy,{0}}] = D;
+			}
+		};
+		init_Ds(Label::ab::a, {Na0,Na1,Na2});
+		init_Ds(Label::ab::b, {Nb0,Nb1,Nb2});
+		init_Ds(Label::ab::a0b0, {Na0,Nb0});
+		init_Ds(Label::ab::a0b1, {Na0,Nb1});
+		init_Ds(Label::ab::a0b2, {Na0,Nb2});
+		init_Ds(Label::ab::a1b0, {Na1,Nb0});
+		init_Ds(Label::ab::a1b1, {Na1,Nb1});
+		init_Ds(Label::ab::a1b2, {Na1,Nb2});
+		init_Ds(Label::ab::a2b0, {Na2,Nb0});
+		init_Ds(Label::ab::a2b1, {Na2,Nb1});
+		init_Ds(Label::ab::a2b2, {Na2,Nb2});
+
+		std::map<int,std::array<double,1>> atoms_pos;
+		for(int iA=0; iA<NA; ++iA)
+			atoms_pos[iA] = {0};
+
+		LRI<int,int,Ndim,Tdata> lri;
+		lri.set_parallel(MPI_COMM_WORLD, atoms_pos, {}, {1});
+		lri.csm.set_threshold(0);
+
+		for(const Label::ab &label : Label::array_ab)
+			lri.set_tensors_map2(Ds_ab[label], label, 0);
+
+		timeval t_begin;
+		gettimeofday(&t_begin, NULL);
+
+		T_Ds Ds_result;
+		lri.cal(Global_Func::to_vector(Label::array_ab_ab), Ds_result);
+
+		std::cout<<time_during(t_begin)<<std::endl;
+
+		MPI_Finalize();
+	}
+
+}
