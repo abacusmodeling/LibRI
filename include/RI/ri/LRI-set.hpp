@@ -38,8 +38,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 	else
 		this->Ds_ab[label] = std::move(Ds_comm);
 
-	if(this->csm.threshold_max)
-		this->csm.set_tensor(label, this->Ds_ab[label]);
+	this->csm.set_tensor(label, this->Ds_ab[label]);
 }
 
 /*

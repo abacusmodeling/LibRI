@@ -32,7 +32,6 @@ public:
 	CS_Matrix();
 	void set_threshold(const Tdata &threshold_in);
 	void set_threshold(const Label::ab_ab &label, const Tdata &threshold_in);
-	Tdata threshold_max = 0;
 
 	template<typename T> void set_tensor( const Label::ab &label, const T &Ds);
 

@@ -19,16 +19,11 @@ void CS_Matrix<TA,TC,Tdata>::set_threshold(const Tdata &threshold_in)
 {
 	for(const Label::ab_ab &label : Label::array_ab_ab)
 		this->threshold[label] = threshold_in;
-	this->threshold_max = threshold_in;
 }
 template<typename TA, typename TC, typename Tdata>
 void CS_Matrix<TA,TC,Tdata>::set_threshold(const Label::ab_ab &label, const Tdata &threshold_in)
 {
 	this->threshold[label] = threshold_in;
-	this->threshold_max = 0;
-	for(const auto thr : threshold)
-		this->threshold_max = std::max(thr, this->threshold_max);
-
 }
 
 
