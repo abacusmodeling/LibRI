@@ -22,8 +22,6 @@ namespace Test_All
 {
 	void test_all(int argc, char *argv[])
 	{
-		icecream::ic.include_context(true);
-
 		Communicate_Tensors_Test::test_comm_judge_map(argc, argv);
 		Communicate_Tensors_Test::test_comm_judge_map2(argc, argv);
 		Communicate_Tensors_Test::test_comm_judge_map3(argc, argv);

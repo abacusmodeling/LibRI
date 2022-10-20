@@ -21,7 +21,7 @@ namespace Global_Func
 		typename std::enable_if<std::is_arithmetic<Tdata>::value,bool>::type=0>
 	Tdata find(
 		const std::map<Tkey, Tdata> &m,
-		const Tkey key)
+		const Tkey &key)
 	{
 		const auto ptr = m.find(key);
 		if(ptr==m.end())
@@ -32,7 +32,7 @@ namespace Global_Func
 	template<typename Tkey, typename Tdata>
 	Tensor<Tdata> find(
 		const std::map<Tkey, Tensor<Tdata>> &m,
-		const Tkey key)
+		const Tkey &key)
 	{
 		const auto ptr = m.find(key);
 		if(ptr==m.end())
@@ -43,9 +43,9 @@ namespace Global_Func
 	template<typename Tkey, typename Tvalue, typename... Tkeys>
 	auto find(
 		const std::map<Tkey, Tvalue> &m,
-		const Tkey key,
-		const Tkeys... keys)
-	-> decltype(find( m.find(key)->second, keys... ))
+		const Tkey &key,
+		const Tkeys&... keys)
+//	-> decltype(find( m.find(key)->second, keys... ))			// why error for C++ compiler high version
 	{
 		const auto ptr = m.find(key);
 		if(ptr==m.end())
