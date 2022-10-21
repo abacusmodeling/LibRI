@@ -12,6 +12,7 @@
 #include "../parallel/Parallel_LRI_Equally.h"
 #include "RI_Tools.h"
 #include "../global/Global_Func-2.h"
+#include "Save_Load.h"
 
 #include <mpi.h>
 #include <map>
@@ -22,7 +23,7 @@
 #include <functional>
 
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 class LRI
 {
 public:
@@ -62,6 +63,7 @@ public:
 public:		// private:
 	TC period;
 	MPI_Comm mpi_comm;
+	Save_Load<TA,Tcell,Ndim,Tdata> save_load;
 	
 	std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_ab;
 

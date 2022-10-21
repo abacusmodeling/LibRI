@@ -11,6 +11,7 @@
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 LRI<TA,Tcell,Ndim,Tdata>::LRI()
+	:save_load(*this)
 {
 	Ds_ab.reserve(Label::array_ab.size());
 

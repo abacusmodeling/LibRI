@@ -31,16 +31,21 @@ public:
 	
 	void set_Cs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
-		const Tdata_real &threshold_C);
+		const Tdata_real &threshold_C,
+		const std::string &save_name_suffix="");
 	void set_Vs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Vs,
-		const Tdata_real &threshold_V);
+		const Tdata_real &threshold_V,
+		const std::string &save_name_suffix="");
 	void set_Ds(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
-		const Tdata_real &threshold_D);
-	void set_csm_threshold(const Tdata_real &threshold){ this->lri.csm.set_threshold(threshold); }
+		const Tdata_real &threshold_D,
+		const std::string &save_name_suffix="");
+	void set_csm_threshold(
+		const Tdata_real &threshold) { this->lri.csm.set_threshold(threshold); }
 
-	void cal_Hs();
+	void cal_Hs(
+		const std::array<std::string,3> &save_names_suffix={"","",""});
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Hs;
 
