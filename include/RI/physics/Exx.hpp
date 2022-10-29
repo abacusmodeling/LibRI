@@ -60,8 +60,10 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 	this->flag_finish.D = true;
 
 	//if()
-		this->post_2D.Ds = this->post_2D.set_tensors_map2(Ds);
+		this->post_2D.saves["Ds"+save_name_suffix] = this->post_2D.set_tensors_map2(Ds);
 }
+
+
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
@@ -85,8 +87,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 		this->Hs);
 
 	//if()
-		this->post_2D.Hs = this->post_2D.set_tensors_map2(this->Hs);
-		this->post_2D.energy = this->post_2D.cal_energy();
+		const std::map<TA,std::map<TAC,Tensor<Tdata>>> Hs_2D = this->post_2D.set_tensors_map2(this->Hs);
+		this->post_2D.energy = this->post_2D.cal_energy( this->post_2D.saves["Ds"+save_names_suffix[2]], Hs_2D );
 
 	this->lri.save_load.save("Cs"+save_names_suffix[0], {Label::ab::a, Label::ab::b});
 	this->lri.save_load.save("Vs"+save_names_suffix[1], Label::ab::a0b0);

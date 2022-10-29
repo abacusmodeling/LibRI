@@ -41,13 +41,15 @@ auto Exx_Post_2D<TA,TC,Tdata>::set_tensors_map2( const std::map<TA,std::map<TAC,
 
 
 template<typename TA, typename TC, typename Tdata>
-Tdata Exx_Post_2D<TA,TC,Tdata>::cal_energy() const
+Tdata Exx_Post_2D<TA,TC,Tdata>::cal_energy(
+	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds,
+	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Hs) const
 {
 	typedef Tdata(*Tfunc_dotc)(const Tensor<Tdata>&, const Tensor<Tdata>&);
 	const std::function<Tdata(const Tensor<Tdata>&, const Tensor<Tdata>&)>
 		dotc = static_cast<Tfunc_dotc>(Blas_Interface::dotc);
 	const std::map<TA, std::map<TAC, Tdata>>
-		E_map = Map_Operator::zip_intersection(this->Ds, this->Hs, dotc);
+		E_map = Map_Operator::zip_intersection(Ds, Hs, dotc);
 
 	const std::function<Tdata(const Tdata&, const Tdata&)>
 		plus = std::plus<Tdata>();

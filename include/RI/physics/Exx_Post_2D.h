@@ -5,6 +5,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <mpi.h>
 
 template<typename TA, typename TC, typename Tdata>
@@ -16,8 +17,7 @@ public:
 	std::set<TA>  list_Aa;
 	std::set<TAC> list_Ab;
 
-	std::map<TA,std::map<TAC,Tensor<Tdata>>> Ds;
-	std::map<TA,std::map<TAC,Tensor<Tdata>>> Hs;
+	std::map<std::string, std::map<TA,std::map<TAC,Tensor<Tdata>>>> saves;
 	Tdata energy = 0;
 
 	template<typename Tatom_pos>
@@ -29,7 +29,9 @@ public:
 	std::map<TA,std::map<TAC,Tensor<Tdata>>>
 	set_tensors_map2( const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds_in ) const;
 
-	Tdata cal_energy() const;
+	Tdata cal_energy(
+		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds,
+		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Hs ) const;
 
 public:	// private:
 	MPI_Comm mpi_comm;
