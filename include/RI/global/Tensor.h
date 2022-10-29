@@ -50,6 +50,7 @@ public:
 	operator bool () const { return !shape.empty(); }
 
 	//Tensor & operator += (const Tensor &);
+	Tensor operator-() const;
 
 	template <class Archive> void serialize( Archive & ar ){ ar(shape); ar(data); }		// for cereal
 };

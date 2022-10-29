@@ -9,6 +9,7 @@
 
 #include <map>
 #include <set>
+#include <array>
 #include <type_traits>
 
 namespace Global_Func
@@ -37,6 +38,17 @@ namespace Global_Func
 		const auto ptr = m.find(key);
 		if(ptr==m.end())
 			return Tensor<Tdata>{};
+		else
+			return ptr->second;
+	}
+	template<typename Tkey, typename Tdata, std::size_t Ndim>
+	std::array<Tdata,Ndim> find(
+		const std::map<Tkey, std::array<Tdata,Ndim>> &m,
+		const Tkey &key)
+	{
+		const auto ptr = m.find(key);
+		if(ptr==m.end())
+			return std::array<Tdata,Ndim>{};
 		else
 			return ptr->second;
 	}
