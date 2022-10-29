@@ -63,7 +63,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 				return;	\
 		}	\
 		Tensor<Tdata> &D_result = D_result_in;	\
-		LRI_Cal_Aux::add_D(D_mul4, D_result);	\
+		if(!this->coefficient)	\
+			LRI_Cal_Aux::add_D(D_mul4, D_result);	\
+		else	\
+			LRI_Cal_Aux::add_D(D_mul4*coefficient(label,Aa01,Aa2,Ab01,Ab2), D_result);	\
 	};	\
 
 

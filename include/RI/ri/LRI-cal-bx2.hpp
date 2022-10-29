@@ -65,7 +65,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			if(this->csm.filter_1(csm_step, D_mul4_csm)) return;	\
 		}	\
 		Tensor<Tdata> &D_result = D_result_in;	\
-		LRI_Cal_Aux::add_D(D_mul4, D_result);	\
+		if(!this->coefficient)	\
+			LRI_Cal_Aux::add_D(D_mul4, D_result);	\
+		else	\
+			LRI_Cal_Aux::add_D(D_mul4*coefficient(label,Aa01,Aa2,Ab01,Ab2), D_result);	\
 	};	\
 
 

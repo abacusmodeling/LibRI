@@ -79,6 +79,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 	this->lri.save_load.load("Ds"+save_names_suffix[2], {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2});
 
 	this->Hs.clear();
+	this->lri.coefficient = nullptr;
 	this->lri.cal({
 		Label::ab_ab::a0b0_a1b1,
 		Label::ab_ab::a0b0_a1b2,
