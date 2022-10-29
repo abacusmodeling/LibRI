@@ -124,6 +124,14 @@ bool same_shape (const Tensor<T1> &t1, const Tensor<T2> &t2)
 	return true;	
 }
 
+template<typename T>
+Tensor<T> Tensor<T>::operator-() const
+{
+	Tensor<T> t(this->shape);
+	*t.data = -*this->data;
+	return t;
+}
+
 
 template<typename T>
 Tensor<T> operator+ (const Tensor<T> &t1, const Tensor<T> &t2)
