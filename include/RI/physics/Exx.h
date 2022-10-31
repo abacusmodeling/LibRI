@@ -41,13 +41,25 @@ public:
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
 		const Tdata_real &threshold_D,
 		const std::string &save_name_suffix="");
+	void set_dCs(
+		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Ndim> &dCs,
+		const Tdata_real &threshold_dC,
+		const std::string &save_name_suffix="");
+	void set_dVs(
+		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Ndim> &dVs,
+		const Tdata_real &threshold_dV,
+		const std::string &save_name_suffix="");
 	void set_csm_threshold(
 		const Tdata_real &threshold) { this->lri.csm.set_threshold(threshold); }
 
 	void cal_Hs(
-		const std::array<std::string,3> &save_names_suffix={"","",""});
+		const std::array<std::string,3> &save_names_suffix={"","",""});		// "Cs","Vs","Ds"
+	void cal_Fs(
+		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCs","dVs"	
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Hs;
+	Tdata energy = 0;
+	std::array<std::map<TA,Tdata>,Ndim> force;
 
 	Exx_Post_2D<TA,TC,Tdata> post_2D;
 
@@ -60,6 +72,8 @@ public:
 		bool C=false;
 		bool V=false;
 		bool D=false;
+		bool dC=false;
+		bool dV=false;
 	};
 	Flag_Finish flag_finish;
 };

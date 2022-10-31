@@ -45,10 +45,10 @@ void Save_Load<TA,Tcell,Ndim,Tdata>::load(const std::string &name, const Label::
 		assert(this->lri.csm.uplimits_norm_tensor3[label][i].empty());
 	assert(this->lri.csm.uplimits_square_tensor2[label].empty());
 
-	this->lri.Ds_ab[label] = std::move(this->saves[name].Ds_ab[label]);
-	this->lri.csm.uplimits_square_tensor3[label] = std::move(this->saves[name].csm_uplimits_square_tensor3[label]);
-	this->lri.csm.uplimits_norm_tensor3  [label] = std::move(this->saves[name].csm_uplimits_norm_tensor3  [label]);
-	this->lri.csm.uplimits_square_tensor2[label] = std::move(this->saves[name].csm_uplimits_square_tensor2[label]);
+	this->lri.Ds_ab[label] = std::move(this->saves.at(name).Ds_ab[label]);
+	this->lri.csm.uplimits_square_tensor3[label] = std::move(this->saves.at(name).csm_uplimits_square_tensor3[label]);
+	this->lri.csm.uplimits_norm_tensor3  [label] = std::move(this->saves.at(name).csm_uplimits_norm_tensor3  [label]);
+	this->lri.csm.uplimits_square_tensor2[label] = std::move(this->saves.at(name).csm_uplimits_square_tensor2[label]);
 
 //	auto save_name_empty = [this]() -> bool
 //	{

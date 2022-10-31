@@ -23,6 +23,7 @@ namespace Exx_Test
 		exx.set_Vs({}, 1E-4);
 		exx.set_Ds({}, 1E-4);
 		exx.cal_Hs();
+		exx.cal_Fs();
 
 		MPI_Finalize();
 	}

@@ -9,8 +9,10 @@
 #include "../comm/mix/Communicate_Tensors_Map_Judge.h"
 #include "../distribute/Distribute_Equally.h"
 
-#include <vector>
+#include "Comm/Comm_Trans/Comm_Trans.h"
+#include "Comm/example/Communicate_Map-1.h"
 
+#include <vector>
 
 template<typename TA, typename TC, typename Tdata> template<typename Tatom_pos>
 void Exx_Post_2D<TA,TC,Tdata>::set_parallel(
@@ -41,15 +43,27 @@ auto Exx_Post_2D<TA,TC,Tdata>::set_tensors_map2( const std::map<TA,std::map<TAC,
 
 
 template<typename TA, typename TC, typename Tdata>
-Tdata Exx_Post_2D<TA,TC,Tdata>::cal_energy(
+auto Exx_Post_2D<TA,TC,Tdata>::cal_zip_dotc(
 	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds,
 	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Hs) const
+-> std::map<TA, std::map<TAC, Tdata>>
 {
 	typedef Tdata(*Tfunc_dotc)(const Tensor<Tdata>&, const Tensor<Tdata>&);
 	const std::function<Tdata(const Tensor<Tdata>&, const Tensor<Tdata>&)>
 		dotc = static_cast<Tfunc_dotc>(Blas_Interface::dotc);
 	const std::map<TA, std::map<TAC, Tdata>>
 		E_map = Map_Operator::zip_intersection(Ds, Hs, dotc);
+	return E_map;
+}
+
+
+template<typename TA, typename TC, typename Tdata>
+Tdata Exx_Post_2D<TA,TC,Tdata>::cal_energy(
+	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds,
+	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Hs) const
+{
+	const std::map<TA, std::map<TAC, Tdata>>
+		E_map = cal_zip_dotc(Ds, Hs);
 
 	const std::function<Tdata(const Tdata&, const Tdata&)>
 		plus = std::plus<Tdata>();
@@ -57,4 +71,38 @@ Tdata Exx_Post_2D<TA,TC,Tdata>::cal_energy(
 
 	MPI_Wrapper::mpi_allreduce( E, MPI_SUM, this->mpi_comm );
 	return E;
+}
+
+template<typename TA, typename TC, typename Tdata>
+void Exx_Post_2D<TA,TC,Tdata>::cal_force(
+	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds,
+	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Hs,
+	const bool flag_add,
+	std::map<TA,Tdata> &force) const
+{
+	const std::map<TA, std::map<TAC, Tdata>>
+		E_map = cal_zip_dotc(Ds, Hs);
+
+	for(const auto &E_map_A : E_map)
+		for(const auto &E_map_B : E_map_A.second)
+			if(flag_add)
+				force[E_map_A.first] += E_map_B.second;
+			else
+				force[std::get<0>(E_map_B.first)] -= E_map_B.second;
+}
+
+template<typename TA, typename TC, typename Tdata>
+std::map<TA,Tdata> Exx_Post_2D<TA,TC,Tdata>::reduce_force(
+	const std::map<TA,Tdata> &F_local) const
+{
+	Comm_Trans<TA, Tdata, std::map<TA,Tdata>, std::map<TA,Tdata>> comm(this->mpi_comm);
+	comm.traverse_isend = Communicate_Map::traverse_datas_all<TA,Tdata>;
+	comm.set_value_recv = Communicate_Map::set_value_add<TA,Tdata>;
+	comm.flag_lock_set_value = Comm_Tools::Lock_Type::Copy_merge;
+	comm.init_datas_local = Communicate_Map::init_datas_local<TA,Tdata>;
+	comm.add_datas = Communicate_Map::add_datas<TA,Tdata>;
+
+	std::map<TA,Tdata> F_global;
+	comm.communicate(F_local, F_global);
+	return F_global;
 }
