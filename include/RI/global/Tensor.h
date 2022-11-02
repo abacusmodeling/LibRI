@@ -47,7 +47,6 @@ public:
 	T* ptr()const{ return &(*this->data)[0]; }
 
 	bool empty() const { return shape.empty(); }
-	operator bool () const { return !shape.empty(); }
 
 	//Tensor & operator += (const Tensor &);
 	Tensor operator-() const;

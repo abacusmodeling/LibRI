@@ -13,6 +13,11 @@
 #include "Comm/example/Communicate_Map-1.h"
 
 #include <vector>
+#include <mpi>
+#include <string>
+#include <stdexcept>
+
+#define MPI_CHECK(x) if((x)!=MPI_SUCCESS)	throw std::runtime_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 
 template<typename TA, typename TC, typename Tdata> template<typename Tatom_pos>
 void Exx_Post_2D<TA,TC,Tdata>::set_parallel(
@@ -95,6 +100,12 @@ template<typename TA, typename TC, typename Tdata>
 std::map<TA,Tdata> Exx_Post_2D<TA,TC,Tdata>::reduce_force(
 	const std::map<TA,Tdata> &F_local) const
 {
+	MPI_CHECK( MPI_Barrier(this->mpi_comm) );
+	// add MPI_Barrier() to cover up an upresolved error.
+	// Error message:
+	// 		terminate called after throwing an instance of 'cereal::Exception'
+	// 		what():  Failed to read 12 bytes from input stream! Read 4
+
 	Comm_Trans<TA, Tdata, std::map<TA,Tdata>, std::map<TA,Tdata>> comm(this->mpi_comm);
 	comm.traverse_isend = Communicate_Map::traverse_datas_all<TA,Tdata>;
 	comm.set_value_recv = Communicate_Map::set_value_add<TA,Tdata>;
@@ -106,3 +117,6 @@ std::map<TA,Tdata> Exx_Post_2D<TA,TC,Tdata>::reduce_force(
 	comm.communicate(F_local, F_global);
 	return F_global;
 }
+
+
+#undef MPI_CHECK

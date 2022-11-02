@@ -27,8 +27,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 			CS_Matrix_Tools::Uplimit_Type::norm_three_2};	\
 		const Tensor<Tdata> &D_ab_first  = D_ab_first_in;	\
 		const Tensor<Tdata> &D_ab_second = D_ab_second_in;	\
-		if(!D_ab_first)		return;	\
-		if(!D_ab_second)	return;	\
+		if(D_ab_first.empty())		return;	\
+		if(D_ab_second.empty())	return;	\
 		typename CS_Matrix<TA,TC,Tdata_real>::Step csm_step;	\
 		if(this->csm.threshold.at(label))	\
 			csm_step = this->csm.set_label_A(label, Aa01, Aa2, Ab01, Ab2, period);	\
