@@ -56,14 +56,15 @@ void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
 		this->lri.set_tensors_map2( Gs, Label::ab::a2b2, threshold_G );
 	};
 
-	this->chi0s.clear();
+	std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> chi0s_vec(1);
+	this->lri.coefficients = {nullptr};
 
 	set_Gs_a1(Gs_tau_positive);
 	set_Gs_a2(Gs_tau_negative);
 	this->lri.cal({
 		Label::ab_ab::a1b1_a2b2,
 		Label::ab_ab::a1b2_a2b1},
-		this->chi0s);
+		chi0s_vec);
 
 	set_Gs_a1(Gs_tau_negative);			// tmp
 	set_Gs_a2(Gs_tau_positive);			// tmp
@@ -72,6 +73,8 @@ void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
 	this->lri.cal({
 		Label::ab_ab::a1b1_a2b2,
 		Label::ab_ab::a1b2_a2b1},
-		this->chi0s);
+		chi0s_vec);
+
+	this->chi0s = std::move(chi0s_vec[0]);
 }
 

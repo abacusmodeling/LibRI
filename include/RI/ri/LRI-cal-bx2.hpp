@@ -12,7 +12,7 @@
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 {
-	#define Macro_cal_func_bx2(D_ab_first_in, D_ab_second_in, D_mul2_in, D_mul3_in, D_mul4_in, unused_a_in, D_result_in)	\
+	#define Macro_cal_func_bx2(D_ab_first_in, D_ab_second_in, D_mul2_in, D_mul3_in, D_mul4_in, unused_a_in, unused_Aa_in, unused_Ab_in)	\
 	[this](	\
 		const Label::ab_ab &label,	\
 		const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2,	\
@@ -64,11 +64,14 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			const Tdata_real D_mul4_csm = D_mul4.norm(std::numeric_limits<double>::max());	\
 			if(this->csm.filter_1(csm_step, D_mul4_csm)) return;	\
 		}	\
-		Tensor<Tdata> &D_result = D_result_in;	\
-		if(!this->coefficient)	\
-			LRI_Cal_Aux::add_D(D_mul4, D_result);	\
-		else	\
-			LRI_Cal_Aux::add_D(D_mul4*coefficient(label,Aa01,Aa2,Ab01,Ab2), D_result);	\
+		for(std::size_t icoef=0; icoef<this->coefficients.size(); ++icoef)	\
+		{	\
+			Tensor<Tdata> &D_result = tools.get_D_result(icoef, unused_Aa_in, unused_Ab_in);	\
+			if(!this->coefficients[icoef])	\
+				LRI_Cal_Aux::add_D(D_mul4, D_result);	\
+			else	\
+				LRI_Cal_Aux::add_D(D_mul4*coefficients[icoef](label,Aa01,Aa2,Ab01,Ab2), D_result);	\
+		}	\
 	};	\
 
 
@@ -93,7 +96,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
 		2,
-		tools.get_D_result(Aa2, Ab01));				
+		Aa2, Ab01);				
 
 	this->cal_funcs[Label::ab_ab::a0b2_a1b0] = this->cal_funcs[Label::ab_ab::a0b2_a1b1] = Macro_cal_func_bx2(
 		tools.get_Ds_ab(LRI_Cal_Aux::get_abx(label), Aa01, Ab01),
@@ -116,7 +119,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
 		2,
-		tools.get_D_result(Aa2, Ab01));
+		Aa2, Ab01);
 
 	this->cal_funcs[Label::ab_ab::a0b0_a2b2] = this->cal_funcs[Label::ab_ab::a0b1_a2b2] = Macro_cal_func_bx2(
 		tools.get_Ds_ab(LRI_Cal_Aux::get_abx(label), Aa01, Ab01),
@@ -139,7 +142,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
 		1,
-		tools.get_D_result(Aa01, Ab01));
+		Aa01, Ab01);
 
 	this->cal_funcs[Label::ab_ab::a0b2_a2b0] = this->cal_funcs[Label::ab_ab::a0b2_a2b1] = Macro_cal_func_bx2(
 		tools.get_Ds_ab(LRI_Cal_Aux::get_abx(label), Aa2, Ab01),
@@ -162,7 +165,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
 		1,
-		tools.get_D_result(Aa01, Ab01));
+		Aa01, Ab01);
 	
 	this->cal_funcs[Label::ab_ab::a1b0_a2b2] = this->cal_funcs[Label::ab_ab::a1b1_a2b2] = Macro_cal_func_bx2(
 		tools.get_Ds_ab(LRI_Cal_Aux::get_abx(label), Aa01, Ab01),
@@ -185,7 +188,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
 		0,
-		tools.get_D_result(Aa01, Ab01));
+		Aa01, Ab01);
 
 	this->cal_funcs[Label::ab_ab::a1b2_a2b0] = this->cal_funcs[Label::ab_ab::a1b2_a2b1] = Macro_cal_func_bx2(
 		tools.get_Ds_ab(LRI_Cal_Aux::get_abx(label), Aa2, Ab01),
@@ -208,7 +211,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
 		0,
-		tools.get_D_result(Aa01, Ab01));
+		Aa01, Ab01);
 	
 	
 	#undef Macro_cal_func_bx2

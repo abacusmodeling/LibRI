@@ -22,7 +22,7 @@ public:
 	LRI_Cal_Tools(
 		const TC &period_in,
 		std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_ab_in,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result_in)
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result_in)
 	:period(period_in), Ds_ab(Ds_ab_in), Ds_result(Ds_result_in){}
 
 	inline Tensor<Tdata> get_Ds_ab(const Label::ab &label,
@@ -41,19 +41,19 @@ public:
 			Aa.first, TAC{Ab.first, (Ab.second-Aa.second)%this->period});
 	}
 
-	inline Tensor<Tdata> &get_D_result(const TA &Aa, const TAC &Ab)
+	inline Tensor<Tdata> &get_D_result(const std::size_t icoef, const TA &Aa, const TAC &Ab)
 	{
-		return this->Ds_result[Aa][Ab];
+		return this->Ds_result[icoef][Aa][Ab];
 	}
 
-	inline Tensor<Tdata> &get_D_result(const TAC &Aa, const TAC &Ab)
+	inline Tensor<Tdata> &get_D_result(const std::size_t icoef, const TAC &Aa, const TAC &Ab)
 	{
 		using namespace Array_Operator;
-		return this->Ds_result[Aa.first][TAC{Ab.first, (Ab.second-Aa.second)%period}];
+		return this->Ds_result[icoef][Aa.first][TAC{Ab.first, (Ab.second-Aa.second)%period}];
 	}
 
 public:		// private:
 	const TC &period;
 	const std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_ab;
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result;
+	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result;
 };

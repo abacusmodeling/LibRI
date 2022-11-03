@@ -5,8 +5,9 @@
 
 #pragma once
 
-#include "RI/global/Tensor.h"
+#include "../global/Tensor.h"
 #include "Label.h"
+#include "../global/Map_Operator.h"
 
 #include <memory.h>
 #include <cassert>
@@ -48,6 +49,24 @@ namespace LRI_Cal_Aux
 		else
 			D_result = D_result + D_add;
 	}
+
+	template<typename T>
+	inline void add_Ds(const std::vector<T> &Ds_add, std::vector<T> &Ds_result)
+	{
+		assert(Ds_add.size()==Ds_result.size());
+		using namespace Map_Operator;						// tmp
+		for(std::size_t i=0; i<Ds_result.size(); ++i)
+			Ds_result[i] = Ds_result[i] + Ds_add[i];		// tmp
+	}
+
+	template<typename T>
+	inline bool judge_Ds_empty(const std::vector<T> &Ds)
+	{
+		for(const T &D : Ds)
+			if(!D.empty())
+				return false;
+		return true;
+	}	
 
 	inline int judge_x(const Label::ab_ab &label)
 	{

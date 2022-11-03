@@ -90,7 +90,7 @@ namespace Communicate_Tensors_Map
 		com.set_value_require = Communicate_Map::set_value_add<TA,TAC,TAC,Tensor<Tdata>>;
 		com.flag_lock_set_value = Comm_Tools::Lock_Type::Copy_merge;
 		com.init_datas_local = Communicate_Map::init_datas_local<TA,TAC,TAC,Tensor<Tdata>>;
-		com.add_datas = Communicate_Map::add_datas<TA,TAC,TAC,Tensor<Tdata>>;
+		com.add_datas = Communicate_Map::add_datas<TA,TAC,std::map<TAC,Tensor<Tdata>>>;
 
 		std::map<TA,std::map<TAC,std::map<TAC,Tensor<Tdata>>>> Ds_out;
 		com.communicate( Ds_in, judge, Ds_out );

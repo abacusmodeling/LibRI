@@ -7,7 +7,6 @@
 
 #include "LRI.h"
 #include "LRI_Cal_Aux.h"
-#include "RI/global/Map_Operator.h"
 
 #include <omp.h>
 #ifdef __MKL
@@ -17,10 +16,9 @@
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	const std::vector<Label::ab_ab> &labels,
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result)
+	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result)
 {
 	using namespace Array_Operator;
-	using namespace Map_Operator;
 
 	const bool flag_D_b_transpose = [&labels]() -> bool
 	{
@@ -29,6 +27,12 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 				return true;
 		return false;
 	}();
+
+	assert(!this->coefficients.empty());
+	if(Ds_result.empty())
+		Ds_result.resize(this->coefficients.size());
+	else
+		assert(Ds_result.size()==this->coefficients.size());
 
 	omp_lock_t lock_Ds_result_add;
 	omp_init_lock(&lock_Ds_result_add);	
@@ -43,7 +47,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 
 	#pragma omp parallel
 	{
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_result_thread;
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_result_thread(this->coefficients.size());
 		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->Ds_ab, Ds_result_thread);
 
 		const std::vector<TA> &list_Aa01 = this->parallel->get_list_Aa01();
@@ -88,22 +92,24 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 						}
 					} // end for ib2
 
-					if( !Ds_result_thread.empty() && omp_test_lock(&lock_Ds_result_add) )
+					if( !LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread) && omp_test_lock(&lock_Ds_result_add) )
 					{
-						Ds_result = Ds_result + Ds_result_thread;		// tmp
+						LRI_Cal_Aux::add_Ds(Ds_result_thread, Ds_result);
 						omp_unset_lock(&lock_Ds_result_add);
 						Ds_result_thread.clear();
+						Ds_result_thread.resize(Ds_result.size());
 					}
 				} // end for ib01
 			}// end for ia2
 		}// end for ia01
 
-		if(!Ds_result_thread.empty())
+		if(!LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread))
 		{
 			omp_set_lock(&lock_Ds_result_add);
-			Ds_result = Ds_result + Ds_result_thread;		// tmp
+			LRI_Cal_Aux::add_Ds(Ds_result_thread, Ds_result);
 			omp_unset_lock(&lock_Ds_result_add);
 			Ds_result_thread.clear();
+			Ds_result_thread.resize(Ds_result.size());
 		}
 	} // end #pragma omp parallel
 

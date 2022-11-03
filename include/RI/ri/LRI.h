@@ -15,9 +15,10 @@
 #include "Save_Load.h"
 
 #include <mpi.h>
+#include <array>
+#include <vector>
 #include <map>
 #include <set>
-#include <array>
 #include <unordered_map>
 #include <memory>
 #include <functional>
@@ -52,15 +53,15 @@ public:
 
 	void cal(
 		const std::vector<Label::ab_ab> &lables,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result);
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result);
 
 public:
 	std::shared_ptr<Parallel_LRI<TA,Tcell,Ndim,Tdata>>
 		parallel = std::make_shared<Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>>();
 	std::unordered_map< Label::ab, RI_Tools::T_filter_func<Tdata> >
 		filter_funcs;
-	std::function<Tdata (const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2)>
-		coefficient = nullptr;
+	std::vector<std::function<Tdata (const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2)>>
+		coefficients = {nullptr};
 	CS_Matrix<TA,TC,Tdata_real> csm;
 
 public:		// private:

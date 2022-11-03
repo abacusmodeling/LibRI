@@ -13,7 +13,7 @@
 #include "Comm/example/Communicate_Map-1.h"
 
 #include <vector>
-#include <mpi>
+#include <mpi.h>
 #include <string>
 #include <stdexcept>
 

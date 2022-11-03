@@ -107,14 +107,15 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 	this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
 	this->lri.save_load.load("Ds_"+save_names_suffix[2], {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2});
 
-	this->Hs.clear();
-	this->lri.coefficient = nullptr;
+	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Hs_vec(1);
+	this->lri.coefficients = {nullptr};
 	this->lri.cal({
 		Label::ab_ab::a0b0_a1b1,
 		Label::ab_ab::a0b0_a1b2,
 		Label::ab_ab::a0b0_a2b1,
 		Label::ab_ab::a0b0_a2b2},
-		this->Hs);
+		Hs_vec);
+	this->Hs = std::move(Hs_vec[0]);
 
 	//if()
 		const std::map<TA,std::map<TAC,Tensor<Tdata>>> Hs_2D = this->post_2D.set_tensors_map2(this->Hs);
@@ -144,13 +145,13 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 		std::map<TA,Tdata> force_ix;
 
 		{
-			std::map<TA,std::map<TAC,Tensor<Tdata>>> dHs;
+			std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(1);
 
 			this->lri.save_load.load("dCs_"+std::to_string(ix)+"_"+save_names_suffix[3], Label::ab::a);
 			this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
 			this->lri.save_load.load("Cs_"+save_names_suffix[0], Label::ab::b);
 
-			this->lri.coefficient = [](const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2) -> Tdata
+			this->lri.coefficients = {[](const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2) -> Tdata
 			{
 				switch(label)
 				{
@@ -158,14 +159,14 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 					case Label::ab_ab::a0b0_a2b1:	case Label::ab_ab::a0b0_a2b2:	return 1;
 					default:	throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 				}
-			};
+			}};
 
 			this->lri.cal({
 				Label::ab_ab::a0b0_a1b1,
 				Label::ab_ab::a0b0_a1b2,
 				Label::ab_ab::a0b0_a2b1,
 				Label::ab_ab::a0b0_a2b2},
-				dHs);
+				dHs_vec);
 
 			this->lri.save_load.save("dCs_"+std::to_string(ix)+"_"+save_names_suffix[3], Label::ab::a);
 			this->lri.save_load.save("Vs_"+save_names_suffix[1], Label::ab::a0b0);
@@ -173,15 +174,15 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 			this->lri.save_load.load("Cs_"+save_names_suffix[0], Label::ab::a);
 			this->lri.save_load.load("dVs_"+std::to_string(ix)+"_"+save_names_suffix[4], Label::ab::a0b0);
 
-			this->lri.coefficient = nullptr;
+			this->lri.coefficients = {nullptr};
 			this->lri.cal({
 				Label::ab_ab::a0b0_a2b2,
 				Label::ab_ab::a0b0_a2b1},
-				dHs);
+				dHs_vec);
 
 			this->post_2D.cal_force(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
-				this->post_2D.set_tensors_map2(dHs),
+				this->post_2D.set_tensors_map2(std::move(dHs_vec[0])),
 				true,
 				force_ix );
 
@@ -192,13 +193,13 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 		}
 
 		{
-			std::map<TA,std::map<TAC,Tensor<Tdata>>> dHs;
+			std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(1);
 
-			this->lri.coefficient = nullptr;
+			this->lri.coefficients = {nullptr};
 			this->lri.cal({
 				Label::ab_ab::a0b0_a2b2,
 				Label::ab_ab::a0b0_a1b2},
-				dHs);
+				dHs_vec);
 
 			this->lri.save_load.save("dVs_"+std::to_string(ix)+"_"+save_names_suffix[4], Label::ab::a0b0);
 			this->lri.save_load.save("Cs_"+save_names_suffix[0], Label::ab::b);
@@ -206,7 +207,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 			this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
 			this->lri.save_load.load("dCs_"+std::to_string(ix)+"_"+save_names_suffix[3], Label::ab::b);
 
-			this->lri.coefficient = [](const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2) -> Tdata
+			this->lri.coefficients = {[](const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2) -> Tdata
 			{
 				switch(label)
 				{
@@ -214,14 +215,14 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 					case Label::ab_ab::a0b0_a1b2:	case Label::ab_ab::a0b0_a2b2:	return -1;
 					default:	throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 				}
-			};
+			}};
 
 			this->lri.cal({
 				Label::ab_ab::a0b0_a1b1,
 				Label::ab_ab::a0b0_a1b2,
 				Label::ab_ab::a0b0_a2b1,
 				Label::ab_ab::a0b0_a2b2},
-				dHs);
+				dHs_vec);
 
 			this->lri.save_load.save("Cs_"+save_names_suffix[0], Label::ab::a);
 			this->lri.save_load.save("dCs_"+std::to_string(ix)+"_"+save_names_suffix[3], Label::ab::b);
@@ -229,7 +230,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 			
 			this->post_2D.cal_force(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
-				this->post_2D.set_tensors_map2(dHs),
+				this->post_2D.set_tensors_map2(std::move(dHs_vec[0])),
 				false,
 				force_ix );
 

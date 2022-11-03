@@ -88,7 +88,7 @@ namespace LRI_Speed_Test
 		timeval t_begin;
 		gettimeofday(&t_begin, NULL);
 
-		T_Ds Ds_result;
+		std::vector<T_Ds> Ds_result(1);
 		lri.cal(Global_Func::to_vector(Label::array_ab_ab), Ds_result);
 
 		std::cout<<time_during(t_begin)<<std::endl;
