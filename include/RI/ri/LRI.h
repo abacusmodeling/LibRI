@@ -23,6 +23,8 @@
 #include <memory>
 #include <functional>
 
+namespace RI
+{
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 class LRI
@@ -32,7 +34,7 @@ public:
 	using TAC = std::pair<TA,TC>;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
 	using TatomR = std::array<double,Ndim>;		// tmp
-	
+
 	LRI();
 
 	//template<typename TatomR>
@@ -40,7 +42,7 @@ public:
 		const MPI_Comm &mpi_comm_in,
 		const std::map<TA,TatomR> &atomsR,
 		const std::array<TatomR,Ndim> &latvec,
-		const std::array<Tcell,Ndim> &period_in);	
+		const std::array<Tcell,Ndim> &period_in);
 
 	void set_tensors_map2(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
@@ -68,7 +70,7 @@ public:		// private:
 	TC period;
 	MPI_Comm mpi_comm;
 	Save_Load<TA,Tcell,Ndim,Tdata> save_load;
-	
+
 	std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_ab;
 
 public:		// private:
@@ -83,6 +85,8 @@ public:		// private:
 	void set_cal_funcs_b01();
 	void set_cal_funcs_bx2();
 };
+
+}
 
 #include "LRI.hpp"
 #include "LRI-set.hpp"

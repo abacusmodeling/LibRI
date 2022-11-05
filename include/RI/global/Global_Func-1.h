@@ -12,6 +12,9 @@
 #include <array>
 #include <type_traits>
 
+namespace RI
+{
+
 namespace Global_Func
 {
 	// tensor = find(m,i,j,k);
@@ -104,4 +107,6 @@ namespace Global_Func
 	{
 		return std::vector<T>(v.begin(), v.end());
 	}
+}
+
 }

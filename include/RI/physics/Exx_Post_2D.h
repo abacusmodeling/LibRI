@@ -8,6 +8,9 @@
 #include <string>
 #include <mpi.h>
 
+namespace RI
+{
+
 template<typename TA, typename TC, typename Tdata>
 class Exx_Post_2D
 {
@@ -47,7 +50,9 @@ public:	// private:
 		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Hs) const;
 
 	std::map<TA,Tdata>
-	reduce_force(const std::map<TA,Tdata> &F_local) const;	
+	reduce_force(const std::map<TA,Tdata> &F_local) const;
 };
+
+}
 
 #include "Exx_Post_2D.hpp"

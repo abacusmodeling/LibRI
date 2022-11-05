@@ -9,6 +9,9 @@
 #include <array>
 #include <utility>
 
+namespace RI
+{
+
 namespace Divide_Atoms
 {
 	// equally divide atoms:
@@ -38,6 +41,8 @@ namespace Divide_Atoms
 		const int group_size,
 		const std::vector<TA> &atoms,
 		const std::array<Tcell,Ndim> &period);
+}
+
 }
 
 #include "Divide_Atoms.hpp"

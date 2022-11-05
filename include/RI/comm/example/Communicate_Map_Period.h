@@ -12,6 +12,9 @@
 #include <set>
 #include <cereal/archives/binary.hpp>
 
+namespace RI
+{
+
 namespace Communicate_Map_Period
 {
 	template<typename TA>
@@ -103,4 +106,6 @@ namespace Communicate_Map_Period
 		std::set<TAC> s2;
 		template <class Archive> void serialize( Archive & ar ){ ar(s0); ar(s1); ar(s2); ar(period); }
 	};
+}
+
 }

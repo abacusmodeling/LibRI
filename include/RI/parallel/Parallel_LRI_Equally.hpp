@@ -10,6 +10,9 @@
 #include "../distribute/Distribute_Equally.h"
 #include "../comm/mix/Communicate_Tensors_Map_Judge.h"
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm_in,
@@ -26,7 +29,7 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel(
 	std::pair<std::vector<TA>, std::vector<std::vector<std::pair<TA,TC>>>>
 		atoms_split_list = Distribute_Equally::distribute_atoms_periods(
 			mpi_comm, atoms_vec, period, num_index);
-			
+
 	this->list_Aa01 = atoms_split_list.first;
 	this->list_Aa2  = atoms_split_list.second[0];
 	this->list_Ab01 = atoms_split_list.second[1];
@@ -59,4 +62,6 @@ auto Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::comm_tensors_map2(
 		default:
 			throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 	}
+}
+
 }

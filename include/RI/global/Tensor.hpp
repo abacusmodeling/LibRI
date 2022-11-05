@@ -16,6 +16,9 @@
 #include <cassert>
 #include <limits>
 
+namespace RI
+{
+
 template<typename T>
 Tensor<T>::Tensor (const std::vector<size_t> &shape_in)
 {
@@ -121,7 +124,7 @@ bool same_shape (const Tensor<T1> &t1, const Tensor<T2> &t2)
 	for(size_t ishape=0; ishape<t1.shape.size(); ++ishape)
 		if(t1.shape[ishape] != t2.shape[ishape])
 			return false;
-	return true;	
+	return true;
 }
 
 template<typename T>
@@ -227,4 +230,6 @@ namespace Global_Func
 			(*t_out.data)[i] = Global_Func::convert<Tout>((*t_in.data)[i]);
 		return t_out;
 	}
+}
+
 }

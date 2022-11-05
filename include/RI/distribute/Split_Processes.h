@@ -9,6 +9,9 @@
 #include <tuple>
 #include <vector>
 
+namespace RI
+{
+
 namespace Split_Processes
 {
 	// comm_color
@@ -19,6 +22,8 @@ namespace Split_Processes
 
 	// vector<comm_color_size>
 	static std::vector<std::tuple<MPI_Comm,int,int>> split_all(const MPI_Comm &mpi_comm, const std::vector<int> &Ns);
+}
+
 }
 
 #include "Split_Processes.hpp"

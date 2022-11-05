@@ -10,6 +10,9 @@
 #include <cassert>
 #include <string>
 
+namespace RI
+{
+
 namespace Blas_Interface
 {
 	// nrm2 = ||x||_2
@@ -60,7 +63,7 @@ namespace Blas_Interface
 
 	// Vy = alpha * Ma.? * Vx + beta * Vy
 	template<typename T>
-	inline void gemv(const char transA, 
+	inline void gemv(const char transA,
 		const T alpha, const Tensor<T> &A, const Tensor<T> &X,
 		const T beta, Tensor<T> &Y)
 	{
@@ -88,7 +91,7 @@ namespace Blas_Interface
 	}
 	// Vy = alpha * Ma.? * Vx
 	template<typename T>
-	inline Tensor<T> gemv(const char transA, 
+	inline Tensor<T> gemv(const char transA,
 		const T alpha, const Tensor<T> &A, const Tensor<T> &X)
 	{
 		constexpr T beta = 0.0;
@@ -127,7 +130,7 @@ namespace Blas_Interface
 			assert(k==B.shape[0]);
 		else
 			assert(k==B.shape[1]);
-			
+
 		gemm(transA, transB, m, n, k,
 			alpha, A.ptr(), B.ptr(),
 			beta, C.ptr());
@@ -171,7 +174,7 @@ namespace Blas_Interface
 			beta, C.ptr());
 	}
 	// Mc = alpha * Ma   * Ma.T
-	// Mc = alpha * Ma.T * Ma  
+	// Mc = alpha * Ma.T * Ma
 	template<typename T>
 	inline Tensor<T> syrk(const char uploC, const char transA,
 		const double alpha, const Tensor<T> &A)
@@ -182,6 +185,8 @@ namespace Blas_Interface
 		syrk(uploC, transA,	alpha, A, beta, C);
 		return C;
 	}
+}
+
 }
 
 #include "Tensor.hpp"

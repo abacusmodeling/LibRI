@@ -14,6 +14,9 @@
 #include <array>
 #include <map>
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 class Exx
 {
@@ -28,7 +31,7 @@ public:
 		const std::map<TA,Tatom_pos> &atoms_pos,
 		const std::array<Tatom_pos,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period);
-	
+
 	void set_Cs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
 		const Tdata_real &threshold_C,
@@ -55,7 +58,7 @@ public:
 	void cal_Hs(
 		const std::array<std::string,3> &save_names_suffix={"","",""});		// "Cs","Vs","Ds"
 	void cal_Fs(
-		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCs","dVs"	
+		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCs","dVs"
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Hs;
 	Tdata energy = 0;
@@ -77,5 +80,7 @@ public:
 	};
 	Flag_Finish flag_finish;
 };
+
+}
 
 #include "Exx.hpp"

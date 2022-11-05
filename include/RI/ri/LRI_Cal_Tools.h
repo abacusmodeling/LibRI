@@ -13,6 +13,9 @@
 #include <map>
 #include <unordered_map>
 
+namespace RI
+{
+
 template<typename TA, typename TC, typename Tdata>
 class LRI_Cal_Tools
 {
@@ -57,3 +60,5 @@ public:		// private:
 	const std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_ab;
 	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result;
 };
+
+}

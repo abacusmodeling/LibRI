@@ -9,6 +9,9 @@
 #include <vector>
 #include <array>
 
+namespace RI
+{
+
 namespace Global_Func
 {
 	template<typename Tcell, std::size_t Ndim>
@@ -22,4 +25,6 @@ namespace Global_Func
 			cells_mod[i] = cells_origin[i] % period;
 		return cells_mod;
 	}
+}
+
 }

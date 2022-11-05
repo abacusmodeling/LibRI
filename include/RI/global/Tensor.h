@@ -14,24 +14,27 @@
 
 // Attention: Unless using t2=t1.copy() explicitly, t2 and t1 share the same memory for all t2=t1, t2(t1), ...
 
+namespace RI
+{
+
 template<typename T>
 class Tensor
 {
 public:
 	std::vector<size_t> shape;
 	std::shared_ptr<std::valarray<T>> data;
-	
+
 	Tensor(){};
 	explicit Tensor (const std::vector<size_t> &shape_in);
 	explicit Tensor (const std::vector<size_t> &shape_in, std::shared_ptr<std::valarray<T>> data_in);
 	//Tensor (const Tensor<T> &t_in);
 	//Tensor (Tensor<T> &&t_in);
 	//Tensor<T> &operator=(const Tensor<T> &t_in);
-	//Tensor<T> &operator=(Tensor<T> &&t_in);	
-	
+	//Tensor<T> &operator=(Tensor<T> &&t_in);
+
 	inline size_t get_shape_all() const;
 	inline Tensor reshape (const std::vector<size_t> &shape_in) const;
-	
+
 	Tensor copy() const;
 
 	inline T& operator() (const size_t i0) const;
@@ -72,6 +75,8 @@ namespace Global_Func
 {
 	template< typename Tout, typename Tin >
 	Tensor<Tout> convert(const Tensor<Tin> &t);
+}
+
 }
 
 #include "Blas_Interface-Tensor.h"

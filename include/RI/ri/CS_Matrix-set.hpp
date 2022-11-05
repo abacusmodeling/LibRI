@@ -8,6 +8,9 @@
 #include "CS_Matrix.h"
 #include "CS_Matrix_Tools.h"
 
+namespace RI
+{
+
 template<typename TA, typename TC, typename Tdata>
 CS_Matrix<TA,TC,Tdata>::CS_Matrix()
 {
@@ -51,4 +54,6 @@ void CS_Matrix<TA,TC,Tdata>::set_tensor(
 		default:
 			throw std::invalid_argument("CS_Matrix::set_tensor");
 	}
+}
+
 }

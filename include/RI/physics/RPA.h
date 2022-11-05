@@ -13,6 +13,9 @@
 #include <array>
 #include <map>
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 class RPA
 {
@@ -49,5 +52,7 @@ public:
 	};
 	Flag_Finish flag_finish;
 };
+
+}
 
 #include "RPA.hpp"

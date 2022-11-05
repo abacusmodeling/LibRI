@@ -12,6 +12,9 @@
 #include <type_traits>
 #include <omp.h>
 
+namespace RI
+{
+
 namespace Global_Func
 {
 	// t = convert(t)
@@ -36,4 +39,6 @@ namespace Global_Func
 			ptr_out[i] = Global_Func::convert<Tout>(ptr_in[i]);
 		return t_out;
 	}
-}	
+}
+
+}

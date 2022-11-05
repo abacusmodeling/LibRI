@@ -15,6 +15,9 @@
 #include <unordered_map>
 #include <string>
 
+namespace RI
+{
+
 	template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 	class LRI;
 
@@ -47,5 +50,7 @@ public:	// private:
 
 	LRI<TA,Tcell,Ndim,Tdata> &lri;
 };
+
+}
 
 #include "Save_Load.hpp"

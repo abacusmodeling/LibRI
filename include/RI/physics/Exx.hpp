@@ -10,6 +10,9 @@
 
 #include <cassert>
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm,
@@ -102,7 +105,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 	assert(this->flag_finish.C);
 	assert(this->flag_finish.V);
 	assert(this->flag_finish.D);
-	
+
 	this->lri.save_load.load("Cs_"+save_names_suffix[0], {Label::ab::a, Label::ab::b});
 	this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
 	this->lri.save_load.load("Ds_"+save_names_suffix[2], {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2});
@@ -130,7 +133,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
-	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"	
+	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"
 {
 	assert(this->flag_finish.stru);
 	assert(this->flag_finish.C);
@@ -227,7 +230,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 			this->lri.save_load.save("Cs_"+save_names_suffix[0], Label::ab::a);
 			this->lri.save_load.save("dCs_"+std::to_string(ix)+"_"+save_names_suffix[3], Label::ab::b);
 			this->lri.save_load.save("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-			
+
 			this->post_2D.cal_force(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
 				this->post_2D.set_tensors_map2(std::move(dHs_vec[0])),
@@ -242,4 +245,6 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 		this->force[ix] = this->post_2D.reduce_force(force_ix);
 	}
 	this->lri.save_load.save("Ds_"+save_names_suffix[2], {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2});
+}
+
 }

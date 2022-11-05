@@ -7,6 +7,9 @@
 
 #include "Save_Load.h"
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::save(const std::string &name, const Label::ab &label)
 {
@@ -95,3 +98,5 @@ void save_copy(const std::string &name)
 		this->save_copy(name, label);
 }
 */
+
+}

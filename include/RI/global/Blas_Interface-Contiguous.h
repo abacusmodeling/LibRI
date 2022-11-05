@@ -8,6 +8,9 @@
 #include "Blas_Interface.h"
 #include "Global_Func-2.h"
 
+namespace RI
+{
+
 namespace Blas_Interface
 {
 	// nrm2 = ||x||_2
@@ -78,9 +81,9 @@ namespace Blas_Interface
 		const int ldB = (transB=='N') ? n : k;
 		const int ldC = n;
 		gemm(transA, transB, m, n, k,
-			alpha, A, ldA, B, ldB, 
+			alpha, A, ldA, B, ldB,
 			beta, C, ldC);
-	}  
+	}
 
 	// Mc = alpha * Ma   * Ma.T + beta * C
 	// Mc = alpha * Ma.T * Ma   + beta * C
@@ -95,4 +98,6 @@ namespace Blas_Interface
 			alpha, A, ldA,
 			beta, C, ldC);
 	}
+}
+
 }

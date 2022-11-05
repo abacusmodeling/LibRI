@@ -8,6 +8,9 @@
 #include <array>
 #include <stdexcept>
 
+namespace RI
+{
+
 namespace Label
 {
 	enum class ab
@@ -18,7 +21,7 @@ namespace Label
 		a2b0, a2b1, a2b2
 	};
 	constexpr std::array<Label::ab,11> array_ab = {
-		ab::a, ab::b, 
+		ab::a, ab::b,
 		ab::a0b0, ab::a0b1, ab::a0b2,
 		ab::a1b0, ab::a1b1, ab::a1b2,
 		ab::a2b0, ab::a2b1, ab::a2b2};
@@ -110,4 +113,6 @@ namespace Label
 			default:	throw std::invalid_argument("Label::get_b");
 		}
 	}
+}
+
 }

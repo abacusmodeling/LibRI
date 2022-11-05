@@ -10,6 +10,9 @@
 #include "CS_Matrix.h"
 #include <algorithm>
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm_in,
@@ -88,3 +91,5 @@ RI<TA,Tcell,Ndim,Tdata>::comm_tensors_map3(
 	}
 }
 */
+
+}

@@ -14,6 +14,9 @@
 #include <map>
 #include <mpi.h>
 
+namespace RI
+{
+
 namespace Communicate_Tensors_Map
 {
 	template<typename TA, typename Tdata, typename Tjudge>
@@ -96,4 +99,6 @@ namespace Communicate_Tensors_Map
 		com.communicate( Ds_in, judge, Ds_out );
 		return Ds_out;
 	}
+}
+
 }

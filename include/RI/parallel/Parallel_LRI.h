@@ -14,11 +14,14 @@
 #include <map>
 #include <set>
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 //template<typename TA, typename Tcell, size_t Ndim>
 class Parallel_LRI
 {
-public:	
+public:
 	using TC = std::array<Tcell,Ndim>;
 	using TAC = std::pair<TA,TC>;
 	using TatomR = std::array<double,Ndim>;		// tmp
@@ -34,10 +37,12 @@ public:
 	//template<typename Tdata>
 	virtual std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
 		const Label::ab &label,
-		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const =0;		
+		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const =0;
 
 	virtual const std::vector<TA >& get_list_Aa01() const =0;
 	virtual const std::vector<TAC>& get_list_Aa2 (const TA &Aa01) const =0;
 	virtual const std::vector<TAC>& get_list_Ab01(const TA &Aa01, const TAC &Aa2) const =0;
 	virtual const std::vector<TAC>& get_list_Ab2 (const TA &Aa01, const TAC &Aa2, const TAC &Ab01) const =0;
 };
+
+}

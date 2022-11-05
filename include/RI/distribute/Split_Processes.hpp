@@ -15,6 +15,9 @@
 
 #define MPI_CHECK(x) if((x)!=MPI_SUCCESS)	throw std::runtime_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 
+namespace RI
+{
+
 namespace Split_Processes
 {
 	// comm_color
@@ -88,6 +91,8 @@ namespace Split_Processes
 			comm_color_sizes[m+1] = split_first(std::get<0>(comm_color_sizes[m]), {Ns.begin()+m, Ns.end()});
 		return comm_color_sizes;
 	}
+}
+
 }
 
 #undef MPI_CHECK

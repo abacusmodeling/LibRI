@@ -10,6 +10,9 @@
 #include <stdexcept>
 #include <memory.h>
 
+namespace RI
+{
+
 namespace CS_Matrix_Tools
 {
 	// {Dfirst label, Dsecond label}。顺序必须与D4=DDDD的顺序相同，与实现顺序直接耦合
@@ -93,7 +96,7 @@ namespace CS_Matrix_Tools
 				for(size_t i1=0; i1<D.shape[1]; ++i1)
 					for(size_t i2=0; i2<D.shape[2]; ++i2)
 						*(Ds_sub_ptr[i2]++) = *(D_ptr++);
-						
+
 			std::valarray<Tlim> uplimits(D.shape[2]);
 			for(size_t i2=0; i2<D.shape[2]; ++i2)
 				uplimits[i2] = func(Ds_sub[i2]);
@@ -145,4 +148,6 @@ namespace CS_Matrix_Tools
 			uplimits[Ds_tmp.first] = cal_uplimit(uplimit_type, Ds_tmp.second);
 		return uplimits;
 	}
+}
+
 }

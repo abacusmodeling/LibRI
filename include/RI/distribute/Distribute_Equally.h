@@ -12,6 +12,9 @@
 #include <utility>
 #include <mpi.h>
 
+namespace RI
+{
+
 namespace Distribute_Equally
 {
 	// num_index 维张量，第0维为atoms，剩余维为{atom,cell}。
@@ -36,4 +39,6 @@ namespace Distribute_Equally
 		const std::vector<TA> &atoms,
 		const std::array<Tcell,Ndim> &period,
 		const size_t num_index);
+}
+
 }

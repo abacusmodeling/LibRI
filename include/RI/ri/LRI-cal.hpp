@@ -13,6 +13,9 @@
 #include <mkl_service.h>
 #endif
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	const std::vector<Label::ab_ab> &labels,
@@ -35,7 +38,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 		assert(Ds_result.size()==this->coefficients.size());
 
 	omp_lock_t lock_Ds_result_add;
-	omp_init_lock(&lock_Ds_result_add);	
+	omp_init_lock(&lock_Ds_result_add);
 
 #ifdef __MKL
     const size_t mkl_threads = mkl_get_max_threads();
@@ -119,4 +122,4 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 #endif
 }
 
-
+}

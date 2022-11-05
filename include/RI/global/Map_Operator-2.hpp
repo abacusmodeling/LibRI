@@ -7,6 +7,9 @@
 
 #include "Map_Operator-2.h"
 
+namespace RI
+{
+
 namespace Map_Operator
 {
 	template<typename Tkey, typename Tvalue>
@@ -48,7 +51,7 @@ namespace Map_Operator
 		const std::map<Tkey,Tdata> &m2,
 		const std::function<Tdata(const Tdata&,const Tdata&)> &func)
 	{
-		const std::function<Tdata(const Tdata&, const Tdata&)> 
+		const std::function<Tdata(const Tdata&, const Tdata&)>
 			func_prototype = [&func](const Tdata& v1, const Tdata &v2) -> Tdata
 			{ return func(v1, v2); };
 		return zip_union_prototype(m1, m2, func_prototype);
@@ -61,7 +64,7 @@ namespace Map_Operator
 		const std::function<Tdata(const Tdata&,const Tdata&)> &func)
 	{
 		using Tvalue1 = std::map<Tkey2,Tvalue>;
-		const std::function<Tvalue1(const Tvalue1&, const Tvalue1&)> 
+		const std::function<Tvalue1(const Tvalue1&, const Tvalue1&)>
 			func_prototype = [&func](const Tvalue1& v1, const Tvalue1 &v2) -> Tvalue1
 			{ return zip_union(v1, v2, func); };
 		return zip_union_prototype(m1, m2, func_prototype);
@@ -102,7 +105,7 @@ namespace Map_Operator
 		const std::map<Tkey,Tdata2> &m2,
 		const std::function<Tdata_return(const Tdata1&,const Tdata2&)> &func)
 	{
-		const std::function<Tdata_return(const Tdata1&, const Tdata2&)> 
+		const std::function<Tdata_return(const Tdata1&, const Tdata2&)>
 			func_prototype = [&func](const Tdata1 &v1, const Tdata2 &v2) -> Tdata_return
 			{ return func(v1, v2); };
 		return zip_intersection_prototype(m1, m2, func_prototype);
@@ -124,9 +127,11 @@ namespace Map_Operator
 		using TvalueA1 = std::map<TkeyB,Tvalue1>;
 		using TvalueA2 = std::map<TkeyB,Tvalue2>;
 		using TvalueA_return = decltype(zip_intersection(m1.begin()->second, m2.begin()->second, func));
-		const std::function<TvalueA_return(const TvalueA1&, const TvalueA2&)> 
+		const std::function<TvalueA_return(const TvalueA1&, const TvalueA2&)>
 			func_prototype = [&func](const TvalueA1 &v1, const TvalueA2 &v2) -> TvalueA_return
 			{ return zip_intersection(v1, v2, func); };
 		return zip_intersection_prototype(m1, m2, func_prototype);
-	}	
+	}
 } // namespace Map_Operator
+
+}

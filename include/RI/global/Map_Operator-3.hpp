@@ -7,6 +7,9 @@
 
 #include "Map_Operator-3.h"
 
+namespace RI
+{
+
 namespace Map_Operator
 {
 	template<typename Tkey, typename Tvalue>
@@ -25,7 +28,7 @@ namespace Map_Operator
 		const std::map<Tkey,Tdata> &m_in,
 		const std::function<Tdata(const Tdata&)> &func)
 	{
-		const std::function<Tdata(const Tdata&)> 
+		const std::function<Tdata(const Tdata&)>
 			func_prototype = [&func](const Tdata& v) -> Tdata
 			{ return func(v); };
 		return transform_prototype(m_in, func_prototype);
@@ -37,7 +40,7 @@ namespace Map_Operator
 		const std::function<Tdata(const Tdata&)> &func)
 	{
 		using Tvalue1 = std::map<Tkey2,Tvalue>;
-		const std::function<Tvalue1(const Tvalue1&)> 
+		const std::function<Tvalue1(const Tvalue1&)>
 			func_prototype = [&func](const Tvalue1& v) -> Tvalue1
 			{ return transform(v, func); };
 		return transform_prototype(m_in, func_prototype);
@@ -57,7 +60,7 @@ namespace Map_Operator
 		std::map<Tkey,Tdata> &m,
 		const std::function<void(Tdata&)> &func)
 	{
-		const std::function<void(Tdata&)> 
+		const std::function<void(Tdata&)>
 			func_prototype = [&func](Tdata& v)
 			{ return func(v); };
 		for_each_prototype(m, func_prototype);
@@ -69,7 +72,7 @@ namespace Map_Operator
 		const std::function<void(Tdata&)> &func)
 	{
 		using Tvalue1 = std::map<Tkey2,Tvalue>;
-		const std::function<void(Tvalue1&)> 
+		const std::function<void(Tvalue1&)>
 			func_prototype = [&func](Tvalue1& v)
 			{ return for_each(v, func); };
 		for_each_prototype(m, func_prototype);
@@ -98,6 +101,8 @@ namespace Map_Operator
 			data = reduce(item.second, data, func);
 		return data;
 	}
+}
+
 }
 
 #include "Map_Operator-2.hpp"

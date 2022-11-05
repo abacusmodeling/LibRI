@@ -20,9 +20,9 @@
 namespace LRI_Speed_Test
 {
 	template<typename Tdata>
-	static Tensor<Tdata> init_tensor(const std::vector<size_t> &shape)
+	static RI::Tensor<Tdata> init_tensor(const std::vector<size_t> &shape)
 	{
-		Tensor<Tdata> D(shape);
+		RI::Tensor<Tdata> D(shape);
 		for(size_t i=0; i<D.data->size(); ++i)
 			(*D.data)[i] = i;
 		return D;
@@ -47,14 +47,14 @@ namespace LRI_Speed_Test
 		//const size_t Na0=20, Nb0=30, Na1=40, Nb1=50, Na2=60, Nb2=70;
 		const size_t Na0=Ni, Nb0=Ni, Na1=Ni, Nb1=Ni, Na2=Ni, Nb2=Ni;
 
-		using T_Ds = std::map<int, std::map<std::pair<int,std::array<int,Ndim>>, Tensor<Tdata>>>;
-		std::unordered_map<Label::ab, T_Ds> Ds_ab;
+		using T_Ds = std::map<int, std::map<std::pair<int,std::array<int,Ndim>>, RI::Tensor<Tdata>>>;
+		std::unordered_map<RI::Label::ab, T_Ds> Ds_ab;
 		Ds_ab.reserve(11);
-		auto init_Ds = [&Ds_ab, NA](const Label::ab &label, const std::vector<size_t> &shape)
+		auto init_Ds = [&Ds_ab, NA](const RI::Label::ab &label, const std::vector<size_t> &shape)
 		{
-			const int rank_mine = MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
-			const int rank_size = MPI_Wrapper::mpi_get_size(MPI_COMM_WORLD);
-			const Tensor<Tdata> D = init_tensor<Tdata>(shape);
+			const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
+			const int rank_size = RI::MPI_Wrapper::mpi_get_size(MPI_COMM_WORLD);
+			const RI::Tensor<Tdata> D = init_tensor<Tdata>(shape);
 			for(int iAx=0; iAx<NA; ++iAx)
 			{
 				if(iAx%rank_size!=rank_mine)	continue;
@@ -62,34 +62,34 @@ namespace LRI_Speed_Test
 					Ds_ab[label][iAx][{iAy,{0}}] = D;
 			}
 		};
-		init_Ds(Label::ab::a, {Na0,Na1,Na2});
-		init_Ds(Label::ab::b, {Nb0,Nb1,Nb2});
-		init_Ds(Label::ab::a0b0, {Na0,Nb0});
-		init_Ds(Label::ab::a0b1, {Na0,Nb1});
-		init_Ds(Label::ab::a0b2, {Na0,Nb2});
-		init_Ds(Label::ab::a1b0, {Na1,Nb0});
-		init_Ds(Label::ab::a1b1, {Na1,Nb1});
-		init_Ds(Label::ab::a1b2, {Na1,Nb2});
-		init_Ds(Label::ab::a2b0, {Na2,Nb0});
-		init_Ds(Label::ab::a2b1, {Na2,Nb1});
-		init_Ds(Label::ab::a2b2, {Na2,Nb2});
+		init_Ds(RI::Label::ab::a, {Na0,Na1,Na2});
+		init_Ds(RI::Label::ab::b, {Nb0,Nb1,Nb2});
+		init_Ds(RI::Label::ab::a0b0, {Na0,Nb0});
+		init_Ds(RI::Label::ab::a0b1, {Na0,Nb1});
+		init_Ds(RI::Label::ab::a0b2, {Na0,Nb2});
+		init_Ds(RI::Label::ab::a1b0, {Na1,Nb0});
+		init_Ds(RI::Label::ab::a1b1, {Na1,Nb1});
+		init_Ds(RI::Label::ab::a1b2, {Na1,Nb2});
+		init_Ds(RI::Label::ab::a2b0, {Na2,Nb0});
+		init_Ds(RI::Label::ab::a2b1, {Na2,Nb1});
+		init_Ds(RI::Label::ab::a2b2, {Na2,Nb2});
 
 		std::map<int,std::array<double,1>> atoms_pos;
 		for(int iA=0; iA<NA; ++iA)
 			atoms_pos[iA] = {0};
 
-		LRI<int,int,Ndim,Tdata> lri;
+		RI::LRI<int,int,Ndim,Tdata> lri;
 		lri.set_parallel(MPI_COMM_WORLD, atoms_pos, {}, {1});
 		lri.csm.set_threshold(0);
 
-		for(const Label::ab &label : Label::array_ab)
+		for(const RI::Label::ab &label : RI::Label::array_ab)
 			lri.set_tensors_map2(Ds_ab[label], label, 0);
 
 		timeval t_begin;
 		gettimeofday(&t_begin, NULL);
 
 		std::vector<T_Ds> Ds_result(1);
-		lri.cal(Global_Func::to_vector(Label::array_ab_ab), Ds_result);
+		lri.cal(RI::Global_Func::to_vector(RI::Label::array_ab_ab), Ds_result);
 
 		std::cout<<time_during(t_begin)<<std::endl;
 

@@ -12,15 +12,18 @@
 
 #define MPI_CHECK(x) if((x)!=MPI_SUCCESS)	throw std::runtime_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 
+namespace RI
+{
+
 namespace MPI_Wrapper
-{		
+{
 	inline int mpi_get_rank(const MPI_Comm &mpi_comm)
 	{
 		int rank_mine;
 		MPI_CHECK( MPI_Comm_rank (mpi_comm, &rank_mine) );
 		return rank_mine;
 	}
-		
+
 	inline int mpi_get_size(const MPI_Comm &mpi_comm)
 	{
 		int rank_size;
@@ -90,6 +93,8 @@ namespace MPI_Wrapper
 		mpi_allreduce(&data, &data_tmp, 1, op, mpi_comm);
 		data = data_tmp;
 	}
+}
+
 }
 
 #undef MPI_CHECK

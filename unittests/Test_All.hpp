@@ -29,7 +29,7 @@ namespace Test_All
 		Communicate_Tensors_Test::test_comm_judge_map3_first(argc, argv);
 		Communicate_Tensors_Test::test_comm_judge_map2_period(argc, argv);
 		Communicate_Tensors_Test::test_comm_judge_map3_period(argc, argv);
-		
+
 		Distribute_Equally_Test::test_distribute_atoms(argc, argv);
 		Distribute_Equally_Test::test_distribute_atoms_periods(argc, argv);
 
@@ -61,7 +61,7 @@ namespace Test_All
 		LRI_Speed_Test::test_speed<double>(argc, argv, 1, 1);
 		LRI_Speed_Test::test_speed<std::complex<float>>(argc, argv, 1, 1);
 		LRI_Speed_Test::test_speed<std::complex<double>>(argc, argv, 1, 1);
-		
+
 		Exx_Test::main<float>(argc, argv);
 		Exx_Test::main<double>(argc, argv);
 		Exx_Test::main<std::complex<float>>(argc, argv);

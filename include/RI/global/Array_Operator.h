@@ -7,6 +7,9 @@
 
 #include <array>
 
+namespace RI
+{
+
 namespace Array_Operator
 {
 	template<typename T, std::size_t N>
@@ -47,5 +50,6 @@ namespace Array_Operator
 			v[i] = -v_in[i];
 		return v;
 	}
+}
 
 }

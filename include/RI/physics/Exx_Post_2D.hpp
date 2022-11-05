@@ -19,6 +19,9 @@
 
 #define MPI_CHECK(x) if((x)!=MPI_SUCCESS)	throw std::runtime_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 
+namespace RI
+{
+
 template<typename TA, typename TC, typename Tdata> template<typename Tatom_pos>
 void Exx_Post_2D<TA,TC,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm_in,
@@ -118,5 +121,6 @@ std::map<TA,Tdata> Exx_Post_2D<TA,TC,Tdata>::reduce_force(
 	return F_global;
 }
 
+}
 
 #undef MPI_CHECK

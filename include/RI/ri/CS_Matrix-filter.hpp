@@ -12,6 +12,9 @@
 
 #include <stdexcept>
 
+namespace RI
+{
+
 template<typename TA, typename TC, typename Tdata>
 typename CS_Matrix<TA,TC,Tdata>::Step CS_Matrix<TA,TC,Tdata>::set_label_A(
 	const Label::ab_ab &label_in,
@@ -59,14 +62,16 @@ typename CS_Matrix<TA,TC,Tdata>::Step CS_Matrix<TA,TC,Tdata>::set_label_A(
 	const int index_a = Label::get_unused_a(step.label);
 	step.a_square = Global_Func::find(this->uplimits_square_tensor3.at(Label::ab::a)[index_a], Aa01, Aa2);
 	step.a_norm   = Global_Func::find(this->uplimits_norm_tensor3  .at(Label::ab::a)[index_a], Aa01, Aa2);
-	
+
 	const int index_b = get_unused_b(step.label);
 	step.b_square = Global_Func::find(this->uplimits_square_tensor3.at(Label::ab::b)[index_b], Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%period});
 	step.b_norm   = Global_Func::find(this->uplimits_norm_tensor3  .at(Label::ab::b)[index_b], Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%period});
-	
+
 	const std::pair<Label::ab, Label::ab> label_split_tmp = CS_Matrix_Tools::split_label(step.label);
 	step.first_square  = get_uplimit_tensor2(this->uplimits_square_tensor2, label_split_tmp.first);
 	step.second_square = get_uplimit_tensor2(this->uplimits_square_tensor2, label_split_tmp.second);
 
 	return step;
+}
+
 }

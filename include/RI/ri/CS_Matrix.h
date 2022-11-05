@@ -11,6 +11,9 @@
 #include <map>
 #include <unordered_map>
 
+namespace RI
+{
+
 template<typename TA, typename TC, typename Tdata>
 class CS_Matrix
 {
@@ -52,6 +55,8 @@ public:	// private:
 	std::unordered_map<Label::ab, std::map<TA,std::map<TAC,Tdata>>> uplimits_square_tensor2;
 	//std::unordered_map<Label::ab, std::map<TA,std::map<TAC,Tdata>>> uplimits_norm_tensor2;
 };
+
+}
 
 #include "CS_Matrix-set.hpp"
 #include "CS_Matrix-filter.hpp"

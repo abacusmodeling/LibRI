@@ -7,6 +7,9 @@
 
 #include "Parallel_LRI.h"
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 class Parallel_LRI_Equally: public Parallel_LRI<TA,Tcell,Ndim,Tdata>
 {
@@ -28,7 +31,7 @@ public:
 	const std::vector<TA >& get_list_Aa01()                                                const override { return this->list_Aa01; }
 	const std::vector<TAC>& get_list_Aa2 (const TA &Aa01)                                  const override { return this->list_Aa2;  }
 	const std::vector<TAC>& get_list_Ab01(const TA &Aa01, const TAC &Aa2)                  const override { return this->list_Ab01; }
-	const std::vector<TAC>& get_list_Ab2 (const TA &Aa01, const TAC &Aa2, const TAC &Ab01) const override { return this->list_Ab2;  }	
+	const std::vector<TAC>& get_list_Ab2 (const TA &Aa01, const TAC &Aa2, const TAC &Ab01) const override { return this->list_Ab2;  }
 
 // private:
 public:
@@ -40,5 +43,7 @@ public:
 	MPI_Comm mpi_comm;
 	std::array<Tcell,Ndim> period;
 };
+
+}
 
 #include "Parallel_LRI_Equally.hpp"

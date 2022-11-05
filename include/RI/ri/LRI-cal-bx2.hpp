@@ -9,6 +9,9 @@
 #include "LRI_Cal_Aux.h"
 #include "CS_Matrix_Tools.h"
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 {
@@ -96,7 +99,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			LRI_Cal_Aux::tensor3_merge(D_mul3,false),
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
 		2,
-		Aa2, Ab01);				
+		Aa2, Ab01);
 
 	this->cal_funcs[Label::ab_ab::a0b2_a1b0] = this->cal_funcs[Label::ab_ab::a0b2_a1b1] = Macro_cal_func_bx2(
 		tools.get_Ds_ab(LRI_Cal_Aux::get_abx(label), Aa01, Ab01),
@@ -166,7 +169,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
 		1,
 		Aa01, Ab01);
-	
+
 	this->cal_funcs[Label::ab_ab::a1b0_a2b2] = this->cal_funcs[Label::ab_ab::a1b1_a2b2] = Macro_cal_func_bx2(
 		tools.get_Ds_ab(LRI_Cal_Aux::get_abx(label), Aa01, Ab01),
 		tools.get_Ds_ab(Label::ab::a2b2, Aa2, Ab2),
@@ -212,7 +215,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 			LRI_Cal_Aux::tensor3_merge(D_bx,false)),
 		0,
 		Aa01, Ab01);
-	
-	
+
+
 	#undef Macro_cal_func_bx2
+}
+
 }

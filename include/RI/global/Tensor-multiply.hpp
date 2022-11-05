@@ -14,6 +14,9 @@
 #include <stdexcept>
 #include <string>
 
+namespace RI
+{
+
 template<typename T,
 	typename std::enable_if<!Global_Func::is_complex<T>::value,int>::type =0>
 static T vector_dot_vector_tmp (const Tensor<T> &t1, const Tensor<T> &t2)
@@ -75,4 +78,6 @@ Tensor<T> operator* (const Tensor<T> &t1, const Tensor<T> &t2)
 		default:
 			throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 	}
+}
+
 }

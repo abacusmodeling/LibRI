@@ -11,6 +11,9 @@
 
 #include <cassert>
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void RPA<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm,
@@ -78,3 +81,4 @@ void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
 	this->chi0s = std::move(chi0s_vec[0]);
 }
 
+}

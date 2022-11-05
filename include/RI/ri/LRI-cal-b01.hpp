@@ -9,6 +9,9 @@
 #include "LRI_Cal_Aux.h"
 #include "CS_Matrix_Tools.h"
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 {
@@ -213,4 +216,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_b01()
 
 
 	#undef Macro_cal_func_b01
+}
+
 }

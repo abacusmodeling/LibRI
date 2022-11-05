@@ -8,6 +8,9 @@
 #include "RI_Tools.h"
 #include "../global/Array_Operator.h"
 
+namespace RI
+{
+
 namespace RI_Tools
 {
 	template<typename TA, typename TAC, typename Tdata>
@@ -45,4 +48,6 @@ namespace RI_Tools
 		}
 		return Ds_period;
 	}
+}
+
 }

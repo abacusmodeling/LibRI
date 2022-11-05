@@ -13,18 +13,18 @@
 namespace Tensor_Test
 {
 	template<typename Tdata>
-	Tensor<Tdata> init_vector(const size_t n)
+	RI::Tensor<Tdata> init_vector(const size_t n)
 	{
-		Tensor<Tdata> t({n});
+		RI::Tensor<Tdata> t({n});
 		for(size_t i=0; i<t.shape[0]; ++i)
 			t(i) = i;
 		return t;
 	}
 
 	template<typename Tdata>
-	Tensor<Tdata> init_matrix(const size_t nr, const size_t nc)
+	RI::Tensor<Tdata> init_matrix(const size_t nr, const size_t nc)
 	{
-		Tensor<Tdata> t({nr,nc});
+		RI::Tensor<Tdata> t({nr,nc});
 		for(size_t i0=0; i0<t.shape[0]; ++i0)
 			for(size_t i1=0; i1<t.shape[1]; ++i1)
 				t(i0,i1) = i0*10+i1;
@@ -34,7 +34,7 @@ namespace Tensor_Test
 	template<typename Tdata>
 	void test_property()
 	{
-		const Tensor<Tdata> t = init_matrix<Tdata>(3,2);
+		const RI::Tensor<Tdata> t = init_matrix<Tdata>(3,2);
 
 		std::cout<<t.shape<<std::endl;
 		std::cout<<t.get_shape_all()<<std::endl;
@@ -52,13 +52,13 @@ namespace Tensor_Test
 		// 0  2  4
 		// 20 22 24
 	}
-	
+
 	template<typename Tdata>
 	void test_multiply()
 	{
-		const Tensor<Tdata> v3 = init_vector<Tdata>(3);
-		const Tensor<Tdata> m23 = init_matrix<Tdata>(2,3);
-		const Tensor<Tdata> m34 = init_matrix<Tdata>(3,4);
+		const RI::Tensor<Tdata> v3 = init_vector<Tdata>(3);
+		const RI::Tensor<Tdata> m23 = init_matrix<Tdata>(2,3);
+		const RI::Tensor<Tdata> m34 = init_matrix<Tdata>(3,4);
 
 		std::cout<<v3<<std::endl;
 		std::cout<<v3*v3<<std::endl<<std::endl;
@@ -84,7 +84,7 @@ namespace Tensor_Test
 	template<typename Tdata>
 	void test_norm()
 	{
-		Tensor<double> td({2});
+		RI::Tensor<double> td({2});
 		td(0)=3;	td(1)=-4;
 		std::cout<<td.norm(1)<<std::endl;									// 7
 		std::cout<<td.norm(2)<<std::endl;									// 5
@@ -95,7 +95,7 @@ namespace Tensor_Test
 	template<typename Tdata>
 	void test_norm_complex()
 	{
-		Tensor<std::complex<Tdata>> tc({2});
+		RI::Tensor<std::complex<Tdata>> tc({2});
 		tc(0)={-3,4}; tc(1)={6,-8};
 		std::cout<<tc.norm(1)<<std::endl;									// 15
 		std::cout<<tc.norm(2)<<std::endl;									// 11.180339887498949
@@ -121,7 +121,7 @@ namespace Tensor_Test
 		test_norm<double>();
 		test_norm<std::complex<float>>();
 		test_norm<std::complex<double>>();
-		test_norm_complex<float>();		
-		test_norm_complex<double>();		
+		test_norm_complex<float>();
+		test_norm_complex<double>();
 	}
 }

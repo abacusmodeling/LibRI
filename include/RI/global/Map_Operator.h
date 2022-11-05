@@ -7,6 +7,9 @@
 
 #include <map>
 
+namespace RI
+{
+
 namespace Map_Operator
 {
 	template<typename Tkey, typename Tvalue>
@@ -38,4 +41,6 @@ namespace Map_Operator
 		m.insert(ptr2, m2.end());
 		return m;
 	}
+}
+
 }

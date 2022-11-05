@@ -12,6 +12,9 @@
 #include <stdexcept>
 #include <string>
 
+namespace RI
+{
+
 namespace Divide_Atoms
 {
 	/*
@@ -22,7 +25,7 @@ namespace Divide_Atoms
 	template<typename Tcell>
 	std::vector<std::array<Tcell,1>> traversal_period(const std::array<Tcell,1> &period)
 	{
-		std::vector<std::array<Tcell,1>> cells; 
+		std::vector<std::array<Tcell,1>> cells;
 		cells.reserve(std::accumulate( period.begin(), period.end(), 1, std::multiplies<Tcell>() ));
 		for(int item=0; item<period[0]; ++item)
 			cells.push_back(std::array<Tcell,1>{item});
@@ -54,10 +57,10 @@ namespace Divide_Atoms
 			return array_sub;
 		};
 
-		std::vector<std::array<Tcell, Ndim>> cells; 
+		std::vector<std::array<Tcell, Ndim>> cells;
 		cells.reserve(std::accumulate( period.begin(), period.end(), 1, std::multiplies<Tcell>() ));
 		const std::array<Tcell,Ndim-1> period_sub = sub_array(period);
-		const std::vector<std::array<Tcell, Ndim-1>> cells_sub = traversal_period(period_sub); 
+		const std::vector<std::array<Tcell, Ndim-1>> cells_sub = traversal_period(period_sub);
 		for(int item_first=0; item_first<period[0]; ++item_first)
 			for(const auto &cell_sub : cells_sub)
 				cells.push_back(cat_array(item_first, cell_sub));
@@ -71,11 +74,11 @@ namespace Divide_Atoms
 		const std::vector<TA> &atoms)
 	{
 		const int mod = atoms.size() % group_size;
-		const int index_begin = 
+		const int index_begin =
 			(group_rank < mod)
 			? group_rank * (atoms.size()/group_size+1)
 			: mod * (atoms.size()/group_size+1) + (group_rank-mod) * (atoms.size()/group_size);
-		const int index_size = 
+		const int index_size =
 			(group_rank < mod)
 			? atoms.size()/group_size+1
 			: atoms.size()/group_size;
@@ -114,16 +117,16 @@ namespace Divide_Atoms
 		const std::vector<TC> cells_origin = traversal_period(period);
 		const std::vector<TC> cells = Global_Func::mod_period(cells_origin, period);
 		const int mod = atoms.size() * cells.size() % group_size;
-		const int index_begin = 
+		const int index_begin =
 			(group_rank < mod)
 			? group_rank * (atoms.size()*cells.size()/group_size+1)
 			: mod * (atoms.size()*cells.size()/group_size+1) + (group_rank-mod) * (atoms.size()*cells.size()/group_size);
-		const int index_size = 
+		const int index_size =
 			(group_rank < mod)
 			? atoms.size()*cells.size()/group_size+1
 			: atoms.size()*cells.size()/group_size;
 		const int index_end = index_begin + index_size;
-		
+
 		std::vector<TAC> atoms_periods_divide;
 		atoms_periods_divide.reserve(index_size);
 
@@ -142,4 +145,6 @@ namespace Divide_Atoms
 		}
 		throw std::range_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 	}
+}
+
 }

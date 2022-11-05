@@ -13,6 +13,9 @@
 #include <cassert>
 #include <stdexcept>
 
+namespace RI
+{
+
 namespace LRI_Cal_Aux
 {
 	template<typename Tdata>
@@ -66,7 +69,7 @@ namespace LRI_Cal_Aux
 			if(!D.empty())
 				return false;
 		return true;
-	}	
+	}
 
 	inline int judge_x(const Label::ab_ab &label)
 	{
@@ -98,4 +101,6 @@ namespace LRI_Cal_Aux
 			default:	throw std::invalid_argument("get_abx");
 		}
 	}
+}
+
 }

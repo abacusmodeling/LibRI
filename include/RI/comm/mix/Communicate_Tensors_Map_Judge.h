@@ -13,6 +13,9 @@
 #include <map>
 #include <mpi.h>
 
+namespace RI
+{
+
 namespace Communicate_Tensors_Map_Judge
 {
 	template<typename TA, typename Tdata>
@@ -111,4 +114,6 @@ namespace Communicate_Tensors_Map_Judge
 		judge.s2 = s2;
 		return Communicate_Tensors_Map::comm_map3(mpi_comm, Ds_in, judge);
 	}
+}
+
 }

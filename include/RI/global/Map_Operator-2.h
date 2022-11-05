@@ -8,6 +8,9 @@
 #include <map>
 #include <functional>
 
+namespace RI
+{
+
 namespace Map_Operator
 {
 	template<typename Tkey, typename Tvalue, typename Tdata>
@@ -23,6 +26,8 @@ namespace Map_Operator
 		const std::map<Tkey,Tvalue1> &m1,
 		const std::map<Tkey,Tvalue2> &m2,
 		const std::function<Tdata_return(const Tdata1&,const Tdata2&)> &func);
+}
+
 }
 
 #include "Map_Operator-2.hpp"

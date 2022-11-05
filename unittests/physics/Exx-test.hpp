@@ -16,7 +16,7 @@ namespace Exx_Test
 		int mpi_init_provide;
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 
-		Exx<int,int,1,Tdata> exx;
+		RI::Exx<int,int,1,Tdata> exx;
 		exx.set_parallel(MPI_COMM_WORLD, {{1,{0}},{2,{4}}}, {}, {1});
 		exx.set_csm_threshold(1E-4);
 		exx.set_Cs({}, 1E-4);

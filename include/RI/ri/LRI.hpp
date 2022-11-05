@@ -9,6 +9,9 @@
 #include "../ri/Label.h"
 #include <limits>
 
+namespace RI
+{
+
 template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 LRI<TA,Tcell,Ndim,Tdata>::LRI()
 	:save_load(*this)
@@ -27,4 +30,6 @@ LRI<TA,Tcell,Ndim,Tdata>::LRI()
 
 	this->set_cal_funcs_b01();
 	this->set_cal_funcs_bx2();
+}
+
 }

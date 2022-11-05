@@ -9,6 +9,9 @@
 #include "Split_Processes.h"
 #include "Divide_Atoms.h"
 
+namespace RI
+{
+
 namespace Distribute_Equally
 {
 	template<typename TA, typename Tcell, size_t Ndim>
@@ -56,7 +59,7 @@ namespace Distribute_Equally
 		std::vector<int> Ns(num_index);
 		Ns[0] = atoms.size();
 		for(size_t i=1; i<num_index; ++i)
-			Ns[i] = 
+			Ns[i] =
 				atoms.size()
 				* std::accumulate( period.begin(), period.end(), 1, std::multiplies<Tcell>() );
 		const std::vector<std::tuple<MPI_Comm,int,int>> comm_color_sizes = Split_Processes::split_all(mpi_comm, Ns);
@@ -75,4 +78,6 @@ namespace Distribute_Equally
 				period);
 		return atoms_split_list;
 	}
+}
+
 }
