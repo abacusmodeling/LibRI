@@ -106,12 +106,12 @@ std::map<TA,Tdata> Exx_Post_2D<TA,TC,Tdata>::reduce_force(
 	// 		terminate called after throwing an instance of 'cereal::Exception'
 	// 		what():  Failed to read 12 bytes from input stream! Read 4
 
-	Comm_Trans<TA, Tdata, std::map<TA,Tdata>, std::map<TA,Tdata>> comm(this->mpi_comm);
-	comm.traverse_isend = Communicate_Map::traverse_datas_all<TA,Tdata>;
-	comm.set_value_recv = Communicate_Map::set_value_add<TA,Tdata>;
-	comm.flag_lock_set_value = Comm_Tools::Lock_Type::Copy_merge;
-	comm.init_datas_local = Communicate_Map::init_datas_local<TA,Tdata>;
-	comm.add_datas = Communicate_Map::add_datas<TA,Tdata>;
+	Comm::Comm_Trans<TA, Tdata, std::map<TA,Tdata>, std::map<TA,Tdata>> comm(this->mpi_comm);
+	comm.traverse_isend = Comm::Communicate_Map::traverse_datas_all<TA,Tdata>;
+	comm.set_value_recv = Comm::Communicate_Map::set_value_add<TA,Tdata>;
+	comm.flag_lock_set_value = Comm::Comm_Tools::Lock_Type::Copy_merge;
+	comm.init_datas_local = Comm::Communicate_Map::init_datas_local<TA,Tdata>;
+	comm.add_datas = Comm::Communicate_Map::add_datas<TA,Tdata>;
 
 	std::map<TA,Tdata> F_global;
 	comm.communicate(F_local, F_global);

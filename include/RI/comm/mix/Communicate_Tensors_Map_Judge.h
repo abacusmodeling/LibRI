@@ -22,7 +22,7 @@ namespace Communicate_Tensors_Map_Judge
 		const std::map<TA,Tensor<Tdata>> &Ds_in,
 		const std::set<TA> &s)
 	{
-		Communicate_Map::Judge_Map<TA> judge;
+		Comm::Communicate_Map::Judge_Map<TA> judge;
 		judge.s = s;
 		return Communicate_Tensors_Map::comm_map(mpi_comm, Ds_in, judge);
 	}
@@ -34,9 +34,9 @@ namespace Communicate_Tensors_Map_Judge
 		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds_in,
 		const std::set<TA> &s0, const std::set<TAC> &s1)
 	{
-		Communicate_Map::Judge_Map2<TA,TAC> judge;
+		Comm::Communicate_Map::Judge_Map2<TA,TAC> judge;
 		judge.s0 = s0;
-		judge.s1 = s1;	
+		judge.s1 = s1;
 		return Communicate_Tensors_Map::comm_map2(mpi_comm, Ds_in, judge);
 	}
 
@@ -47,13 +47,13 @@ namespace Communicate_Tensors_Map_Judge
 		const std::map<TA,std::map<TAC,std::map<TAC,Tensor<Tdata>>>> &Ds_in,
 		const std::set<TA> &s0, const std::set<TAC> &s1, const std::set<TAC> &s2)
 	{
-		Communicate_Map::Judge_Map3<TA,TAC,TAC> judge;
+		Comm::Communicate_Map::Judge_Map3<TA,TAC,TAC> judge;
 		judge.s0 = s0;
 		judge.s1 = s1;
 		judge.s2 = s2;
 		return Communicate_Tensors_Map::comm_map3(mpi_comm, Ds_in, judge);
 	}
-	
+
 	template<typename TA, typename TAC, typename Tdata>
 	std::map<TA,std::map<TAC,Tensor<Tdata>>>
 	comm_map2_first(
@@ -66,7 +66,7 @@ namespace Communicate_Tensors_Map_Judge
 		judge.s1 = s1;
 		return Communicate_Tensors_Map::comm_map2(mpi_comm, Ds_in, judge);
 	}
-	
+
 	template<typename TA, typename TAC, typename Tdata>
 	std::map<TA,std::map<TAC,std::map<TAC,Tensor<Tdata>>>>
 	comm_map3_first(
@@ -103,7 +103,7 @@ namespace Communicate_Tensors_Map_Judge
 		const std::map<TA,std::map<std::pair<TA,TC>,std::map<std::pair<TA,TC>,Tensor<Tdata>>>> &Ds_in,
 		const std::set<std::pair<TA,TC>> &s0, const std::set<std::pair<TA,TC>> &s1, const std::set<std::pair<TA,TC>> &s2,
 		const TC &period)
-	{		
+	{
 		Communicate_Map_Period::Judge_Map3_Period<TA,TC> judge;
 		judge.period = period;
 		judge.s0 = s0;
