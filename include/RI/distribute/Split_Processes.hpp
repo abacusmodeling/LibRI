@@ -21,74 +21,71 @@ namespace RI
 namespace Split_Processes
 {
 	// comm_color
-	static std::tuple<MPI_Comm,int> split(const MPI_Comm &mpi_comm, const int &group_size)
+	static std::tuple<MPI_Comm,std::size_t> split(
+		const MPI_Comm &mpi_comm,
+		const std::size_t &group_size)
 	{
 		assert(group_size>0);
-		const int rank_mine = MPI_Wrapper::mpi_get_rank(mpi_comm);
-		const int rank_size = MPI_Wrapper::mpi_get_size(mpi_comm);
+		const std::size_t rank_mine = static_cast<std::size_t>(MPI_Wrapper::mpi_get_rank(mpi_comm));
+		const std::size_t rank_size = static_cast<std::size_t>(MPI_Wrapper::mpi_get_size(mpi_comm));
 		assert(rank_size>=group_size);
 
-		std::vector<int> num(group_size);			// sum(num) = rank_size
-		const int mod = rank_size % group_size;
-		for(int i=0; i<mod; ++i)
+		std::vector<std::size_t> num(group_size);			// sum(num) = rank_size
+		const std::size_t mod = rank_size % group_size;
+		for(std::size_t i=0; i<mod; ++i)
 			num[i] = rank_size/group_size+1;
-		for(int i=mod; i<group_size; ++i)
+		for(std::size_t i=mod; i<group_size; ++i)
 			num[i] = rank_size/group_size;
 
-		std::vector<int> slice(group_size);			// slice.back() = rank_size
+		std::vector<std::size_t> slice(group_size);			// slice.back() = rank_size
 		slice[0] = num[0];
-		for(int i=1; i<group_size; ++i)
+		for(std::size_t i=1; i<group_size; ++i)
 			slice[i] = slice[i-1] + num[i];
 
-		const int color_group = [&]() -> int		// which group should rank_mine in
+		const std::size_t color_group = [&]() -> std::size_t		// which group should rank_mine in
 		{
-			for(int i=0; i<group_size; ++i)
+			for(std::size_t i=0; i<group_size; ++i)
 				if(rank_mine < slice[i])
 					return i;
 			throw std::range_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 		}();
 
 		MPI_Comm mpi_comm_split;
-		MPI_CHECK( MPI_Comm_split( mpi_comm, color_group, rank_mine, &mpi_comm_split ) );
+		MPI_CHECK( MPI_Comm_split( mpi_comm, static_cast<int>(color_group), static_cast<int>(rank_mine), &mpi_comm_split ) );
 
 		return std::make_tuple(mpi_comm_split, color_group);
 	}
 
 	// comm_color_size
-	static std::tuple<MPI_Comm,int,int> split_first(const MPI_Comm &mpi_comm, const std::vector<int> &Ns)
+	static std::tuple<MPI_Comm,std::size_t,std::size_t> split_first(
+		const MPI_Comm &mpi_comm,
+		const std::vector<std::size_t> &task_sizes)
 	{
-		assert(Ns.size()>=1);
-		const int rank_size = MPI_Wrapper::mpi_get_size(mpi_comm);
-		const double N_product = std::accumulate( Ns.begin(), Ns.end(), double(1.0), std::multiplies<double>() );		// double for numerical range
-		if(N_product>=rank_size)
-		{
-			const double num_average = std::pow(static_cast<double>(N_product)/rank_size, 1.0/Ns.size());
-			const int group_size = std::max(1, static_cast<int>(std::round(Ns[0]/num_average)));
-			const std::tuple<MPI_Comm,int> comm_color = split(mpi_comm, group_size);
-			return std::make_tuple(std::get<0>(comm_color), std::get<1>(comm_color), group_size);
-		}
-		else
-		{
-			if(Ns.size()>1)
-			{
-				const int group_size = Ns[0];
-				const std::tuple<MPI_Comm,int> comm_color = split(mpi_comm, group_size);
-				return std::make_tuple(std::get<0>(comm_color), std::get<1>(comm_color), group_size);
-			}
-			else
-			{
-				throw std::range_error(std::string(__FILE__)+" line "+std::to_string(__LINE__));
-			}
-		}
+		assert(task_sizes.size()>=1);
+		const std::size_t rank_size = static_cast<std::size_t>(MPI_Wrapper::mpi_get_size(mpi_comm));
+		const std::size_t task_product = std::accumulate(
+			task_sizes.begin(), task_sizes.end(), std::size_t(1), std::multiplies<std::size_t>() );		// double for numerical range
+		const double num_average = 
+			task_product < rank_size
+			? 1.0		// if task_product<rank_size, then num_average<1, then group_size>task_sizes[0]. Set group_size=task_sizes[0]
+			: std::pow(static_cast<double>(task_product)/rank_size, 1.0/task_sizes.size());
+		const std::size_t group_size = 
+			task_sizes[0] < num_average
+			? 1			// if task_sizes[0]<<task_sizes[1:], then group_size<0.5. Set group_size=1
+			: static_cast<std::size_t>(std::round(task_sizes[0]/num_average));
+		const std::tuple<MPI_Comm,std::size_t> comm_color = split(mpi_comm, group_size);
+		return std::make_tuple(std::get<0>(comm_color), std::get<1>(comm_color), group_size);
 	}
 
 	// vector<comm_color_size>
-	static std::vector<std::tuple<MPI_Comm,int,int>> split_all(const MPI_Comm &mpi_comm, const std::vector<int> &Ns)
+	static std::vector<std::tuple<MPI_Comm,std::size_t,std::size_t>> split_all(
+		const MPI_Comm &mpi_comm,
+		const std::vector<std::size_t> &task_sizes)
 	{
-		std::vector<std::tuple<MPI_Comm,int,int>> comm_color_sizes(Ns.size()+1);
+		std::vector<std::tuple<MPI_Comm,std::size_t,std::size_t>> comm_color_sizes(task_sizes.size()+1);
 		comm_color_sizes[0] = std::make_tuple(mpi_comm, 0, 1);
-		for(int m=0; m<Ns.size(); ++m)
-			comm_color_sizes[m+1] = split_first(std::get<0>(comm_color_sizes[m]), {Ns.begin()+m, Ns.end()});
+		for(std::size_t m=0; m<task_sizes.size(); ++m)
+			comm_color_sizes[m+1] = split_first(std::get<0>(comm_color_sizes[m]), {task_sizes.begin()+m, task_sizes.end()});
 		return comm_color_sizes;
 	}
 }

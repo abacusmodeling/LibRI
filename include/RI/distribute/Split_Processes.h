@@ -14,14 +14,23 @@ namespace RI
 
 namespace Split_Processes
 {
-	// comm_color
-	static std::tuple<MPI_Comm,int> split(const MPI_Comm &mpi_comm, const int &group_size);
+	// 将所有进程按划分为 group_size 组，每组进程数尽量相同
+	// 返回 {本进程所在组mpi_comm, 本进程属于第几组}
+	static std::tuple<MPI_Comm,std::size_t> split(
+		const MPI_Comm &mpi_comm,
+		const std::size_t &group_size);
 
-	// comm_color_size
-	static std::tuple<MPI_Comm,int,int> split_first(const MPI_Comm &mpi_comm, const std::vector<int> &Ns);
+	// 任务数多维，所有进程多维划分组，每维分得任务数尽量相同。
+	// 返回按第0维划分结果，{本进程所在组mpi_comm, 本进程属于第几组, 总组数}
+	static std::tuple<MPI_Comm,std::size_t,std::size_t> split_first(
+		const MPI_Comm &mpi_comm,
+		const std::vector<std::size_t> &task_sizes);
 
-	// vector<comm_color_size>
-	static std::vector<std::tuple<MPI_Comm,int,int>> split_all(const MPI_Comm &mpi_comm, const std::vector<int> &Ns);
+	// 任务数多维，所有进程多维划分，每维分得任务数尽量相同。
+	// 返回按所有维划分结果，返回[0]为 {mpi_comm,0,1}，返回[i+1]为 按第i维划分结果
+	static std::vector<std::tuple<MPI_Comm,std::size_t,std::size_t>> split_all(
+		const MPI_Comm &mpi_comm,
+		const std::vector<std::size_t> &task_sizes);
 }
 
 }

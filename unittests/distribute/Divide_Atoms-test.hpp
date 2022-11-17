@@ -12,11 +12,11 @@ namespace Divide_Atoms_Test
 {
     void test_divide_atoms()
     {
-        const int group_size = 6;
-        std::vector<int> atoms(31);
-        for(int i=0; i<atoms.size(); ++i)
+        const std::size_t group_size = 6;
+        std::vector<std::size_t> atoms(31);
+        for(std::size_t i=0; i<atoms.size(); ++i)
             atoms[i]=i;
-        for(int i=0; i<group_size; ++i)
+        for(std::size_t i=0; i<group_size; ++i)
             std::cout<<RI::Divide_Atoms::divide_atoms(i, group_size, atoms)<<std::endl;
     }
     /*
@@ -31,12 +31,12 @@ namespace Divide_Atoms_Test
 
     void test_divide_atoms_with_period()
     {
-        const int group_size = 6;
-        std::vector<int> atoms(31);
-        for(int i=0; i<atoms.size(); ++i)
+        const std::size_t group_size = 6;
+        std::vector<std::size_t> atoms(31);
+        for(std::size_t i=0; i<atoms.size(); ++i)
             atoms[i]=i;
-        const std::array<int,1> period = {2};
-        for(int i=0; i<group_size; ++i)
+        const std::array<std::size_t,1> period = {2};
+        for(std::size_t i=0; i<group_size; ++i)
             std::cout<<RI::Divide_Atoms::divide_atoms(i, group_size, atoms, period)<<std::endl;
     }
     /*
@@ -51,12 +51,12 @@ namespace Divide_Atoms_Test
 
     void test_divide_atoms_periods()
     {
-        const int group_size = 6;
-        std::vector<int> atoms(31);
-        for(int i=0; i<atoms.size(); ++i)
+        const std::size_t group_size = 6;
+        std::vector<std::size_t> atoms(31);
+        for(std::size_t i=0; i<atoms.size(); ++i)
             atoms[i]=i;
-        const std::array<int,1> period = {2};
-        for(int i=0; i<group_size; ++i)
+        const std::array<std::size_t,1> period = {2};
+        for(std::size_t i=0; i<group_size; ++i)
             std::cout<<RI::Divide_Atoms::divide_atoms_periods(i, group_size, atoms, period)<<std::endl;
     }
     /*

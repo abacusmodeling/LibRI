@@ -42,9 +42,9 @@ template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::load(const std::string &name, const Label::ab &label)
 {
 	assert(this->lri.Ds_ab[label].empty());
-	for(int i=0; i<this->lri.csm.uplimits_square_tensor3[label].size(); ++i)
+	for(std::size_t i=0; i<this->lri.csm.uplimits_square_tensor3[label].size(); ++i)
 		assert(this->lri.csm.uplimits_square_tensor3[label][i].empty());
-	for(int i=0; i<this->lri.csm.uplimits_norm_tensor3[label].size(); ++i)
+	for(std::size_t i=0; i<this->lri.csm.uplimits_norm_tensor3[label].size(); ++i)
 		assert(this->lri.csm.uplimits_norm_tensor3[label][i].empty());
 	assert(this->lri.csm.uplimits_square_tensor2[label].empty());
 

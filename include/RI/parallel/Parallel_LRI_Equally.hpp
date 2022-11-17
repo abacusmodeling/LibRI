@@ -28,7 +28,7 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel(
 
 	std::pair<std::vector<TA>, std::vector<std::vector<std::pair<TA,TC>>>>
 		atoms_split_list = Distribute_Equally::distribute_atoms_periods(
-			mpi_comm, atoms_vec, period, num_index);
+			mpi_comm, atoms_vec, period, num_index, false);
 
 	this->list_Aa01 = atoms_split_list.first;
 	this->list_Aa2  = atoms_split_list.second[0];
