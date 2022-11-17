@@ -122,9 +122,9 @@ namespace Blas_Interface
 		else
 			throw std::invalid_argument("trans must be 'N', 'T' or 'C'.\nIn "+std::string(__FILE__)+" line "+std::to_string(__LINE__)+". ");
 
-		const size_t m = C.shape[0];
-		const size_t n = C.shape[1];
-		const size_t k = (transA=='N') ? A.shape[1] : A.shape[0];
+		const std::size_t m = C.shape[0];
+		const std::size_t n = C.shape[1];
+		const std::size_t k = (transA=='N') ? A.shape[1] : A.shape[0];
 
 		if(transB=='N')
 			assert(k==B.shape[0]);
@@ -167,8 +167,8 @@ namespace Blas_Interface
 		else
 			throw std::invalid_argument("trans must be 'N', 'T' or 'C'.\nIn "+std::string(__FILE__)+" line "+std::to_string(__LINE__)+". ");
 
-		const size_t n = C.shape[0];
-		const size_t k = (transA=='N') ? A.shape[1] : A.shape[0];
+		const std::size_t n = C.shape[0];
+		const std::size_t k = (transA=='N') ? A.shape[1] : A.shape[0];
 		syrk(uploC, transA, n, k,
 			alpha, A.ptr(),
 			beta, C.ptr());
@@ -180,7 +180,7 @@ namespace Blas_Interface
 		const double alpha, const Tensor<T> &A)
 	{
 		constexpr double beta = 0.0;
-		const size_t n = (transA=='N') ? A.shape[0] : A.shape[1];
+		const std::size_t n = (transA=='N') ? A.shape[0] : A.shape[1];
 		Tensor<T> C({n,n});
 		syrk(uploC, transA,	alpha, A, beta, C);
 		return C;

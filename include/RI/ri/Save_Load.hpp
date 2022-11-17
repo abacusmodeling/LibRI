@@ -10,7 +10,7 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::save(const std::string &name, const Label::ab &label)
 {
 	this->saves[name].Ds_ab.reserve(Label::array_ab.size());
@@ -24,21 +24,21 @@ void Save_Load<TA,Tcell,Ndim,Tdata>::save(const std::string &name, const Label::
 	this->saves[name].csm_uplimits_square_tensor2[label] = std::move(this->lri.csm.uplimits_square_tensor2[label]);
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::save(const std::string &name)
 {
 	for(const Label::ab &label : Label::array_ab)
 		this->save(name, label);
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::save(const std::string &name, const std::vector<Label::ab> &labels)
 {
 	for(const Label::ab &label : labels)
 		this->save(name, label);
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::load(const std::string &name, const Label::ab &label)
 {
 	assert(this->lri.Ds_ab[label].empty());
@@ -68,7 +68,7 @@ void Save_Load<TA,Tcell,Ndim,Tdata>::load(const std::string &name, const Label::
 //		this->saves.erase(name);
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::load(const std::string &name)
 {
 	for(const Label::ab &label : Label::array_ab)
@@ -76,7 +76,7 @@ void Save_Load<TA,Tcell,Ndim,Tdata>::load(const std::string &name)
 	this->saves.erase(name);
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::load(const std::string &name, const std::vector<Label::ab> &labels)
 {
 	for(const Label::ab &label : labels)

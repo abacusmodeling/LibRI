@@ -30,7 +30,7 @@ void Exx_Post_2D<TA,TC,Tdata>::set_parallel(
 {
 	this->mpi_comm = mpi_comm_in;
 
-	constexpr size_t num_index = 2;
+	constexpr std::size_t num_index = 2;
 	const std::vector<TA> atoms_vec = Global_Func::map_key_to_vec(atoms_pos);
 
 	const std::pair<std::vector<TA>, std::vector<std::vector<TAC>>>

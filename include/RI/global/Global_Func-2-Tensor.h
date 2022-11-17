@@ -33,9 +33,9 @@ namespace Global_Func
 		Tensor<Tout> t_out(t_in.shape);
 		const Tin*const ptr_in = t_in.ptr();
 		Tout*const ptr_out = t_out.ptr();
-		const size_t size = t_in.get_shape_all();
+		const std::size_t size = t_in.get_shape_all();
 		#pragma omp parallel for
-		for(size_t i=0; i<size; ++i)
+		for(std::size_t i=0; i<size; ++i)
 			ptr_out[i] = Global_Func::convert<Tout>(ptr_in[i]);
 		return t_out;
 	}

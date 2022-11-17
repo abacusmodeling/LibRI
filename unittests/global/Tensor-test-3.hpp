@@ -13,20 +13,20 @@
 namespace Tensor_Test
 {
 	template<typename Tdata>
-	RI::Tensor<Tdata> init_vector(const size_t n)
+	RI::Tensor<Tdata> init_vector(const std::size_t n)
 	{
 		RI::Tensor<Tdata> t({n});
-		for(size_t i=0; i<t.shape[0]; ++i)
+		for(std::size_t i=0; i<t.shape[0]; ++i)
 			t(i) = i;
 		return t;
 	}
 
 	template<typename Tdata>
-	RI::Tensor<Tdata> init_matrix(const size_t nr, const size_t nc)
+	RI::Tensor<Tdata> init_matrix(const std::size_t nr, const std::size_t nc)
 	{
 		RI::Tensor<Tdata> t({nr,nc});
-		for(size_t i0=0; i0<t.shape[0]; ++i0)
-			for(size_t i1=0; i1<t.shape[1]; ++i1)
+		for(std::size_t i0=0; i0<t.shape[0]; ++i0)
+			for(std::size_t i1=0; i1<t.shape[1]; ++i1)
 				t(i0,i1) = i0*10+i1;
 		return t;
 	}

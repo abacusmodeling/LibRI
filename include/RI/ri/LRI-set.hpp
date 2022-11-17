@@ -13,19 +13,19 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm_in,
-	const std::map<TA,TatomR> &atomsR,
-	const std::array<TatomR,Ndim> &latvec,
+	const std::map<TA,Tatom_pos> &atoms_pos,
+	const std::array<Tatom_pos,Ndim> &latvec,
 	const std::array<Tcell,Ndim> &period_in)
 {
 	this->mpi_comm = mpi_comm_in;
 	this->period = period_in;
-	this->parallel->set_parallel( this->mpi_comm, atomsR, latvec, this->period );
+	this->parallel->set_parallel( this->mpi_comm, atoms_pos, latvec, this->period );
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 	const Label::ab &label,
@@ -45,7 +45,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 }
 
 /*
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void RI<TA,Tcell,Ndim,Tdata>::set_tensors_map3(
 	const std::map<TA, std::map<TAC, std::map<TAC, Tensor<Tdata>>>> &Ds_local,
 	const Label::ab &label,
@@ -74,7 +74,7 @@ void RI<TA,Tcell,Ndim,Tdata>::set_tensors_map3(
 
 
 /*
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 std::map<TA,std::map<TAC,std::map<TAC,Tensor<Tdata>>>>
 RI<TA,Tcell,Ndim,Tdata>::comm_tensors_map3(
 	const Label::ab &label,

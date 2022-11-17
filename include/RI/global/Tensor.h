@@ -21,25 +21,25 @@ template<typename T>
 class Tensor
 {
 public:
-	std::vector<size_t> shape;
+	std::vector<std::size_t> shape;
 	std::shared_ptr<std::valarray<T>> data;
 
 	Tensor(){};
-	explicit Tensor (const std::vector<size_t> &shape_in);
-	explicit Tensor (const std::vector<size_t> &shape_in, std::shared_ptr<std::valarray<T>> data_in);
+	explicit Tensor (const std::vector<std::size_t> &shape_in);
+	explicit Tensor (const std::vector<std::size_t> &shape_in, std::shared_ptr<std::valarray<T>> data_in);
 	//Tensor (const Tensor<T> &t_in);
 	//Tensor (Tensor<T> &&t_in);
 	//Tensor<T> &operator=(const Tensor<T> &t_in);
 	//Tensor<T> &operator=(Tensor<T> &&t_in);
 
-	inline size_t get_shape_all() const;
-	inline Tensor reshape (const std::vector<size_t> &shape_in) const;
+	inline std::size_t get_shape_all() const;
+	inline Tensor reshape (const std::vector<std::size_t> &shape_in) const;
 
 	Tensor copy() const;
 
-	inline T& operator() (const size_t i0) const;
-	inline T& operator() (const size_t i0, const size_t i1) const;
-	inline T& operator() (const size_t i0, const size_t i1, const size_t i2) const;
+	inline T& operator() (const std::size_t i0) const;
+	inline T& operator() (const std::size_t i0, const std::size_t i1) const;
+	inline T& operator() (const std::size_t i0, const std::size_t i1, const std::size_t i2) const;
 
 	Tensor transpose() const;
 

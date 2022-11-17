@@ -18,17 +18,17 @@
 #include<mpi.h>
 
 #define FOR_ia012_ib012                                		\
-	for(size_t ia0=0; ia0<Na0; ++ia0)                     	\
-		for(size_t ia1=0; ia1<Na1; ++ia1)                 	\
-			for(size_t ia2=0; ia2<Na2; ++ia2)             	\
-				for(size_t ib0=0; ib0<Nb0; ++ib0)         	\
-					for(size_t ib1=0; ib1<Nb1; ++ib1)     	\
-						for(size_t ib2=0; ib2<Nb2; ++ib2)
+	for(std::size_t ia0=0; ia0<Na0; ++ia0)                     	\
+		for(std::size_t ia1=0; ia1<Na1; ++ia1)                 	\
+			for(std::size_t ia2=0; ia2<Na2; ++ia2)             	\
+				for(std::size_t ib0=0; ib0<Nb0; ++ib0)         	\
+					for(std::size_t ib1=0; ib1<Nb1; ++ib1)     	\
+						for(std::size_t ib2=0; ib2<Nb2; ++ib2)
 
 
 namespace LRI_Test
 {
-	template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+	template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 	class Parallel_LRI_test: public RI::Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>
 	{
 		using TatomR = std::array<double,Ndim>;		// tmp
@@ -49,10 +49,10 @@ namespace LRI_Test
 	};
 
 	template<typename Tdata>
-	static RI::Tensor<Tdata> init_tensor(const std::vector<size_t> &shape)
+	static RI::Tensor<Tdata> init_tensor(const std::vector<std::size_t> &shape)
 	{
 		RI::Tensor<Tdata> D(shape);
-		for(size_t i=0; i<D.data->size(); ++i)
+		for(std::size_t i=0; i<D.data->size(); ++i)
 			(*D.data)[i] = i;
 		return D;
 	}
@@ -69,8 +69,8 @@ namespace LRI_Test
 			return;
 		}
 
-		constexpr size_t Ndim = 1;
-		const size_t Na0=2, Nb0=3, Na1=4, Nb1=5, Na2=6, Nb2=7;
+		constexpr std::size_t Ndim = 1;
+		const std::size_t Na0=2, Nb0=3, Na1=4, Nb1=5, Na2=6, Nb2=7;
 		const int Aa01=1, Ab01=2, Aa2=5, Ab2=6;
 		using T_Ds = std::map<int, std::map<std::pair<int,std::array<int,Ndim>>, RI::Tensor<Tdata>>>;
 		std::unordered_map<RI::Label::ab, T_Ds> Ds_ab;

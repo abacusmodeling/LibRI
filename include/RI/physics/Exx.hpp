@@ -13,7 +13,7 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm,
 	const std::map<TA,Tatom_pos> &atoms_pos,
@@ -26,7 +26,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_parallel(
 		this->post_2D.set_parallel(mpi_comm, atoms_pos, period);
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_Cs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
 	const Tdata_real &threshold_C,
@@ -38,7 +38,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Cs(
 	this->flag_finish.C = true;
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_Vs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Vs,
 	const Tdata_real &threshold_V,
@@ -49,7 +49,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Vs(
 	this->flag_finish.V = true;
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
 	const Tdata_real &threshold_D,
@@ -97,7 +97,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dVs(
 
 
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 	const std::array<std::string,3> &save_names_suffix)						// "Cs","Vs","Ds"
 {
@@ -131,7 +131,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 
 
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_Fs(
 	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"
 {

@@ -15,7 +15,7 @@
 template<typename T>
 std::ostream &operator<<(std::ostream &os, const std::vector<T> &v)
 {
-	for(size_t i=0; i<v.size(); ++i)
+	for(std::size_t i=0; i<v.size(); ++i)
 		os<<v[i]<<"|\t";
 	return os;
 }
@@ -28,10 +28,10 @@ std::ostream &operator<<(std::ostream &os, const std::set<T> &s)
 	return os;
 }
 
-template<typename T, size_t N>
+template<typename T, std::size_t N>
 std::ostream &operator<<(std::ostream &os, const std::array<T,N> &v)
 {
-	for(size_t i=0; i<v.size(); ++i)
+	for(std::size_t i=0; i<v.size(); ++i)
 		os<<v[i]<<"\t";
 	return os;
 }

@@ -13,18 +13,18 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm_in,
-	const std::map<TA,TatomR> &atomsR,
-	const std::array<TatomR,Ndim> &latvec,
+	const std::map<TA,Tatom_pos> &atoms_pos,
+	const std::array<Tatom_pos,Ndim> &latvec,
 	const std::array<Tcell,Ndim> &period_in)
 {
 	this->mpi_comm = mpi_comm_in;
 	this->period = period_in;
 
-	constexpr size_t num_index = 4;
-	const std::vector<TA> atoms_vec = Global_Func::map_key_to_vec(atomsR);
+	constexpr std::size_t num_index = 4;
+	const std::vector<TA> atoms_vec = Global_Func::map_key_to_vec(atoms_pos);
 
 	std::pair<std::vector<TA>, std::vector<std::vector<std::pair<TA,TC>>>>
 		atoms_split_list = Distribute_Equally::distribute_atoms_periods(
@@ -37,7 +37,7 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel(
 }
 
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 auto Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::comm_tensors_map2(
 	const Label::ab &label,
 	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const

@@ -17,22 +17,22 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
-//template<typename TA, typename Tcell, size_t Ndim>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+//template<typename TA, typename Tcell, std::size_t Ndim>
 class Parallel_LRI
 {
 public:
 	using TC = std::array<Tcell,Ndim>;
 	using TAC = std::pair<TA,TC>;
-	using TatomR = std::array<double,Ndim>;		// tmp
+	using Tatom_pos = std::array<double,Ndim>;		// tmp
 
-	//template<typename TatomR>
+	//template<typename Tatom_pos>
 	virtual void set_parallel(
 		const MPI_Comm &mpi_comm,
-		const std::map<TA,TatomR> &atomsR,
-		const std::array<TatomR,Ndim> &latvec,
+		const std::map<TA,Tatom_pos> &atoms_pos,
+		const std::array<Tatom_pos,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period) =0;
-	// atomR[iA][{cell}] = atomsR[iA] + \sum_x cell_x * latvec[cell_x]
+	// atom_pos[iA][{cell}] = atoms_pos[iA] + \sum_x cell_x * latvec[cell_x]
 
 	//template<typename Tdata>
 	virtual std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(

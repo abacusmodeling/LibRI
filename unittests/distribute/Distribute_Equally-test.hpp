@@ -19,7 +19,7 @@ namespace Distribute_Equally_Test
 
 		const std::vector<int> atoms = {0,1,2,3,4};
 		const std::array<int,1> period = {2};
-		const size_t num_index = 2;
+		const std::size_t num_index = 2;
 		const std::pair<std::vector<int>,
 		                std::vector<std::vector<std::pair<int,std::array<int,1>>>>>
 			atoms_split_list
@@ -63,7 +63,7 @@ namespace Distribute_Equally_Test
 
 		const std::vector<int> atoms = {0,1,2,3,4};
 		const std::array<int,1> period = {2};
-		const size_t num_index = 2;
+		const std::size_t num_index = 2;
 		const std::pair<std::vector<int>,
 		                std::vector<std::vector<std::pair<int,std::array<int,1>>>>>
 			atoms_split_list
@@ -109,7 +109,7 @@ namespace Distribute_Equally_Test
 
 			const std::vector<int> atoms = {0,1};
 			const std::array<int,1> period = {1};
-			const size_t num_index = 1;
+			const std::size_t num_index = 1;
 			const std::pair<std::vector<int>,
 							std::vector<std::vector<std::pair<int,std::array<int,1>>>>>
 				atoms_split_list

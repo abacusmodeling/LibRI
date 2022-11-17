@@ -14,16 +14,16 @@ std::ostream &operator<<(std::ostream &os, const RI::Tensor<T> &t)
 	{
 		case 1:
 		{
-			for(size_t i0=0; i0<t.shape[0]; ++i0)
+			for(std::size_t i0=0; i0<t.shape[0]; ++i0)
 				os<<t(i0)<<"\t";
 			os<<std::endl;
 			return os;
 		}
 		case 2:
 		{
-			for(size_t i0=0; i0<t.shape[0]; ++i0)
+			for(std::size_t i0=0; i0<t.shape[0]; ++i0)
 			{
-				for(size_t i1=0; i1<t.shape[1]; ++i1)
+				for(std::size_t i1=0; i1<t.shape[1]; ++i1)
 	//				os<<t(i0,i1)<<"\t";						// test
 					os<<( std::abs(t(i0,i1))>1E-10 ? t(i0,i1) : 0 )<<"\t";
 				os<<std::endl;
@@ -33,11 +33,11 @@ std::ostream &operator<<(std::ostream &os, const RI::Tensor<T> &t)
 		case 3:
 		{
 			os<<"["<<std::endl;
-			for(size_t i0=0; i0<t.shape[0]; ++i0)
+			for(std::size_t i0=0; i0<t.shape[0]; ++i0)
 			{
-				for(size_t i1=0; i1<t.shape[1]; ++i1)
+				for(std::size_t i1=0; i1<t.shape[1]; ++i1)
 				{
-					for(size_t i2=0; i2<t.shape[2]; ++i2)
+					for(std::size_t i2=0; i2<t.shape[2]; ++i2)
 						os<<t(i0,i1,i2)<<"\t";
 					os<<std::endl;
 				}

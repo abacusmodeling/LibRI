@@ -14,18 +14,18 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void RPA<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm,
-	const std::map<TA,TatomR> &atomsR,
-	const std::array<TatomR,Ndim> &latvec,
+	const std::map<TA,Tatom_pos> &atoms_pos,
+	const std::array<Tatom_pos,Ndim> &latvec,
 	const std::array<Tcell,Ndim> &period)
 {
-	this->lri.set_parallel(mpi_comm, atomsR, latvec, period);
+	this->lri.set_parallel(mpi_comm, atoms_pos, latvec, period);
 	this->flag_finish.stru = true;
 }
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void RPA<TA,Tcell,Ndim,Tdata>::set_Cs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
 	const Tdata_real &threshold_C)
@@ -36,7 +36,7 @@ void RPA<TA,Tcell,Ndim,Tdata>::set_Cs(
 }
 
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_tau_positive,
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_tau_negative,

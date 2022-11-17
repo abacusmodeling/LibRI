@@ -20,10 +20,10 @@
 namespace LRI_Speed_Test
 {
 	template<typename Tdata>
-	static RI::Tensor<Tdata> init_tensor(const std::vector<size_t> &shape)
+	static RI::Tensor<Tdata> init_tensor(const std::vector<std::size_t> &shape)
 	{
 		RI::Tensor<Tdata> D(shape);
-		for(size_t i=0; i<D.data->size(); ++i)
+		for(std::size_t i=0; i<D.data->size(); ++i)
 			(*D.data)[i] = i;
 		return D;
 	}
@@ -37,20 +37,20 @@ namespace LRI_Speed_Test
 
 
 	template<typename Tdata>
-	void test_speed(int argc, char *argv[], const int NA, const size_t Ni)
+	void test_speed(int argc, char *argv[], const int NA, const std::size_t Ni)
 	{
 
 		int mpi_init_provide;
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 
-		constexpr size_t Ndim = 1;
-		//const size_t Na0=20, Nb0=30, Na1=40, Nb1=50, Na2=60, Nb2=70;
-		const size_t Na0=Ni, Nb0=Ni, Na1=Ni, Nb1=Ni, Na2=Ni, Nb2=Ni;
+		constexpr std::size_t Ndim = 1;
+		//const std::size_t Na0=20, Nb0=30, Na1=40, Nb1=50, Na2=60, Nb2=70;
+		const std::size_t Na0=Ni, Nb0=Ni, Na1=Ni, Nb1=Ni, Na2=Ni, Nb2=Ni;
 
 		using T_Ds = std::map<int, std::map<std::pair<int,std::array<int,Ndim>>, RI::Tensor<Tdata>>>;
 		std::unordered_map<RI::Label::ab, T_Ds> Ds_ab;
 		Ds_ab.reserve(11);
-		auto init_Ds = [&Ds_ab, NA](const RI::Label::ab &label, const std::vector<size_t> &shape)
+		auto init_Ds = [&Ds_ab, NA](const RI::Label::ab &label, const std::vector<std::size_t> &shape)
 		{
 			const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
 			const int rank_size = RI::MPI_Wrapper::mpi_get_size(MPI_COMM_WORLD);

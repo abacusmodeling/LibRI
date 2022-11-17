@@ -16,7 +16,7 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	const std::vector<Label::ab_ab> &labels,
 	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result)
@@ -41,7 +41,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	omp_init_lock(&lock_Ds_result_add);
 
 #ifdef __MKL
-    const size_t mkl_threads = mkl_get_max_threads();
+    const std::size_t mkl_threads = mkl_get_max_threads();
 //	if(!omp_get_nested())
 //		mkl_set_num_threads(std::max(1UL,mkl_threads/list_Aa01.size()));
 //	else
@@ -54,12 +54,12 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->Ds_ab, Ds_result_thread);
 
 		const std::vector<TA> &list_Aa01 = this->parallel->get_list_Aa01();
-		for(size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
+		for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
 		{
 			const TA &Aa01 = list_Aa01[ia01];
 
 			const std::vector<TAC> &list_Aa2 = this->parallel->get_list_Aa2(Aa01);
-			for(size_t ia2=0; ia2<list_Aa2.size(); ++ia2)
+			for(std::size_t ia2=0; ia2<list_Aa2.size(); ++ia2)
 			{
 				const TAC &Aa2 = list_Aa2[ia2];
 				const Tensor<Tdata> D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
@@ -67,7 +67,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 
 				const std::vector<TAC> &list_Ab01 = this->parallel->get_list_Ab01(Aa01, Aa2);
 				#pragma omp for schedule(dynamic) nowait
-				for(size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
+				for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 				{
 					const TAC &Ab01 = list_Ab01[ib01];
 					std::unordered_map<Label::ab_ab, Tensor<Tdata>> Ds_b01;
@@ -76,7 +76,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 					Ds_b01_csm.reserve(Label::array_ab_ab.size());
 
 					const std::vector<TAC> &list_Ab2 = this->parallel->get_list_Ab2(Aa01, Aa2, Ab01);
-					for(size_t ib2=0; ib2<list_Ab2.size(); ++ib2)
+					for(std::size_t ib2=0; ib2<list_Ab2.size(); ++ib2)
 					{
 						const TAC &Ab2 = list_Ab2[ib2];
 						const Tensor<Tdata> D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);

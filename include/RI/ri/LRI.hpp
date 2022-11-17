@@ -12,7 +12,7 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 LRI<TA,Tcell,Ndim,Tdata>::LRI()
 	:save_load(*this)
 {
@@ -25,7 +25,7 @@ LRI<TA,Tcell,Ndim,Tdata>::LRI()
 				const Tdata_real &threshold) -> bool
 			{	return D.norm(std::numeric_limits<double>::max()) > threshold;	};
 
-	for(size_t i=0; i<Ndim; ++i)
+	for(std::size_t i=0; i<Ndim; ++i)
 		period[i] = std::numeric_limits<Tcell>::max()/4;		// /4 for not out of range when Array_Operator::operator%
 
 	this->set_cal_funcs_b01();

@@ -52,7 +52,7 @@ namespace CS_Matrix_Tools
 		auto three_0 = [&D](const std::function<Tlim(Tensor<Tdata>)> &func) -> Tlim
 		{
 			std::valarray<Tlim> uplimits(D.shape[0]);
-			for(size_t i0=0; i0<D.shape[0]; ++i0)
+			for(std::size_t i0=0; i0<D.shape[0]; ++i0)
 			{
 				Tensor<Tdata> D_sub({D.shape[1], D.shape[2]});
 				memcpy(
@@ -67,10 +67,10 @@ namespace CS_Matrix_Tools
 		auto three_1 = [&D](const std::function<Tlim(Tensor<Tdata>)> &func) -> Tlim
 		{
 			std::valarray<Tlim> uplimits(D.shape[1]);
-			for(size_t i1=0; i1<D.shape[1]; ++i1)
+			for(std::size_t i1=0; i1<D.shape[1]; ++i1)
 			{
 				Tensor<Tdata> D_sub({D.shape[0], D.shape[2]});
-				for(size_t i0=0; i0<D.shape[0]; ++i0)
+				for(std::size_t i0=0; i0<D.shape[0]; ++i0)
 					memcpy(
 						D_sub.ptr()+i0*D.shape[2],
 						D.ptr()+(i0*D.shape[1]+i1)*D.shape[2],
@@ -84,21 +84,21 @@ namespace CS_Matrix_Tools
 		{
 			std::vector<Tensor<Tdata>> Ds_sub;
 			Ds_sub.reserve(D.shape[2]);
-			for(size_t i2=0; i2<D.shape[2]; ++i2)
-				Ds_sub.emplace_back(std::vector<size_t>{D.shape[0],D.shape[1]});
+			for(std::size_t i2=0; i2<D.shape[2]; ++i2)
+				Ds_sub.emplace_back(std::vector<std::size_t>{D.shape[0],D.shape[1]});
 
 			const Tdata* D_ptr = D.ptr();
 			std::vector<Tdata*> Ds_sub_ptr(D.shape[2]);
-			for(size_t i2=0; i2<D.shape[2]; ++i2)
+			for(std::size_t i2=0; i2<D.shape[2]; ++i2)
 				Ds_sub_ptr[i2] = Ds_sub[i2].ptr();
 
-			for(size_t i0=0; i0<D.shape[0]; ++i0)
-				for(size_t i1=0; i1<D.shape[1]; ++i1)
-					for(size_t i2=0; i2<D.shape[2]; ++i2)
+			for(std::size_t i0=0; i0<D.shape[0]; ++i0)
+				for(std::size_t i1=0; i1<D.shape[1]; ++i1)
+					for(std::size_t i2=0; i2<D.shape[2]; ++i2)
 						*(Ds_sub_ptr[i2]++) = *(D_ptr++);
 
 			std::valarray<Tlim> uplimits(D.shape[2]);
-			for(size_t i2=0; i2<D.shape[2]; ++i2)
+			for(std::size_t i2=0; i2<D.shape[2]; ++i2)
 				uplimits[i2] = func(Ds_sub[i2]);
 
 			return uplimits.max();

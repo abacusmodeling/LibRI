@@ -33,8 +33,8 @@ namespace LRI_Cal_Aux
 	{
 		assert(D.shape.size()==3);
 		Tensor<Tdata> D_new({D.shape[1], D.shape[0], D.shape[2]});
-		for(size_t i0=0; i0<D.shape[0]; ++i0)
-			for(size_t i1=0; i1<D.shape[1]; ++i1)
+		for(std::size_t i0=0; i0<D.shape[0]; ++i0)
+			for(std::size_t i1=0; i1<D.shape[1]; ++i1)
 			{
 				memcpy(
 					D_new.ptr()+(i1*D.shape[0]+i0)*D.shape[2],

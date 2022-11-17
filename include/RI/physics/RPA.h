@@ -16,18 +16,18 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 class RPA
 {
 public:
 	using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
-	using TatomR = std::array<double,Ndim>;		// tmp
+	using Tatom_pos = std::array<double,Ndim>;		// tmp
 
 	void set_parallel(
 		const MPI_Comm &mpi_comm,
-		const std::map<TA,TatomR> &atomsR,
-		const std::array<TatomR,Ndim> &latvec,
+		const std::map<TA,Tatom_pos> &atoms_pos,
+		const std::array<Tatom_pos,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period);
 
 	void set_Cs(

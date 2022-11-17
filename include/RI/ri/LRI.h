@@ -33,15 +33,15 @@ public:
 	using TC = std::array<Tcell,Ndim>;
 	using TAC = std::pair<TA,TC>;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
-	using TatomR = std::array<double,Ndim>;		// tmp
+	using Tatom_pos = std::array<double,Ndim>;		// tmp
 
 	LRI();
 
-	//template<typename TatomR>
+	//template<typename Tatom_pos>
 	void set_parallel(
 		const MPI_Comm &mpi_comm_in,
-		const std::map<TA,TatomR> &atomsR,
-		const std::array<TatomR,Ndim> &latvec,
+		const std::map<TA,Tatom_pos> &atoms_pos,
+		const std::array<Tatom_pos,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period_in);
 
 	void set_tensors_map2(

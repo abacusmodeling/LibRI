@@ -12,7 +12,7 @@
 namespace RI
 {
 
-template<typename TA, typename Tcell, size_t Ndim, typename Tdata>
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 {
 	#define Macro_cal_func_bx2(D_ab_first_in, D_ab_second_in, D_mul2_in, D_mul3_in, D_mul4_in, unused_a_in, unused_Aa_in, unused_Ab_in)	\
