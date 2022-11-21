@@ -22,8 +22,11 @@ namespace Exx_Test
 		exx.set_Cs({}, 1E-4);
 		exx.set_Vs({}, 1E-4);
 		exx.set_Ds({}, 1E-4);
+		exx.set_dCs({}, 1E-4);
+		exx.set_dVs({}, 1E-4);
 		exx.cal_Hs();
-		exx.cal_Fs();
+		exx.cal_force();
+		exx.cal_stress();
 
 		MPI_Finalize();
 	}

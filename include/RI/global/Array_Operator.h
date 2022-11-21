@@ -50,6 +50,15 @@ namespace Array_Operator
 			v[i] = -v_in[i];
 		return v;
 	}
+
+	template<typename T, std::size_t N>
+	std::array<T,N> operator*(const T &s, const std::array<T,N> &v_in)
+	{
+		std::array<T,N> v;
+		for(std::size_t i=0; i<N; ++i)
+			v[i] = s * v_in[i];
+		return v;
+	}	
 }
 
 }

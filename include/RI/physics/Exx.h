@@ -24,7 +24,8 @@ public:
 	using TC = std::array<Tcell,Ndim>;
 	using TAC = std::pair<TA,TC>;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
-	using Tatom_pos = std::array<double,Ndim>;		// tmp
+	constexpr static std::size_t Npos = Ndim;		// tmp
+	using Tatom_pos = std::array<double,Npos>;		// tmp
 
 	void set_parallel(
 		const MPI_Comm &mpi_comm,
@@ -45,11 +46,11 @@ public:
 		const Tdata_real &threshold_D,
 		const std::string &save_name_suffix="");
 	void set_dCs(
-		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Ndim> &dCs,
+		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos> &dCs,
 		const Tdata_real &threshold_dC,
 		const std::string &save_name_suffix="");
 	void set_dVs(
-		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Ndim> &dVs,
+		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos> &dVs,
 		const Tdata_real &threshold_dV,
 		const std::string &save_name_suffix="");
 	void set_csm_threshold(
@@ -57,12 +58,15 @@ public:
 
 	void cal_Hs(
 		const std::array<std::string,3> &save_names_suffix={"","",""});		// "Cs","Vs","Ds"
-	void cal_Fs(
+	void cal_force(
+		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCs","dVs"
+	void cal_stress(
 		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCs","dVs"
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Hs;
 	Tdata energy = 0;
 	std::array<std::map<TA,Tdata>,Ndim> force;
+	Tensor<Tdata> stress;
 
 	Exx_Post_2D<TA,TC,Tdata> post_2D;
 
@@ -79,6 +83,11 @@ public:
 		bool dV=false;
 	};
 	Flag_Finish flag_finish;
+
+	MPI_Comm mpi_comm;
+	std::map<TA,Tatom_pos> atoms_pos;
+	std::array<Tatom_pos,Ndim> latvec;
+	std::array<Tcell,Ndim> period;	
 };
 
 }
