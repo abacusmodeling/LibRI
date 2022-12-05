@@ -77,7 +77,8 @@ public:		// private:
 	using T_cal_func = std::function<void(
 		const Label::ab_ab &label,
 		const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2,
-		const Tensor<Tdata> &D_a, const Tensor<Tdata> &D_b, const Tensor<Tdata> &D_b_transpose,
+		const Tensor<Tdata> &D_a, const Tensor<Tdata> &D_b,
+		const Tensor<Tdata> &D_a_transpose, const Tensor<Tdata> &D_b_transpose,
 		std::unordered_map<Label::ab_ab, Tensor<Tdata>> &Ds_b01,
 		std::unordered_map<Label::ab_ab, Tdata_real> &Ds_b01_csm,
 		LRI_Cal_Tools<TA,TC,Tdata> &tools)>;

@@ -19,7 +19,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 	[this](	\
 		const Label::ab_ab &label,	\
 		const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2,	\
-		const Tensor<Tdata> &D_a, const Tensor<Tdata> &D_b, const Tensor<Tdata> &D_b_transpose,	\
+		const Tensor<Tdata> &D_a, const Tensor<Tdata> &D_b,	\
+		const Tensor<Tdata> &D_a_transpose, const Tensor<Tdata> &D_b_transpose,	\
 		std::unordered_map<Label::ab_ab, Tensor<Tdata>> &Ds_b01,	\
 		std::unordered_map<Label::ab_ab, Tdata_real> &Ds_b01_csm,	\
 		LRI_Cal_Tools<TA,TC,Tdata> &tools)	\
@@ -107,7 +108,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 		// D_mul2(ia0,ia2,ibx) = D_a(ia0,ia1,ia2) * D_ab(ia1,ibx)
 		Blas_Interface::gemm(
 			'T', 'N', Tdata(1),
-			LRI_Cal_Aux::tensor3_merge(LRI_Cal_Aux::tensor3_transpose(D_a),false),
+			LRI_Cal_Aux::tensor3_merge(D_a_transpose,false),
 			D_ab_first
 			).reshape({D_a.shape[0], D_a.shape[2], D_b.shape[x]}),
 		// D_mul3(ia2,ibx,ib2) = D_mul2(ia0,ia2,ibx) * D_ab(ia0,ib2)
@@ -177,7 +178,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 		LRI_Cal_Aux::tensor3_transpose(Blas_Interface::gemm(
 			'T', 'N', Tdata(1),
 			D_ab_first,
-			LRI_Cal_Aux::tensor3_merge(LRI_Cal_Aux::tensor3_transpose(D_a),false)
+			LRI_Cal_Aux::tensor3_merge(D_a_transpose,false)
 			).reshape({D_b.shape[x], D_a.shape[0], D_a.shape[2]})),
 		// D_mul3(ia0,ibx,ib2) = D_mul2(ia0,ibx,ia2) * D_ab(ia2,ib2)
 		Blas_Interface::gemm(

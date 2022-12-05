@@ -7,6 +7,7 @@
 
 #include "LRI.h"
 #include "LRI_Cal_Aux.h"
+#include "../global/Array_Operator.h"
 
 #include <omp.h>
 #ifdef __MKL
@@ -41,7 +42,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	omp_init_lock(&lock_Ds_result_add);
 
 #ifdef __MKL
-    const std::size_t mkl_threads = mkl_get_max_threads();
+	const std::size_t mkl_threads = mkl_get_max_threads();
 //	if(!omp_get_nested())
 //		mkl_set_num_threads(std::max(1UL,mkl_threads/list_Aa01.size()));
 //	else
@@ -53,17 +54,18 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_result_thread(this->coefficients.size());
 		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->Ds_ab, Ds_result_thread);
 
-		const std::vector<TA> &list_Aa01 = this->parallel->get_list_Aa01();
-		for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
-		{
-			const TA &Aa01 = list_Aa01[ia01];
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_b_transpose
+			= flag_D_b_transpose
+			? LRI_Cal_Aux::cal_Ds_transpose(this->Ds_ab[Label::ab::b])
+			: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
 
-			const std::vector<TAC> &list_Aa2 = this->parallel->get_list_Aa2(Aa01);
-			for(std::size_t ia2=0; ia2<list_Aa2.size(); ++ia2)
+		for(const TA &Aa01 : this->parallel->get_list_Aa01())
+		{
+			for(const TAC &Aa2 : this->parallel->get_list_Aa2(Aa01))
 			{
-				const TAC &Aa2 = list_Aa2[ia2];
 				const Tensor<Tdata> D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 				if(D_a.empty())	continue;
+				const Tensor<Tdata> D_a_transpose = LRI_Cal_Aux::tensor3_transpose(D_a);
 
 				const std::vector<TAC> &list_Ab01 = this->parallel->get_list_Ab01(Aa01, Aa2);
 				#pragma omp for schedule(dynamic) nowait
@@ -75,25 +77,26 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 					Ds_b01.reserve(Label::array_ab_ab.size());
 					Ds_b01_csm.reserve(Label::array_ab_ab.size());
 
-					const std::vector<TAC> &list_Ab2 = this->parallel->get_list_Ab2(Aa01, Aa2, Ab01);
-					for(std::size_t ib2=0; ib2<list_Ab2.size(); ++ib2)
+					for(const TAC &Ab2 : this->parallel->get_list_Ab2(Aa01, Aa2, Ab01))
 					{
-						const TAC &Ab2 = list_Ab2[ib2];
 						const Tensor<Tdata> D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 						if(D_b.empty())	continue;
-						const Tensor<Tdata> D_b_transpose =
-							flag_D_b_transpose ? LRI_Cal_Aux::tensor3_transpose(D_b) : Tensor<Tdata>{};
+						const Tensor<Tdata> D_b_transpose
+							= flag_D_b_transpose
+							  ? Ds_b_transpose.at(Ab01.first).at({Ab2.first, (Ab2.second-Ab01.second)%this->period})
+							  : Tensor<Tdata>{};
 
 						for(const Label::ab_ab &label : labels)
 						{
 							this->cal_funcs[label](
 								label,
 								Aa01, Aa2, Ab01, Ab2,
-								D_a, D_b, D_b_transpose,
+								D_a, D_b,
+								D_a_transpose, D_b_transpose,
 								Ds_b01, Ds_b01_csm,
 								tools);
 						}
-					} // end for ib2
+					} // end for Ab2
 
 					if( !LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread) && omp_test_lock(&lock_Ds_result_add) )
 					{
@@ -102,9 +105,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 						Ds_result_thread.clear();
 						Ds_result_thread.resize(Ds_result.size());
 					}
-				} // end for ib01
-			}// end for ia2
-		}// end for ia01
+				} // end for Ab01
+			}// end for Aa2
+		}// end for Aa01
 
 		if(!LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread))
 		{
@@ -118,7 +121,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 
 	omp_destroy_lock(&lock_Ds_result_add);
 #ifdef __MKL
-    mkl_set_num_threads(mkl_threads);
+	mkl_set_num_threads(mkl_threads);
 #endif
 }
 

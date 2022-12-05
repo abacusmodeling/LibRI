@@ -9,6 +9,7 @@
 #include "Label.h"
 #include "../global/Map_Operator.h"
 
+#include <map>
 #include <memory.h>
 #include <cassert>
 #include <stdexcept>
@@ -100,6 +101,17 @@ namespace LRI_Cal_Aux
 			case Label::ab_ab::a0b2_a2b1:	case Label::ab_ab::a1b2_a2b1:	return Label::ab::a2b1;
 			default:	throw std::invalid_argument("get_abx");
 		}
+	}
+
+	template<typename Tkey0, typename Tkey1, typename Tdata>
+	std::map<Tkey0, std::map<Tkey1, Tensor<Tdata>>>
+	cal_Ds_transpose(const std::map<Tkey0, std::map<Tkey1, Tensor<Tdata>>> &Ds)
+	{
+		std::map<Tkey0, std::map<Tkey1, Tensor<Tdata>>> Ds_transpose;
+		for(const auto &Ds0 : Ds)
+			for(const auto &Ds1 : Ds0.second)
+				Ds_transpose[Ds0.first][Ds1.first] = tensor3_transpose(Ds1.second);
+		return Ds_transpose;
 	}
 }
 
