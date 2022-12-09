@@ -52,9 +52,9 @@ namespace CS_Matrix_Tools
 		auto three_0 = [&D](const std::function<Tlim(Tensor<Tdata>)> &func) -> Tlim
 		{
 			std::valarray<Tlim> uplimits(D.shape[0]);
+			Tensor<Tdata> D_sub({D.shape[1], D.shape[2]});
 			for(std::size_t i0=0; i0<D.shape[0]; ++i0)
 			{
-				Tensor<Tdata> D_sub({D.shape[1], D.shape[2]});
 				memcpy(
 					D_sub.ptr(),
 					D.ptr()+i0*D.shape[1]*D.shape[2],
@@ -67,9 +67,9 @@ namespace CS_Matrix_Tools
 		auto three_1 = [&D](const std::function<Tlim(Tensor<Tdata>)> &func) -> Tlim
 		{
 			std::valarray<Tlim> uplimits(D.shape[1]);
+			Tensor<Tdata> D_sub({D.shape[0], D.shape[2]});
 			for(std::size_t i1=0; i1<D.shape[1]; ++i1)
 			{
-				Tensor<Tdata> D_sub({D.shape[0], D.shape[2]});
 				for(std::size_t i0=0; i0<D.shape[0]; ++i0)
 					memcpy(
 						D_sub.ptr()+i0*D.shape[2],

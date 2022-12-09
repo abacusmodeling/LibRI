@@ -23,8 +23,12 @@ template<typename T>
 Tensor<T>::Tensor (const std::vector<std::size_t> &shape_in)
 {
 	this->shape = shape_in;
-	const std::size_t shape_all = get_shape_all();
-	this->data = std::make_shared<std::valarray<T>>(0,shape_all);
+	if(!this->shape.empty())
+	{
+		const std::size_t shape_all = get_shape_all();
+		if(shape_all)
+			this->data = std::make_shared<std::valarray<T>>(0,shape_all);
+	}
 }
 
 template<typename T>
@@ -34,38 +38,6 @@ Tensor<T>::Tensor (const std::vector<std::size_t> &shape_in, std::shared_ptr<std
 	this->shape = shape_in;
 	this->data = data_in;
 }
-
-/*
-template<typename T>
-Tensor<T>::Tensor (const Tensor<T> &t_in)
-{
-	this->shape = t_in.shape;
-	this->data = t_in.data;
-}
-
-template<typename T>
-Tensor<T>::Tensor (Tensor<T> &&t_in)
-{
-	this->shape = std::move(t_in.shape);
-	this->data = std::move(t_in.data);
-}
-
-template<typename T>
-Tensor<T> &Tensor<T>::operator=(const Tensor<T> &t_in)
-{
-	this->shape = t_in.shape;
-	this->data = t_in.data;
-	return *this;
-}
-
-template<typename T>
-Tensor<T> &Tensor<T>::operator=(Tensor<T> &&t_in)
-{
-	this->shape = std::move(t_in.shape);
-	this->data = std::move(t_in.data);
-	return *this;
-}
-*/
 
 template<typename T>
 std::size_t Tensor<T>::get_shape_all() const

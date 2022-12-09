@@ -22,15 +22,16 @@ class Tensor
 {
 public:
 	std::vector<std::size_t> shape;
-	std::shared_ptr<std::valarray<T>> data;
+	std::shared_ptr<std::valarray<T>> data=nullptr;
 
-	Tensor(){};
-	explicit Tensor (const std::vector<std::size_t> &shape_in);
-	explicit Tensor (const std::vector<std::size_t> &shape_in, std::shared_ptr<std::valarray<T>> data_in);
-	//Tensor (const Tensor<T> &t_in);
-	//Tensor (Tensor<T> &&t_in);
-	//Tensor<T> &operator=(const Tensor<T> &t_in);
-	//Tensor<T> &operator=(Tensor<T> &&t_in);
+	explicit inline Tensor (const std::vector<std::size_t> &shape_in);
+	explicit inline Tensor (const std::vector<std::size_t> &shape_in, std::shared_ptr<std::valarray<T>> data_in);
+
+	Tensor()=default;
+	Tensor(const Tensor<T> &t_in)=default;
+	Tensor(Tensor<T> &&t_in)=default;
+	Tensor<T> &operator=(const Tensor<T> &t_in)=default;
+	Tensor<T> &operator=(Tensor<T> &&t_in)=default;
 
 	inline std::size_t get_shape_all() const;
 	inline Tensor reshape (const std::vector<std::size_t> &shape_in) const;

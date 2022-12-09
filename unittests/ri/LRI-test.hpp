@@ -91,7 +91,7 @@ namespace LRI_Test
 		lri.parallel = std::make_shared<Parallel_LRI_test<int,int,Ndim,Tdata>>();
 		lri.set_parallel(MPI_COMM_WORLD, {}, {}, {1});
 
-		lri.csm.set_threshold(0);
+		lri.csm.set_threshold(1E-10);
 
 		for(const RI::Label::ab &label : RI::Label::array_ab)
 			lri.set_tensors_map2(Ds_ab[label], label, 0);

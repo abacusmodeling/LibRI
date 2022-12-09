@@ -23,7 +23,7 @@ namespace Global_Func
 	// Peize Lin add 2022.05.26
 	template<typename Tkey, typename Tdata,
 		typename std::enable_if<std::is_arithmetic<Tdata>::value,bool>::type=0>
-	Tdata find(
+	inline Tdata find(
 		const std::map<Tkey, Tdata> &m,
 		const Tkey &key)
 	{
@@ -34,7 +34,7 @@ namespace Global_Func
 			return ptr->second;
 	}
 	template<typename Tkey, typename Tdata>
-	Tensor<Tdata> find(
+	inline Tensor<Tdata> find(
 		const std::map<Tkey, Tensor<Tdata>> &m,
 		const Tkey &key)
 	{
@@ -45,7 +45,7 @@ namespace Global_Func
 			return ptr->second;
 	}
 	template<typename Tkey, typename Tdata, std::size_t Ndim>
-	std::array<Tdata,Ndim> find(
+	inline std::array<Tdata,Ndim> find(
 		const std::map<Tkey, std::array<Tdata,Ndim>> &m,
 		const Tkey &key)
 	{
@@ -56,7 +56,7 @@ namespace Global_Func
 			return ptr->second;
 	}
 	template<typename Tkey, typename Tvalue, typename... Tkeys>
-	auto find(
+	inline auto find(
 		const std::map<Tkey, Tvalue> &m,
 		const Tkey &key,
 		const Tkeys&... keys)
@@ -72,7 +72,7 @@ namespace Global_Func
 	// in_set(3, {2,3,5,7})
 	// Peize Lin add 2022.05.26
 	template<typename T>
-	bool in_set(const T &item, const std::set<T> &s)
+	inline bool in_set(const T &item, const std::set<T> &s)
 	{
 		return s.find(item) != s.end();
 	}
@@ -98,12 +98,12 @@ namespace Global_Func
 	}
 
 	template<typename T>
-	std::set<T> to_set(const std::vector<T> &v)
+	inline std::set<T> to_set(const std::vector<T> &v)
 	{
 		return std::set<T>(v.begin(), v.end());
 	}
 	template<typename T, std::size_t N>
-	std::vector<T> to_vector(const std::array<T,N> &v)
+	inline std::vector<T> to_vector(const std::array<T,N> &v)
 	{
 		return std::vector<T>(v.begin(), v.end());
 	}

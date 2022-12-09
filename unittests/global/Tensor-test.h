@@ -12,6 +12,11 @@ std::ostream &operator<<(std::ostream &os, const RI::Tensor<T> &t)
 {
 	switch(t.shape.size())
 	{
+		case 0:
+		{
+			os<<std::endl;
+			return os;
+		}
 		case 1:
 		{
 			for(std::size_t i0=0; i0<t.shape[0]; ++i0)
