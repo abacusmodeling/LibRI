@@ -14,7 +14,9 @@
 #include "RI/global/Tensor.h"
 #include "../global/Tensor-test-3.hpp"
 
+#ifdef __MKL_RI
 #include <mkl_blas.h>
+#endif
 
 namespace Blas_Test
 {
@@ -49,14 +51,16 @@ namespace Blas_Test
 		// 32
 	}
 
-	void dot_2()
-	{
-		const MKL_INT N=3, INC=1;
-		std::vector<double> a = {1,2,3};
-		std::vector<double> b = {4,5,6};
-		std::cout<<DDOT(&N, a.data(), &INC, b.data(), &INC)<<std::endl;
-		// 32
-	}
+//#ifdef __MKL_RI
+//	void dot_2()
+//	{
+//		const MKL_INT N=3, INC=1;
+//		std::vector<double> a = {1,2,3};
+//		std::vector<double> b = {4,5,6};
+//		std::cout<<DDOT(&N, a.data(), &INC, b.data(), &INC)<<std::endl;
+//		// 32
+//	}
+//#endif
 
 	template<typename Tdata>
 	void dot_complex()
@@ -144,6 +148,22 @@ namespace Blas_Test
 		// 0   0   148
 	}
 
+#ifdef __MKL_RI
+	template<typename Tdata>
+	void matcopy()
+	{
+		RI::Tensor<Tdata> t1 = Tensor_Test::init_matrix<Tdata>(2,3);
+		RI::Blas_Interface::imatcopy('N',Tdata{1},t1);		std::cout<<t1<<std::endl;
+		RI::Blas_Interface::imatcopy('T',Tdata{1},t1);		std::cout<<t1<<std::endl;
+		RI::Blas_Interface::imatcopy('C',Tdata{1},t1);		std::cout<<t1<<std::endl;
+		RI::Blas_Interface::imatcopy('R',Tdata{1},t1);		std::cout<<t1<<std::endl;
+		std::cout<<RI::Blas_Interface::omatcopy('N',Tdata{1},t1)<<std::endl;
+		std::cout<<RI::Blas_Interface::omatcopy('T',Tdata{1},t1)<<std::endl;
+		std::cout<<RI::Blas_Interface::omatcopy('C',Tdata{1},t1)<<std::endl;
+		std::cout<<RI::Blas_Interface::omatcopy('R',Tdata{1},t1)<<std::endl;
+	}
+#endif
+
 	void test_all()
 	{
 		nrm2<float>();
@@ -156,7 +176,7 @@ namespace Blas_Test
 		axpy<std::complex<double>>();
 		dot_1<float>();
 		dot_1<double>();
-		dot_2();
+//		dot_2();
 		dot_complex<std::complex<float>>();
 		dot_complex<std::complex<double>>();
 		gemv<float>();
@@ -166,5 +186,11 @@ namespace Blas_Test
 		gemv_complex<std::complex<float>>();
 		gemv_complex<std::complex<double>>();
 		syrk();
+#ifdef __MKL_RI
+		matcopy<float>();
+		matcopy<double>();
+		matcopy<std::complex<float>>();
+		matcopy<std::complex<double>>();
+#endif
 	}
 }

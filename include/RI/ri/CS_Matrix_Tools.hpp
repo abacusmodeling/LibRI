@@ -7,6 +7,7 @@
 
 #include "CS_Matrix_Tools.h"
 #include "../global/Blas_Interface-Tensor.h"
+#include "../global/Tensor_Wrapper.h"
 #include <stdexcept>
 #include <memory.h>
 
@@ -104,6 +105,36 @@ namespace CS_Matrix_Tools
 			return uplimits.max();
 		};
 
+		auto three_2_norm = [&D]() -> Tlim
+		{
+#ifdef __MKL_RI
+			const Tensor<Tdata> Ds_sub = Blas_Interface::omatcopy(
+				'T', Tdata{1.0},
+				D.reshape({D.shape[0]*D.shape[1],D.shape[2]}));
+#else
+			Tensor<Tdata> Ds_sub({D.shape[2], D.shape[0]*D.shape[1]});
+
+			std::vector<Tdata*> Ds_sub_ptr(D.shape[2]);
+			for(std::size_t i2=0; i2<D.shape[2]; ++i2)
+				Ds_sub_ptr[i2] = Ds_sub.ptr()+i2*Ds_sub.shape[1]-1;
+
+			const Tdata* D_ptr = D.ptr()-1;
+			const std::size_t size2 = D.shape[2];
+			for(std::size_t i01=0; i01<Ds_sub.shape[1]; ++i01)
+				for(std::size_t i2=0; i2<size2; ++i2)
+					*(++Ds_sub_ptr[i2]) = *(++D_ptr);
+#endif
+
+			Tensor_Wrapper<Tdata> D_sub({D.shape[0],D.shape[1]}, nullptr);
+			std::valarray<Global_Func::To_Real_t<Tdata>> uplimits(D.shape[2]);
+			for(std::size_t i2=0; i2<D.shape[2]; ++i2)
+			{
+				D_sub.ptr_ = Ds_sub.ptr()+i2*Ds_sub.shape[1];
+				uplimits[i2] = D_sub.norm(2);
+			}
+			return uplimits.max();
+		};	
+
 		auto norm = [](const Tensor<Tdata> &D) -> Tlim
 		{
 			return D.norm(2);
@@ -123,7 +154,8 @@ namespace CS_Matrix_Tools
 			case Uplimit_Type::norm_three_1:
 				return three_1(norm);
 			case Uplimit_Type::norm_three_2:
-				return three_2(norm);
+//				return three_2(norm);
+				return three_2_norm();
 			case Uplimit_Type::square_two:
 				return square(D);
 			case Uplimit_Type::square_three_0:

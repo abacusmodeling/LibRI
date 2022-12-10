@@ -16,8 +16,8 @@ namespace RI
 namespace Blas_Interface
 {
 	// nrm2 = ||x||_2
-	template<typename T>
-	inline Global_Func::To_Real_t<T> nrm2(const Tensor<T> &X)
+	template<typename T, template<typename> class Tvec>
+	inline Global_Func::To_Real_t<T> nrm2(const Tvec<T> &X)
 	{
 		return nrm2(X.get_shape_all(), X.ptr());
 	}
@@ -186,6 +186,41 @@ namespace Blas_Interface
 		return C;
 	}
 }
+
+
+#ifdef __MKL_RI
+
+namespace Blas_Interface
+{
+	template<typename T>
+	inline void imatcopy (const char trans, const T alpha, Tensor<T> &AB)
+	{
+		assert(AB.shape.size()==2);
+		imatcopy ('R', trans, AB.shape[0], AB.shape[1], alpha, AB.ptr());
+		switch(std::toupper(trans))
+		{
+			case 'N':	case 'R':	break;
+			case 'T':	case 'C':	AB=AB.reshape({AB.shape[1], AB.shape[0]});	break;
+			default:	throw std::invalid_argument("trans cannot be "+std::to_string(trans)+". "+std::string(__FILE__)+" line "+std::to_string(__LINE__));
+		}
+	}
+	template<typename T>
+	inline Tensor<T> omatcopy (char trans, const T alpha, const Tensor<T> &A)
+	{
+		assert(A.shape.size()==2);
+		Tensor<T> B;
+		switch(std::toupper(trans))
+		{
+			case 'N':	case 'R':	B = Tensor<T>({A.shape[0], A.shape[1]});	break;
+			case 'T':	case 'C':	B = Tensor<T>({A.shape[1], A.shape[0]});	break;
+			default:	throw std::invalid_argument("trans cannot be "+std::to_string(trans)+". "+std::string(__FILE__)+" line "+std::to_string(__LINE__));
+		}
+		omatcopy ('R', trans, A.shape[0], A.shape[1], alpha, A.ptr(), B.ptr());
+		return B;
+	}
+}
+
+#endif
 
 }
 

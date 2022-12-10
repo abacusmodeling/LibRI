@@ -100,4 +100,58 @@ namespace Blas_Interface
 	}
 }
 
+
+
+#ifdef __MKL_RI
+
+namespace Blas_Interface
+{
+	inline size_t get_lda_matcopy(const char ordering, size_t rows, size_t cols)
+	{
+		switch(std::toupper(ordering))
+		{
+			case 'R':	return cols;
+			case 'C':	return rows;
+			default:	throw std::invalid_argument("ordering cannot be "+std::to_string(ordering)+". "+std::string(__FILE__)+" line "+std::to_string(__LINE__));
+		}
+	}
+	inline size_t get_ldb_matcopy(const char ordering, const char trans, size_t rows, size_t cols)
+	{
+		switch(std::toupper(ordering))
+		{
+			case 'R':
+				switch(std::toupper(trans))
+				{
+					case 'N':	case 'R':	return cols;
+					case 'T':	case 'C':	return rows;
+					default:	throw std::invalid_argument("trans cannot be "+std::to_string(trans)+". "+std::string(__FILE__)+" line "+std::to_string(__LINE__));
+				}
+			case 'C':
+				switch(std::toupper(trans))
+				{
+					case 'N':	case 'R':	return rows;
+					case 'T':	case 'C':	return cols;
+					default:	throw std::invalid_argument("trans cannot be "+std::to_string(trans)+". "+std::string(__FILE__)+" line "+std::to_string(__LINE__));
+				}
+			default:	throw std::invalid_argument("ordering cannot be "+std::to_string(ordering)+". "+std::string(__FILE__)+" line "+std::to_string(__LINE__));
+		}		
+	}
+	template<typename T>
+	inline void imatcopy (const char ordering, const char trans, size_t rows, size_t cols, const T alpha, T * AB)
+	{
+		const size_t lda = get_lda_matcopy(ordering, rows, cols);
+		const size_t ldb = get_ldb_matcopy(ordering, trans, rows, cols);
+		imatcopy (ordering, trans, rows, cols, alpha, AB, lda, ldb);
+	}
+	template<typename T>
+	inline void omatcopy (char ordering, char trans, size_t rows, size_t cols, const T alpha, const T * A, T * B)
+	{
+		const size_t lda = get_lda_matcopy(ordering, rows, cols);
+		const size_t ldb = get_ldb_matcopy(ordering, trans, rows, cols);
+		omatcopy (ordering, trans, rows, cols, alpha, A, lda, B, ldb);
+	}
+}
+
+#endif
+
 }

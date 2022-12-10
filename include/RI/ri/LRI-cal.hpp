@@ -10,7 +10,7 @@
 #include "../global/Array_Operator.h"
 
 #include <omp.h>
-#ifdef __MKL
+#ifdef __MKL_RI
 #include <mkl_service.h>
 #endif
 
@@ -41,7 +41,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	omp_lock_t lock_Ds_result_add;
 	omp_init_lock(&lock_Ds_result_add);
 
-#ifdef __MKL
+#ifdef __MKL_RI
 	const std::size_t mkl_threads = mkl_get_max_threads();
 //	if(!omp_get_nested())
 //		mkl_set_num_threads(std::max(1UL,mkl_threads/list_Aa01.size()));
@@ -120,7 +120,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	} // end #pragma omp parallel
 
 	omp_destroy_lock(&lock_Ds_result_add);
-#ifdef __MKL
+#ifdef __MKL_RI
 	mkl_set_num_threads(mkl_threads);
 #endif
 }
