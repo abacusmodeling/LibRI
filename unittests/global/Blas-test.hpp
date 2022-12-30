@@ -116,6 +116,21 @@ namespace Blas_Test
 		// (5,10)	(38,66)
 	}
 
+	template<typename Tdata>
+	void gemm_real()
+	{
+		const RI::Tensor<Tdata> m23 = Tensor_Test::init_matrix<Tdata>(2,3);
+		std::cout<<m23<<std::endl;
+		std::cout<<RI::Blas_Interface::gemm('T','N',Tdata(1.0),m23,m23)<<std::endl;
+		std::cout<<RI::Blas_Interface::gemm('N','T',Tdata(1.0),m23,m23)<<std::endl;
+		// 100     110     120
+		// 110     122     134
+		// 120     134     148
+
+		// 5       35
+		// 35      365
+	}
+
 	void syrk()
 	{
 		const RI::Tensor<double> m = Tensor_Test::init_matrix<double>(2,3);
@@ -185,6 +200,10 @@ namespace Blas_Test
 		gemv<std::complex<double>>();
 		gemv_complex<std::complex<float>>();
 		gemv_complex<std::complex<double>>();
+		gemm_real<float>();
+		gemm_real<double>();
+		gemm_real<std::complex<float>>();
+		gemm_real<std::complex<double>>();
 		syrk();
 #ifdef __MKL_RI
 		matcopy<float>();

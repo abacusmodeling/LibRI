@@ -204,4 +204,70 @@ namespace Global_Func
 	}
 }
 
+
+template<typename T, std::size_t N0>
+Tensor<T> to_Tensor(const std::array<T,N0> &a)
+{
+	Tensor<T> t({N0});
+	for(std::size_t i0=0; i0<N0; ++i0)
+		t(i0) = a[i0];
+	return t;
+}
+template<typename T, std::size_t N0, std::size_t N1>
+Tensor<T> to_Tensor(const std::array<std::array<T,N1>,N0> &a)
+{
+	Tensor<T> t({N0,N1});
+	for(std::size_t i0=0; i0<N0; ++i0)
+		for(std::size_t i1=0; i1<N1; ++i1)
+			t(i0,i1) = a[i0][i1];
+	return t;
+}
+template<typename T, std::size_t N0, std::size_t N1, std::size_t N2>
+Tensor<T> to_Tensor(const std::array<std::array<std::array<T,N2>,N1>,N0> &a)
+{
+	Tensor<T> t({N0,N1,N2});
+	for(std::size_t i0=0; i0<N0; ++i0)
+		for(std::size_t i1=0; i1<N1; ++i1)
+			for(std::size_t i2=0; i2<N2; ++i2)
+				t(i0,i1,i2) = a[i0][i1][i2];
+	return t;
+}
+
+template<typename T, std::size_t N0>
+std::array<T,N0> to_array(const Tensor<T> &t)
+{
+	assert(t.shape.size()==1);
+	assert(t.shape[0]==N0);
+	std::array<T,N0> a;
+	for(std::size_t i0=0; i0<N0; ++i0)
+		a[i0] = t(i0);
+	return a;
+}
+template<typename T, std::size_t N0, std::size_t N1>
+std::array<std::array<T,N1>,N0> to_array(const Tensor<T> &t)
+{
+	assert(t.shape.size()==2);
+	assert(t.shape[0]==N0);
+	assert(t.shape[1]==N1);
+	std::array<std::array<T,N1>,N0> a;
+	for(std::size_t i0=0; i0<N0; ++i0)
+		for(std::size_t i1=0; i1<N1; ++i1)
+			a[i0][i1] = t(i0,i1);
+	return a;
+}
+template<typename T, std::size_t N0, std::size_t N1, std::size_t N2>
+std::array<std::array<std::array<T,N2>,N1>,N0> to_array(const Tensor<T> &t)
+{
+	assert(t.shape.size()==3);
+	assert(t.shape[0]==N0);
+	assert(t.shape[1]==N1);
+	assert(t.shape[2]==N2);
+	std::array<std::array<T,N1>,N0> a;
+	for(std::size_t i0=0; i0<N0; ++i0)
+		for(std::size_t i1=0; i1<N1; ++i1)
+			for(std::size_t i2=0; i2<N2; ++i2)
+				a[i0][i1][i2] = t(i0,i1,i2);
+	return a;
+}
+
 }

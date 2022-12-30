@@ -10,7 +10,6 @@
 #include <string>
 #include <stdexcept>
 
-
 #ifdef __MKL_RI
 #include <mkl_trans.h>
 #endif

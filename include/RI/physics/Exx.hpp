@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Exx.h"
+#include "Exx_Stress_Cell_Nearest.h"
 #include "../ri/Label.h"
 
 #include <cassert>
@@ -265,14 +266,18 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 	assert(this->flag_finish.dC);
 	assert(this->flag_finish.dV);
 
+	Exx_Stress_Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos> cell_nearest;
+	cell_nearest.init(this->atoms_pos, this->latvec, this->period);
+
 	using namespace Array_Operator;
-	auto get_delta_pos = [this](
+	auto get_delta_pos = [this, &cell_nearest](
 		const TA &Ax, const TA &Ay, const std::array<Tcell,Ndim> &celly, const std::size_t &ipos1)
-		-> typename Tatom_pos::value_type
+		-> Tpos
 	{
-		typename Tatom_pos::value_type delta_pos = this->atoms_pos[Ay][ipos1] - this->atoms_pos[Ax][ipos1];
+		Tpos delta_pos = this->atoms_pos[Ay][ipos1] - this->atoms_pos[Ax][ipos1];
+		const std::array<Tcell,Ndim> celly_nearest = cell_nearest.get_cell_nearest_discrete(Ax, Ay, celly);
 		for(std::size_t idim=0; idim<Ndim; ++idim)
-			delta_pos += celly[idim] * this->latvec[idim][ipos1];
+			delta_pos += celly_nearest[idim] * this->latvec[idim][ipos1];
 		return delta_pos;
 	};
 

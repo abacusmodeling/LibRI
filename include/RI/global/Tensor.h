@@ -60,16 +60,16 @@ public:
 
 
 template<typename T>
-Tensor<T> operator+ (const Tensor<T> &t1, const Tensor<T> &t2);
+extern Tensor<T> operator+ (const Tensor<T> &t1, const Tensor<T> &t2);
 template<typename T>
-Tensor<T> operator- (const Tensor<T> &t1, const Tensor<T> &t2);
+extern Tensor<T> operator- (const Tensor<T> &t1, const Tensor<T> &t2);
 
 template<typename T>
-Tensor<T> operator* (const Tensor<T> &t1, const Tensor<T> &t2);
+extern Tensor<T> operator* (const Tensor<T> &t1, const Tensor<T> &t2);
 template<typename T>
-Tensor<T> operator* (const T &t1, const Tensor<T> &t2);
+extern Tensor<T> operator* (const T &t1, const Tensor<T> &t2);
 template<typename T>
-Tensor<T> operator* (const Tensor<T> &t1, const T &t2);
+extern Tensor<T> operator* (const Tensor<T> &t1, const T &t2);
 
 
 namespace Global_Func
@@ -77,6 +77,21 @@ namespace Global_Func
 	template< typename Tout, typename Tin >
 	Tensor<Tout> convert(const Tensor<Tin> &t);
 }
+
+
+template<typename T, std::size_t N0>
+extern Tensor<T> to_Tensor(const std::array<T,N0> &a);
+template<typename T, std::size_t N0, std::size_t N1>
+extern Tensor<T> to_Tensor(const std::array<std::array<T,N1>,N0> &a);
+template<typename T, std::size_t N0, std::size_t N1, std::size_t N2>
+extern Tensor<T> to_Tensor(const std::array<std::array<std::array<T,N2>,N1>,N0> &a);
+
+template<typename T, std::size_t N0>
+extern std::array<T,N0> to_array(const Tensor<T> &t);
+template<typename T, std::size_t N0, std::size_t N1>
+extern std::array<std::array<T,N1>,N0> to_array(const Tensor<T> &t);
+template<typename T, std::size_t N0, std::size_t N1, std::size_t N2>
+extern std::array<std::array<std::array<T,N2>,N1>,N0> to_array(const Tensor<T> &t);
 
 }
 

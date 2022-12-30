@@ -24,8 +24,9 @@ public:
 	using TC = std::array<Tcell,Ndim>;
 	using TAC = std::pair<TA,TC>;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
+	using Tpos = double;							// tmp
 	constexpr static std::size_t Npos = Ndim;		// tmp
-	using Tatom_pos = std::array<double,Npos>;		// tmp
+	using Tatom_pos = std::array<Tpos,Npos>;		// tmp
 
 	void set_parallel(
 		const MPI_Comm &mpi_comm,
