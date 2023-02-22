@@ -31,6 +31,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 				return true;
 		return false;
 	}();
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_b_transpose
+		= flag_D_b_transpose
+		? LRI_Cal_Aux::cal_Ds_transpose(this->Ds_ab[Label::ab::b])
+		: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
 
 	assert(!this->coefficients.empty());
 	if(Ds_result.empty())
@@ -53,11 +57,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	{
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_result_thread(this->coefficients.size());
 		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->Ds_ab, Ds_result_thread);
-
-		const std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_b_transpose
-			= flag_D_b_transpose
-			? LRI_Cal_Aux::cal_Ds_transpose(this->Ds_ab[Label::ab::b])
-			: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
 
 		for(const TA &Aa01 : this->parallel->get_list_Aa01())
 		{
