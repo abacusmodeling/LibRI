@@ -87,6 +87,16 @@ T& Tensor<T>::operator() (const std::size_t i0, const std::size_t i1, const std:
 	assert(i2>=0);	assert(i2<this->shape[2]);
 	return (*this->data)[(i0*this->shape[1]+i1)*this->shape[2]+i2];
 }
+template<typename T>
+T& Tensor<T>::operator() (const std::size_t i0, const std::size_t i1, const std::size_t i2, const std::size_t i3) const
+{
+	assert(this->shape.size()==3);
+	assert(i0>=0);	assert(i0<this->shape[0]);
+	assert(i1>=0);	assert(i1<this->shape[1]);
+	assert(i2>=0);	assert(i2<this->shape[2]);
+	assert(i3>=0);	assert(i3<this->shape[3]);
+	return (*this->data)[((i0*this->shape[1]+i1)*this->shape[2]+i2)*this->shape[3]+i3];
+}
 
 template<typename T1, typename T2>
 bool same_shape (const Tensor<T1> &t1, const Tensor<T2> &t2)
@@ -232,6 +242,17 @@ Tensor<T> to_Tensor(const std::array<std::array<std::array<T,N2>,N1>,N0> &a)
 				t(i0,i1,i2) = a[i0][i1][i2];
 	return t;
 }
+template<typename T, std::size_t N0, std::size_t N1, std::size_t N2, std::size_t N3>
+Tensor<T> to_Tensor(const std::array<std::array<std::array<std::array<T,N3>,N2>,N1>,N0> &a)
+{
+	Tensor<T> t({N0,N1,N2,N3});
+	for(std::size_t i0=0; i0<N0; ++i0)
+		for(std::size_t i1=0; i1<N1; ++i1)
+			for(std::size_t i2=0; i2<N2; ++i2)
+				for(std::size_t i3=0; i3<N3; ++i3)
+					t(i0,i1,i2,i3) = a[i0][i1][i2][i3];
+	return t;
+}
 
 template<typename T, std::size_t N0>
 std::array<T,N0> to_array(const Tensor<T> &t)
@@ -267,6 +288,22 @@ std::array<std::array<std::array<T,N2>,N1>,N0> to_array(const Tensor<T> &t)
 		for(std::size_t i1=0; i1<N1; ++i1)
 			for(std::size_t i2=0; i2<N2; ++i2)
 				a[i0][i1][i2] = t(i0,i1,i2);
+	return a;
+}
+template<typename T, std::size_t N0, std::size_t N1, std::size_t N2, std::size_t N3>
+std::array<std::array<std::array<std::array<T,N3>,N2>,N1>,N0> to_array(const Tensor<T> &t)
+{
+	assert(t.shape.size()==4);
+	assert(t.shape[0]==N0);
+	assert(t.shape[1]==N1);
+	assert(t.shape[2]==N2);
+	assert(t.shape[3]==N3);
+	std::array<std::array<T,N1>,N0> a;
+	for(std::size_t i0=0; i0<N0; ++i0)
+		for(std::size_t i1=0; i1<N1; ++i1)
+			for(std::size_t i2=0; i2<N2; ++i2)
+				for(std::size_t i3=0; i3<N3; ++i3)
+					a[i0][i1][i2][i3] = t(i0,i1,i2,i3);
 	return a;
 }
 

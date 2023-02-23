@@ -41,6 +41,7 @@ public:
 	inline T& operator() (const std::size_t i0) const;
 	inline T& operator() (const std::size_t i0, const std::size_t i1) const;
 	inline T& operator() (const std::size_t i0, const std::size_t i1, const std::size_t i2) const;
+	inline T& operator() (const std::size_t i0, const std::size_t i1, const std::size_t i2, const std::size_t i3) const;
 
 	Tensor transpose() const;
 
@@ -85,6 +86,8 @@ template<typename T, std::size_t N0, std::size_t N1>
 extern Tensor<T> to_Tensor(const std::array<std::array<T,N1>,N0> &a);
 template<typename T, std::size_t N0, std::size_t N1, std::size_t N2>
 extern Tensor<T> to_Tensor(const std::array<std::array<std::array<T,N2>,N1>,N0> &a);
+template<typename T, std::size_t N0, std::size_t N1, std::size_t N2, std::size_t N3>
+extern Tensor<T> to_Tensor(const std::array<std::array<std::array<std::array<T,N3>,N2>,N1>,N0> &a);
 
 template<typename T, std::size_t N0>
 extern std::array<T,N0> to_array(const Tensor<T> &t);
@@ -92,6 +95,8 @@ template<typename T, std::size_t N0, std::size_t N1>
 extern std::array<std::array<T,N1>,N0> to_array(const Tensor<T> &t);
 template<typename T, std::size_t N0, std::size_t N1, std::size_t N2>
 extern std::array<std::array<std::array<T,N2>,N1>,N0> to_array(const Tensor<T> &t);
+template<typename T, std::size_t N0, std::size_t N1, std::size_t N2, std::size_t N3>
+extern std::array<std::array<std::array<std::array<T,N3>,N2>,N1>,N0> to_array(const Tensor<T> &t);
 
 }
 
