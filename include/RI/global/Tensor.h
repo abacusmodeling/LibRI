@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "Shared_Vector.h"
 #include "Global_Func-2.h"
 #include <memory>
 #include <vector>
@@ -16,16 +17,16 @@
 
 namespace RI
 {
-
+	
 template<typename T>
 class Tensor
 {
 public:
-	std::vector<std::size_t> shape;
+	Shape_Vector shape;
 	std::shared_ptr<std::valarray<T>> data=nullptr;
 
-	explicit inline Tensor (const std::vector<std::size_t> &shape_in);
-	explicit inline Tensor (const std::vector<std::size_t> &shape_in, std::shared_ptr<std::valarray<T>> data_in);
+	explicit inline Tensor (const Shape_Vector &shape_in);
+	explicit inline Tensor (const Shape_Vector &shape_in, std::shared_ptr<std::valarray<T>> data_in);
 
 	Tensor()=default;
 	Tensor(const Tensor<T> &t_in)=default;
@@ -34,7 +35,7 @@ public:
 	Tensor<T> &operator=(Tensor<T> &&t_in)=default;
 
 	inline std::size_t get_shape_all() const;
-	inline Tensor reshape (const std::vector<std::size_t> &shape_in) const;
+	inline Tensor reshape (const Shape_Vector &shape_in) const;
 
 	Tensor copy() const;
 
@@ -56,7 +57,7 @@ public:
 	//Tensor & operator += (const Tensor &);
 	Tensor operator-() const;
 
-	template <class Archive> void serialize( Archive & ar ){ ar(shape); ar(data); }		// for cereal
+	template <class Archive> void serialize( Archive & ar ){ ar(shape, data); }		// for cereal
 };
 
 
@@ -97,7 +98,6 @@ template<typename T, std::size_t N0, std::size_t N1, std::size_t N2>
 extern std::array<std::array<std::array<T,N2>,N1>,N0> to_array(const Tensor<T> &t);
 template<typename T, std::size_t N0, std::size_t N1, std::size_t N2, std::size_t N3>
 extern std::array<std::array<std::array<std::array<T,N3>,N2>,N1>,N0> to_array(const Tensor<T> &t);
-
 }
 
 #include "Blas_Interface-Tensor.h"

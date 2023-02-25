@@ -20,7 +20,7 @@
 namespace LRI_Speed_Test
 {
 	template<typename Tdata>
-	static RI::Tensor<Tdata> init_tensor(const std::vector<std::size_t> &shape)
+	static RI::Tensor<Tdata> init_tensor(const RI::Shape_Vector &shape)
 	{
 		RI::Tensor<Tdata> D(shape);
 		for(std::size_t i=0; i<D.data->size(); ++i)
@@ -50,7 +50,7 @@ namespace LRI_Speed_Test
 		using T_Ds = std::map<int, std::map<std::pair<int,std::array<int,Ndim>>, RI::Tensor<Tdata>>>;
 		std::unordered_map<RI::Label::ab, T_Ds> Ds_ab;
 		Ds_ab.reserve(11);
-		auto init_Ds = [&Ds_ab, NA](const RI::Label::ab &label, const std::vector<std::size_t> &shape)
+		auto init_Ds = [&Ds_ab, NA](const RI::Label::ab &label, const RI::Shape_Vector &shape)
 		{
 			const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
 			const int rank_size = RI::MPI_Wrapper::mpi_get_size(MPI_COMM_WORLD);

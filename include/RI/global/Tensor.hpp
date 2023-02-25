@@ -20,7 +20,7 @@ namespace RI
 {
 
 template<typename T>
-Tensor<T>::Tensor (const std::vector<std::size_t> &shape_in)
+Tensor<T>::Tensor (const Shape_Vector &shape_in)
 {
 	this->shape = shape_in;
 	if(!this->shape.empty())
@@ -32,7 +32,7 @@ Tensor<T>::Tensor (const std::vector<std::size_t> &shape_in)
 }
 
 template<typename T>
-Tensor<T>::Tensor (const std::vector<std::size_t> &shape_in, std::shared_ptr<std::valarray<T>> data_in)
+Tensor<T>::Tensor (const Shape_Vector &shape_in, std::shared_ptr<std::valarray<T>> data_in)
 {
 	assert( std::accumulate(shape_in.begin(), shape_in.end(), static_cast<std::size_t>(1), std::multiplies<std::size_t>() ) == data_in->size() );
 	this->shape = shape_in;
@@ -46,7 +46,7 @@ std::size_t Tensor<T>::get_shape_all() const
 }
 
 template<typename T>
-Tensor<T> Tensor<T>::reshape (const std::vector<std::size_t> &shape_in) const
+Tensor<T> Tensor<T>::reshape (const Shape_Vector &shape_in) const
 {
 	assert(
 		std::accumulate(shape_in.begin(), shape_in.end(), static_cast<std::size_t>(1), std::multiplies<std::size_t>())
