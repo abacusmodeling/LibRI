@@ -99,7 +99,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 
 					if( !LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread) && omp_test_lock(&lock_Ds_result_add) )
 					{
-						LRI_Cal_Aux::add_Ds(Ds_result_thread, Ds_result);
+						LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result);
 						omp_unset_lock(&lock_Ds_result_add);
 						Ds_result_thread.clear();
 						Ds_result_thread.resize(Ds_result.size());
@@ -111,7 +111,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 		if(!LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread))
 		{
 			omp_set_lock(&lock_Ds_result_add);
-			LRI_Cal_Aux::add_Ds(Ds_result_thread, Ds_result);
+			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result);
 			omp_unset_lock(&lock_Ds_result_add);
 			Ds_result_thread.clear();
 			Ds_result_thread.resize(Ds_result.size());

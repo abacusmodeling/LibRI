@@ -54,6 +54,7 @@ namespace LRI_Cal_Aux
 			D_result = D_result + D_add;
 	}
 
+	/*
 	template<typename T>
 	inline void add_Ds(const std::vector<T> &Ds_add, std::vector<T> &Ds_result)
 	{
@@ -61,6 +62,27 @@ namespace LRI_Cal_Aux
 		using namespace Map_Operator;						// tmp
 		for(std::size_t i=0; i<Ds_result.size(); ++i)
 			Ds_result[i] = Ds_result[i] + Ds_add[i];		// tmp
+	}
+	*/
+
+	template<typename TA, typename TAC, typename Tdata>
+	void add_Ds(
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_add,
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result)
+	{
+		assert(Ds_add.size()==Ds_result.size());
+		for(std::size_t i=0; i<Ds_result.size(); ++i)
+			for(auto &&Ds_add_A : Ds_add[i])
+				for(auto &&Ds_add_B : Ds_add_A.second)
+				{
+					Tensor<Tdata> &D_result = Ds_result[i][Ds_add_A.first][Ds_add_B.first];
+					if(D_result.empty())
+						D_result = std::move(Ds_add_B.second);
+					else
+						D_result = D_result + Ds_add_B.second;
+				}
+		Ds_add.clear();
+		Ds_add.resize(Ds_result.size());
 	}
 
 	template<typename T>
