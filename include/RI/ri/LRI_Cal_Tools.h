@@ -55,6 +55,64 @@ public:
 		return this->Ds_result[icoef][Aa.first][TAC{Ab.first, (Ab.second-Aa.second)%period}];
 	}
 
+	inline static std::vector<Label::ab> split_b01(const Label::ab_ab &label)
+	{
+		switch(label)
+		{
+			case Label::ab_ab::a0b0_a2b2:	case Label::ab_ab::a0b0_a1b2:	return {Label::ab::a0b0};
+			case Label::ab_ab::a0b1_a1b2:	case Label::ab_ab::a0b1_a2b2:	return {Label::ab::a0b1};
+			case Label::ab_ab::a1b0_a2b2:	case Label::ab_ab::a0b2_a1b0:	return {Label::ab::a1b0};
+			case Label::ab_ab::a1b1_a2b2:	case Label::ab_ab::a0b2_a1b1:	return {Label::ab::a1b1};
+			case Label::ab_ab::a0b2_a2b0:	case Label::ab_ab::a1b2_a2b0:	return {Label::ab::a2b0};
+			case Label::ab_ab::a0b2_a2b1:	case Label::ab_ab::a1b2_a2b1:	return {Label::ab::a2b1};
+			case Label::ab_ab::a1b0_a2b1:									return {Label::ab::a1b0, Label::ab::a2b1};
+			case Label::ab_ab::a1b1_a2b0:									return {Label::ab::a1b1, Label::ab::a2b0};
+			case Label::ab_ab::a0b0_a2b1:									return {Label::ab::a0b0, Label::ab::a2b1};
+			case Label::ab_ab::a0b1_a2b0:									return {Label::ab::a0b1, Label::ab::a2b0};
+			case Label::ab_ab::a0b0_a1b1:									return {Label::ab::a0b0, Label::ab::a1b1};
+			case Label::ab_ab::a0b1_a1b0:									return {Label::ab::a0b1, Label::ab::a1b0};
+			default:	throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
+		}
+	}
+
+	std::vector<Label::ab_ab> filter_Ds_Ab01(
+		const std::vector<Label::ab_ab> &labels,
+		const TA &Aa01, const TAC &Aa2, const TAC &Ab01) const
+	{
+		const auto judge_label = [this, &Aa01, &Aa2, &Ab01](const Label::ab_ab &label_ab_ab) -> bool
+		{
+			const std::vector<Label::ab> &labels_ab = split_b01(label_ab_ab);
+			for(const Label::ab &label_ab : labels_ab)
+			{
+				const int a = Label::get_a(label_ab);
+				switch(a)
+				{
+					case 0:	case 1:
+						if(!this->get_Ds_ab(label_ab, Aa01, Ab01).empty())
+							return true;
+						else
+							continue;
+					case 2:
+						if(!this->get_Ds_ab(label_ab, Aa2, Ab01).empty())
+							return true;
+						else
+							continue;
+					default:
+						throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
+				}
+			}
+			return false;
+		};
+
+		std::vector<Label::ab_ab> labels_filter;
+		for(const Label::ab_ab &label : labels)
+		{
+			if(judge_label(label))
+				labels_filter.push_back(label);
+		}
+		return labels_filter;
+	}	
+
 public:		// private:
 	const TC &period;
 	const std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_ab;

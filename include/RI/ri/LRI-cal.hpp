@@ -71,6 +71,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 				for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 				{
 					const TAC &Ab01 = list_Ab01[ib01];
+					const std::vector<Label::ab_ab> labels_filter_Ab01 = tools.filter_Ds_Ab01(labels, Aa01, Aa2, Ab01);
+					if(labels_filter_Ab01.empty())	continue;
+
 					std::unordered_map<Label::ab_ab, Tensor<Tdata>> Ds_b01;
 					std::unordered_map<Label::ab_ab, Tdata_real> Ds_b01_csm;
 					Ds_b01.reserve(Label::array_ab_ab.size());
@@ -85,7 +88,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 							  ? Ds_b_transpose.at(Ab01.first).at({Ab2.first, (Ab2.second-Ab01.second)%this->period})
 							  : Tensor<Tdata>{};
 
-						for(const Label::ab_ab &label : labels)
+						for(const Label::ab_ab &label : labels_filter_Ab01)
 						{
 							this->cal_funcs[label](
 								label,
