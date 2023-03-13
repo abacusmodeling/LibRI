@@ -24,6 +24,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 {
 	using namespace Array_Operator;
 
+	dynamic_cast<Parallel_LRI_Equally_Filter<TA,Tcell,Ndim,Tdata>*>(this->parallel.get())->filter_Ab2(this->Ds_ab[Label::ab::b]);
+
 	const bool flag_D_b_transpose = [&labels]() -> bool
 	{
 		for(const Label::ab_ab &label : labels)
