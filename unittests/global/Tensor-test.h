@@ -7,7 +7,7 @@
 
 #include "RI/global/Tensor.h"
 
-std::ostream &operator<<(std::ostream &os, const RI::Shape_Vector &v)
+static std::ostream &operator<<(std::ostream &os, const RI::Shape_Vector &v)
 {
 	for(std::size_t i=0; i<v.size(); ++i)
 		os<<v[i]<<"\t";

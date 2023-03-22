@@ -15,6 +15,7 @@ void Parallel_LRI_Equally_Filter<TA,Tcell,Ndim,Tdata>::filter_Ab2 (
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_b)
 {
 	using namespace Array_Operator;
+	this->list_Ab2_filter.clear();
 	for(const TAC &Ab01 : this->list_Ab01)
 	{
 		for(const TAC &Ab2 : this->list_Ab2)
