@@ -101,8 +101,8 @@ namespace Blas_Interface
 		const int incY2 = 2 * incY;
 		auto x = reinterpret_cast<const float*>(X);
 		auto y = reinterpret_cast<const float*>(Y);
-		//Re(resut)=Re(x)*Re(y)-Im(x)*Im(y)
-		//Im(resut)=Re(x)*Im(y)+Im(x)*Re(y)
+		//Re(result)=Re(x)*Re(y)-Im(x)*Im(y)
+		//Im(result)=Re(x)*Im(y)+Im(x)*Re(y)
 		return std::complex<float>(sdot_(&n, x, &incX2, y, &incY2) - sdot_(&n, x + 1, &incX2, y + 1, &incY2),
 			sdot_(&n, x, &incX2, y + 1, &incY2) + sdot_(&n, x + 1, &incX2, y, &incY2));
 	}
@@ -113,8 +113,8 @@ namespace Blas_Interface
 		const int incY2 = 2 * incY;
 		auto x = reinterpret_cast<const double*>(X);
 		auto y = reinterpret_cast<const double*>(Y);
-		//Re(resut)=Re(x)*Re(y)-Im(x)*Im(y)
-		//Im(resut)=Re(x)*Im(y)+Im(x)*Re(y)
+		//Re(result)=Re(x)*Re(y)-Im(x)*Im(y)
+		//Im(result)=Re(x)*Im(y)+Im(x)*Re(y)
 		return std::complex<double>(ddot_(&n, x, &incX2, y, &incY2) - ddot_(&n, x + 1, &incX2, y + 1, &incY2),
 			ddot_(&n, x, &incX2, y + 1, &incY2) + ddot_(&n, x + 1, &incX2, y, &incY2));
 	}
