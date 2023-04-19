@@ -72,6 +72,14 @@ namespace Blas_Test
 		/* -18+68i */
 		std::cout<<RI::Blas_Interface::dotc(a.size(), a.data(), 1, b.data(), 1)<<std::endl;
 		/* 70-8i */
+
+		// test for different incX and incY
+		const std::vector<Tdata> a3 = { {1,2}, {1,4}, {4,2}, {3,4}, {2,8}, {1,8}};
+		const std::vector<Tdata> b2 = { {5,6}, {5,7}, {7,8}, {7,5}};
+		std::cout << RI::Blas_Interface::dotu(a.size(), a3.data(), 3, b2.data(), 2) << std::endl;
+		/* -18+68i */
+		std::cout << RI::Blas_Interface::dotc(a.size(), a3.data(), 3, b2.data(), 2) << std::endl;
+		/* 70-8i */
 	}
 
 	template<typename Tdata>

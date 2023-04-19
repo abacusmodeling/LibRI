@@ -31,12 +31,12 @@ extern "C"
 	// d = Vx * Vy
 	//	reason for passing results as argument instead of returning it:
 	//	https://www.numbercrunch.de/blog/2014/07/lost-in-translation/
-	void cdotu_(std::complex<float>*const result, const int*const n, const std::complex<float>*const X, const int*const incX, const std::complex<float>*const Y, const int*const incY);
-	void zdotu_(std::complex<double>*const result, const int*const n, const std::complex<double>*const X, const int*const incX, const std::complex<double>*const Y, const int*const incY);
+	// void cdotu_(std::complex<float>*const result, const int*const n, const std::complex<float>*const X, const int*const incX, const std::complex<float>*const Y, const int*const incY);
+	// void zdotu_(std::complex<double>*const result, const int*const n, const std::complex<double>*const X, const int*const incX, const std::complex<double>*const Y, const int*const incY);
 
 	// d = Vx * Vy
-	void cdotc_(std::complex<float>*const result, const int*const n, const std::complex<float>*const X, const int*const incX, const std::complex<float>*const Y, const int*const incY);
-	void zdotc_(std::complex<double>*const result, const int*const n, const std::complex<double>*const X, const int*const incX, const std::complex<double>*const Y, const int*const incY);
+	// void cdotc_(std::complex<float>*const result, const int*const n, const std::complex<float>*const X, const int*const incX, const std::complex<float>*const Y, const int*const incY);
+	// void zdotc_(std::complex<double>*const result, const int*const n, const std::complex<double>*const X, const int*const incX, const std::complex<double>*const Y, const int*const incY);
 
 	// Vy = alpha * Ma.? * Vx + beta * Vy
 	void sgemv_(const char*const transA, const int*const m, const int*const n,
