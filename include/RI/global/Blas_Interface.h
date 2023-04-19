@@ -96,15 +96,27 @@ namespace Blas_Interface
 	}
 	inline std::complex<float> dotu(const int n, const std::complex<float>*const X, const int incX, const std::complex<float>*const Y, const int incY)
 	{
-		std::complex<float> result;
-		cdotu_(&result, &n, X, &incX, Y, &incY);
-		return result;
+		//cdotu_(&result, &n, X, &incX, Y, &incY);
+		const int incX2 = 2 * incX;
+		const int incY2 = 2 * incY;
+		auto x = reinterpret_cast<const float*>(X);
+		auto y = reinterpret_cast<const float*>(Y);
+		//Re(resut)=Re(x)*Re(y)-Im(x)*Im(y)
+		//Im(resut)=Re(x)*Im(y)+Im(x)*Re(y)
+		return std::complex<float>(sdot_(&n, x, &incX2, y, &incY2) - sdot_(&n, x + 1, &incX2, y + 1, &incY2),
+			sdot_(&n, x, &incX2, y + 1, &incY2) + sdot_(&n, x + 1, &incX2, y, &incY2));
 	}
 	inline std::complex<double> dotu(const int n, const std::complex<double>*const X, const int incX, const std::complex<double>*const Y, const int incY)
 	{
-		std::complex<double> result;
-		zdotu_(&result, &n, X, &incX, Y, &incY);
-		return result;
+		//zdotu_(&result, &n, X, &incX, Y, &incY);
+		const int incX2 = 2 * incX;
+		const int incY2 = 2 * incY;
+		auto x = reinterpret_cast<const double*>(X);
+		auto y = reinterpret_cast<const double*>(Y);
+		//Re(resut)=Re(x)*Re(y)-Im(x)*Im(y)
+		//Im(resut)=Re(x)*Im(y)+Im(x)*Re(y)
+		return std::complex<double>(ddot_(&n, x, &incX2, y, &incY2) - ddot_(&n, x + 1, &incX2, y + 1, &incY2),
+			ddot_(&n, x, &incX2, y + 1, &incY2) + ddot_(&n, x + 1, &incX2, y, &incY2));
 	}
 
 	// d = Vx.conj() * Vy
@@ -118,15 +130,27 @@ namespace Blas_Interface
 	}
 	inline std::complex<float> dotc(const int n, const std::complex<float>*const X, const int incX, const std::complex<float>*const Y, const int incY)
 	{
-		std::complex<float> result;
-		cdotc_(&result, &n, X, &incX, Y, &incY);
-		return result;
+		//cdotc_(&result, &n, X, &incX, Y, &incY);
+		const int incX2 = 2 * incX;
+		const int incY2 = 2 * incY;
+		auto x = reinterpret_cast<const float*>(X);
+		auto y = reinterpret_cast<const float*>(Y);
+		// Re(result)=Re(X)*Re(Y)+Im(X)*Im(Y)
+		// Im(result)=Re(X)*Im(Y)-Im(X)*Re(Y)
+		return  std::complex<float>(sdot_(&n, x, &incX2, y, &incY2) + sdot_(&n, x + 1, &incX2, y + 1, &incY2),
+			sdot_(&n, x, &incX2, y + 1, &incY2) - sdot_(&n, x + 1, &incX2, y, &incY2));
 	}
 	inline std::complex<double> dotc(const int n, const std::complex<double>*const X, const int incX, const std::complex<double>*const Y, const int incY)
 	{
-		std::complex<double> result;
-		zdotc_(&result, &n, X, &incX, Y, &incY);
-		return result;
+		//zdotc_(&result, &n, X, &incX, Y, &incY);
+		const int incX2 = 2 * incX;
+		const int incY2 = 2 * incY;
+		auto x = reinterpret_cast<const double*>(X);
+		auto y = reinterpret_cast<const double*>(Y);
+		// Re(result)=Re(X)*Re(Y)+Im(X)*Im(Y)
+		// Im(result)=Re(X)*Im(Y)-Im(X)*Re(Y)
+		return  std::complex<double>(ddot_(&n, x, &incX2, y, &incY2) + ddot_(&n, x + 1, &incX2, y + 1, &incY2),
+			ddot_(&n, x, &incX2, y+1, &incY2) - ddot_(&n, x + 1, &incX2, y, &incY2));
 	}
 
 	// Vy = alpha * Ma.? * Vx + beta * Vy
