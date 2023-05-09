@@ -90,8 +90,8 @@ namespace Tensor_Algorithm
 		}
 
 		Tensor<T> em({m.shape[0], m.shape[1]});
-		int ie=0;
-		for( int i=0; i!=m.shape[0]; ++i )
+		std::size_t ie=0;
+		for( std::size_t i=0; i<m.shape[0]; ++i )
 			if( std::abs(eigen_values[i]) >= threshold )
 			{
 				Blas_Interface::axpy(m.shape[1], T(1.0)/eigen_values[i], m.ptr()+i*m.shape[1], em.ptr()+ie*em.shape[1]);

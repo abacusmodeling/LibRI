@@ -53,8 +53,8 @@ Tensor<T> operator* (const Tensor<T> &t1, const Tensor<T> &t2)
 					assert(t1.shape[0] == t2.shape[0]);
 					return Blas_Interface::gemv('T', T(1), t2, t1);
 				}
-				default:;
-					throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
+				default:
+					throw std::invalid_argument("Tensor multiply:\t"+std::to_string(t1.shape.size())+" * "+std::to_string(t2.shape.size())+".\n"+std::string(__FILE__)+" line "+std::to_string(__LINE__));
 			}
 		}
 		case 2:
@@ -72,11 +72,11 @@ Tensor<T> operator* (const Tensor<T> &t1, const Tensor<T> &t2)
 					return Blas_Interface::gemm('N', 'N', T(1), t1, t2);
 				}
 				default:
-					throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
+					throw std::invalid_argument("Tensor multiply:\t"+std::to_string(t1.shape.size())+" * "+std::to_string(t2.shape.size())+".\n"+std::string(__FILE__)+" line "+std::to_string(__LINE__));
 			}
 		}
 		default:
-			throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
+			throw std::invalid_argument("Tensor multiply:\t"+std::to_string(t1.shape.size())+" * "+std::to_string(t2.shape.size())+".\n"+std::string(__FILE__)+" line "+std::to_string(__LINE__));
 	}
 }
 

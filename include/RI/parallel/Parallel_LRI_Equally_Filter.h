@@ -20,7 +20,7 @@ public:
 
 	const std::vector<TAC>& get_list_Ab2 (const TA &Aa01, const TAC &Aa2, const TAC &Ab01) const override
 	{
-		return this->list_Ab2_filter.at(Ab01);
+		return Global_Func::find(this->list_Ab2_filter,Ab01);
 	}
 
 	void filter_Ab2 (const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_b);

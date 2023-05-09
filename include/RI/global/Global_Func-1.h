@@ -7,6 +7,7 @@
 
 #include "Tensor.h"
 
+#include <vector>
 #include <map>
 #include <set>
 #include <array>
@@ -17,54 +18,67 @@ namespace RI
 
 namespace Global_Func
 {
+	template<typename T> const T ZERO{};
+
 	// tensor = find(m,i,j,k);
 	//   <=>
 	// tensor = m.at(i).at(j).at(k);
 	// Peize Lin add 2022.05.26
 	template<typename Tkey, typename Tdata,
 		typename std::enable_if<std::is_arithmetic<Tdata>::value,bool>::type=0>
-	inline Tdata find(
+	inline const Tdata &find(
 		const std::map<Tkey, Tdata> &m,
 		const Tkey &key)
 	{
-		const auto ptr = m.find(key);
+		const auto &ptr = m.find(key);
 		if(ptr==m.end())
-			return 0;
+			return ZERO<Tdata>;
 		else
 			return ptr->second;
 	}
 	template<typename Tkey, typename Tdata>
-	inline Tensor<Tdata> find(
+	inline const Tensor<Tdata> &find(
 		const std::map<Tkey, Tensor<Tdata>> &m,
 		const Tkey &key)
 	{
-		const auto ptr = m.find(key);
+		const auto &ptr = m.find(key);
 		if(ptr==m.end())
-			return Tensor<Tdata>{};
+			return ZERO<Tensor<Tdata>>;
 		else
 			return ptr->second;
 	}
 	template<typename Tkey, typename Tdata, std::size_t Ndim>
-	inline std::array<Tdata,Ndim> find(
+	inline const std::array<Tdata,Ndim> &find(
 		const std::map<Tkey, std::array<Tdata,Ndim>> &m,
 		const Tkey &key)
 	{
-		const auto ptr = m.find(key);
+		const auto &ptr = m.find(key);
 		if(ptr==m.end())
-			return std::array<Tdata,Ndim>{};
+			return ZERO<std::array<Tdata,Ndim>>;
 		else
 			return ptr->second;
 	}
-	template<typename Tkey, typename Tvalue, typename... Tkeys>
-	inline auto find(
-		const std::map<Tkey, Tvalue> &m,
-		const Tkey &key,
+	template<typename Tkey, typename Tdata>
+	inline const std::vector<Tdata> &find(
+		const std::map<Tkey, std::vector<Tdata>> &m,
+		const Tkey &key)
+	{
+		const auto &ptr = m.find(key);
+		if(ptr==m.end())
+			return ZERO<std::vector<Tdata>>;
+		else
+			return ptr->second;
+	}
+	template<typename Tkey0, typename Tkey1, typename Tvalue, typename... Tkeys>
+	inline const auto &find(
+		const std::map<Tkey0, std::map<Tkey1,Tvalue>> &m,
+		const Tkey0 &key0,
 		const Tkeys&... keys)
 //	-> decltype(find( m.find(key)->second, keys... ))			// why error for C++ compiler high version
 	{
-		const auto ptr = m.find(key);
+		const auto &ptr = m.find(key0);
 		if(ptr==m.end())
-			return decltype(find( ptr->second, keys... )){};
+			return ZERO<typename std::remove_reference<decltype(find( ptr->second, keys... ))>::type>;
 		else
 			return find( ptr->second, keys... );
 	}
