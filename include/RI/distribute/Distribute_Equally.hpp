@@ -28,14 +28,14 @@ namespace Distribute_Equally
 		using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
 
 		const std::vector<std::size_t> task_sizes(num_index, atoms.size());
-		const std::vector<std::tuple<MPI_Comm,std::size_t,std::size_t>>
+		const std::vector<std::tuple<MPI_Wrapper::mpi_comm, std::size_t, std::size_t>>
 			comm_color_sizes = Split_Processes::split_all(mpi_comm, task_sizes);
 
 		std::pair<std::vector<TA>, std::vector<std::vector<TAC>>> atoms_split_list;
 		atoms_split_list.second.resize(num_index-1);
 
 		if(!flag_task_repeatable)
-			if(RI::MPI_Wrapper::mpi_get_rank(std::get<0>(comm_color_sizes.back())))
+			if(RI::MPI_Wrapper::mpi_get_rank(std::get<0>(comm_color_sizes.back())()))
 				return atoms_split_list;
 
 		atoms_split_list.first = Divide_Atoms::divide_atoms(
@@ -69,14 +69,14 @@ namespace Distribute_Equally
 		const std::size_t task_size_period = atoms.size() * std::accumulate( period.begin(), period.end(), 1, std::multiplies<Tcell>() );
 		std::vector<std::size_t> task_sizes(num_index, task_size_period);
 		task_sizes[0] = atoms.size();
-		const std::vector<std::tuple<MPI_Comm,std::size_t,std::size_t>>
+		const std::vector<std::tuple<MPI_Wrapper::mpi_comm, std::size_t, std::size_t>>
 			comm_color_sizes = Split_Processes::split_all(mpi_comm, task_sizes);
 
 		std::pair<std::vector<TA>, std::vector<std::vector<TAC>>> atoms_split_list;
 		atoms_split_list.second.resize(num_index-1);
 
 		if(!flag_task_repeatable)
-			if(RI::MPI_Wrapper::mpi_get_rank(std::get<0>(comm_color_sizes.back())))
+			if(RI::MPI_Wrapper::mpi_get_rank(std::get<0>(comm_color_sizes.back())()))
 				return atoms_split_list;
 
 		atoms_split_list.first = Divide_Atoms::divide_atoms(

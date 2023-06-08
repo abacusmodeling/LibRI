@@ -15,13 +15,13 @@ namespace Split_Processes_Test
 	{
 		MPI_Init(&argc, &argv);
 
-		const std::vector<std::tuple<MPI_Comm,std::size_t,std::size_t>>
+		const std::vector<std::tuple<RI::MPI_Wrapper::mpi_comm, std::size_t, std::size_t>>
 			comm_color_sizes = RI::Split_Processes::split_all(MPI_COMM_WORLD, task_sizes);
 
 		std::ofstream ofs("out."+std::to_string(RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD)));
 		for(const auto &comm_color_size : comm_color_sizes)
-			ofs<<RI::MPI_Wrapper::mpi_get_rank(std::get<0>(comm_color_size))<<"\t"
-			   <<RI::MPI_Wrapper::mpi_get_size(std::get<0>(comm_color_size))<<"\t|\t"
+			ofs<<RI::MPI_Wrapper::mpi_get_rank(std::get<0>(comm_color_size)())<<"\t"
+			   <<RI::MPI_Wrapper::mpi_get_size(std::get<0>(comm_color_size)())<<"\t|\t"
 			   <<std::get<1>(comm_color_size)<<"\t"
 			   <<std::get<2>(comm_color_size)<<std::endl;
 
