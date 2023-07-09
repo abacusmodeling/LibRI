@@ -12,7 +12,7 @@ namespace RI
 {
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tpos, std::size_t Npos>
-class Exx_Stress_Cell_Nearest
+class Cell_Nearest
 {
 public:
 	using Tatom_pos = std::array<Tpos,Npos>;		// tmp
@@ -32,4 +32,4 @@ public:		//private:
 
 }
 
-#include "Exx_Stress_Cell_Nearest.hpp"
+#include "Cell_Nearest.hpp"

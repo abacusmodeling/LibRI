@@ -15,6 +15,7 @@
 #include "unittests/global/Map_Operator-test.hpp"
 #include "unittests/ri/LRI-test.hpp"
 #include "unittests/ri/LRI-speed-test.hpp"
+#include "unittests/ri/Cell_Nearest-test.hpp"
 #include "unittests/physics/Exx-test.hpp"
 #include "unittests/physics/RPA-test.hpp"
 
@@ -61,6 +62,8 @@ namespace Test_All
 		LRI_Speed_Test::test_speed<double>(argc, argv, 1, 1);
 		LRI_Speed_Test::test_speed<std::complex<float>>(argc, argv, 1, 1);
 		LRI_Speed_Test::test_speed<std::complex<double>>(argc, argv, 1, 1);
+
+		Cell_Nearest_Test::main();
 
 		Exx_Test::main<float>(argc, argv);
 		Exx_Test::main<double>(argc, argv);

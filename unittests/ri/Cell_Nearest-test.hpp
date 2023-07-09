@@ -7,10 +7,10 @@
 
 #include "../print_stl.h"
 
-#include "RI/physics/Exx_Stress_Cell_Nearest.h"
+#include "RI/ri/Cell_Nearest.h"
 #include "../global/Tensor-test.h"
 
-namespace Exx_Stress_Cell_Nearest_Test
+namespace Cell_Nearest_Test
 {
 	void main()
 	{
@@ -27,7 +27,7 @@ namespace Exx_Stress_Cell_Nearest_Test
 
 		auto test = [&atoms_pos, &latvec, &period]()
 		{
-			RI::Exx_Stress_Cell_Nearest<TA, Tcell, Ndim, Tpos, Npos> stress;
+			RI::Cell_Nearest<TA, Tcell, Ndim, Tpos, Npos> stress;
 			stress.init(atoms_pos, latvec, period);
 			std::cout<<stress.cells_nearest_continuous<<std::endl;
 

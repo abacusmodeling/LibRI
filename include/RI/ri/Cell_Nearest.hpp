@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Exx_Stress_Cell_Nearest.h"
+#include "Cell_Nearest.h"
 
 #include "../global/Tensor.h"
 #include "../global/Array_Operator.h"
@@ -17,7 +17,7 @@ namespace RI
 {
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tpos, std::size_t Npos>
-void Exx_Stress_Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos>::init(
+void Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos>::init(
 	const std::map<TA,Tatom_pos> &atoms_pos,
 	const std::array<Tatom_pos,Ndim> &latvec_in,
 	const std::array<Tcell,Ndim> &period_in)	
@@ -45,7 +45,7 @@ void Exx_Stress_Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos>::init(
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tpos, std::size_t Npos>
-auto Exx_Stress_Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos>::get_cell_nearest_discrete(
+auto Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos>::get_cell_nearest_discrete(
 	const TA &Ax, const TA &Ay, const TC &cell) const
 -> TC
 {

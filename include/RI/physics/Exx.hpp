@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Exx.h"
-#include "Exx_Stress_Cell_Nearest.h"
+#include "../ri/Cell_Nearest.h"
 #include "../ri/Label.h"
 
 #include <cassert>
@@ -266,7 +266,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 	assert(this->flag_finish.dC);
 	assert(this->flag_finish.dV);
 
-	Exx_Stress_Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos> cell_nearest;
+	Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos> cell_nearest;
 	cell_nearest.init(this->atoms_pos, this->latvec, this->period);
 
 	using namespace Array_Operator;
