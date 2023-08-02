@@ -9,7 +9,7 @@
 #include "../ri/Label.h"
 #include "../global/Tensor.h"
 #include "CS_Matrix.h"
-#include "../parallel/Parallel_LRI_Equally_Filter.h"
+#include "../parallel/Parallel_LRI_Equally.h"
 #include "RI_Tools.h"
 #include "../global/Global_Func-2.h"
 #include "Save_Load.h"
@@ -59,7 +59,7 @@ public:
 
 public:
 	std::shared_ptr<Parallel_LRI<TA,Tcell,Ndim,Tdata>>
-		parallel = std::make_shared<Parallel_LRI_Equally_Filter<TA,Tcell,Ndim,Tdata>>();
+		parallel = std::make_shared<Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>>();
 	std::unordered_map< Label::ab, RI_Tools::T_filter_func<Tdata> >
 		filter_funcs;
 	std::vector<std::function<Tdata (const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2)>>

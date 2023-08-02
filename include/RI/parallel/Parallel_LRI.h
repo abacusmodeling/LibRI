@@ -40,9 +40,9 @@ public:
 		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const =0;
 
 	virtual const std::vector<TA >& get_list_Aa01() const =0;
-	virtual const std::vector<TAC>& get_list_Aa2 (const TA &Aa01) const =0;
-	virtual const std::vector<TAC>& get_list_Ab01(const TA &Aa01, const TAC &Aa2) const =0;
-	virtual const std::vector<TAC>& get_list_Ab2 (const TA &Aa01, const TAC &Aa2, const TAC &Ab01) const =0;
+	virtual const std::vector<TAC>& get_list_Aa2 () const =0;
+	virtual const std::vector<TAC>& get_list_Ab01() const =0;
+	virtual const std::vector<TAC>& get_list_Ab2 () const =0;
 };
 
 }

@@ -28,10 +28,10 @@ public:
 		const Label::ab &label,
 		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const override;
 
-	const std::vector<TA >& get_list_Aa01()                                                const override { return this->list_Aa01; }
-	const std::vector<TAC>& get_list_Aa2 (const TA &Aa01)                                  const override { return this->list_Aa2;  }
-	const std::vector<TAC>& get_list_Ab01(const TA &Aa01, const TAC &Aa2)                  const override { return this->list_Ab01; }
-	const std::vector<TAC>& get_list_Ab2 (const TA &Aa01, const TAC &Aa2, const TAC &Ab01) const override { return this->list_Ab2;  }
+	const std::vector<TA >& get_list_Aa01() const override { return this->list_Aa01; }
+	const std::vector<TAC>& get_list_Aa2 () const override { return this->list_Aa2;  }
+	const std::vector<TAC>& get_list_Ab01() const override { return this->list_Ab01; }
+	const std::vector<TAC>& get_list_Ab2 () const override { return this->list_Ab2;  }
 
 // private:
 public:
