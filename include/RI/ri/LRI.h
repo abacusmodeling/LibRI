@@ -56,6 +56,9 @@ public:
 	void cal(
 		const std::vector<Label::ab_ab> &lables,
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result);
+	void cal_loop3(
+		const std::vector<Label::ab_ab> &labels,
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result);
 
 public:
 	std::shared_ptr<Parallel_LRI<TA,Tcell,Ndim,Tdata>>
@@ -94,3 +97,4 @@ public:		// private:
 #include "LRI-cal.hpp"
 #include "LRI-cal-b01.hpp"
 #include "LRI-cal-bx2.hpp"
+#include "LRI-cal_loop3.hpp"

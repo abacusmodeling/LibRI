@@ -151,7 +151,6 @@ Tensor<T> operator* (const Tensor<T> &t1, const T &t2)
 	return t;
 }
 
-/*
 template<typename T>
 Tensor<T> &Tensor<T>::operator+= (const Tensor &t)
 {
@@ -159,7 +158,6 @@ Tensor<T> &Tensor<T>::operator+= (const Tensor &t)
 	*this->data += *t.data;
 	return *this;
 }
-*/
 
 template<typename T>
 Tensor<T> Tensor<T>::transpose() const

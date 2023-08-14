@@ -118,7 +118,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 
 	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Hs_vec(1);
 	this->lri.coefficients = {nullptr};
-	this->lri.cal(
+	this->lri.cal_loop3(
 		{Label::ab_ab::a0b0_a1b1,
 		 Label::ab_ab::a0b0_a1b2,
 		 Label::ab_ab::a0b0_a2b1,

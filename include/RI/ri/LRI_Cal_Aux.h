@@ -65,24 +65,47 @@ namespace LRI_Cal_Aux
 	}
 	*/
 
-	template<typename TA, typename TAC, typename Tdata>
-	void add_Ds(
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_add,
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result)
+	template<typename Tdata>
+	inline void add_Ds(Tensor<Tdata> &&D_add, Tensor<Tdata> &D_result)
 	{
-		assert(Ds_add.size()==Ds_result.size());
-		for(std::size_t i=0; i<Ds_result.size(); ++i)
-			for(auto &&Ds_add_A : Ds_add[i])
-				for(auto &&Ds_add_B : Ds_add_A.second)
-				{
-					Tensor<Tdata> &D_result = Ds_result[i][Ds_add_A.first][Ds_add_B.first];
-					if(D_result.empty())
-						D_result = std::move(Ds_add_B.second);
-					else
-						D_result = D_result + Ds_add_B.second;
-				}
-		Ds_add.clear();
-		Ds_add.resize(Ds_result.size());
+		if(D_result.empty())
+			D_result = std::move(D_add);
+		else
+			D_result += D_add;
+	}
+
+	template<typename Tkey, typename Tvalue>
+	void add_Ds(
+		std::map<Tkey, Tvalue> &&Ds_add,
+		std::map<Tkey, Tvalue> &Ds_result)
+	{
+		if(Ds_result.empty())
+			Ds_result = std::move(Ds_add);
+		else
+		{
+			for(auto &&Ds_add_A : Ds_add)
+				add_Ds(std::move(Ds_add_A.second), Ds_result[Ds_add_A.first]);
+			Ds_add.clear();
+		}
+	}
+	template<typename Tvalue>
+	void add_Ds(
+		std::vector<Tvalue> &&Ds_add,
+		std::vector<Tvalue> &Ds_result)
+	{
+		if(Ds_result.empty())
+		{
+			Ds_result = std::move(Ds_add);
+			Ds_add.resize(Ds_result.size());
+		}
+		else
+		{
+			assert(Ds_add.size()==Ds_result.size());
+			for(std::size_t i=0; i<Ds_result.size(); ++i)
+				add_Ds(std::move(Ds_add[i]), Ds_result[i]);
+			Ds_add.clear();
+			Ds_add.resize(Ds_result.size());
+		}
 	}
 
 	template<typename T>
@@ -134,6 +157,73 @@ namespace LRI_Cal_Aux
 			for(const auto &Ds1 : Ds0.second)
 				Ds_transpose[Ds0.first][Ds1.first] = tensor3_transpose(Ds1.second);
 		return Ds_transpose;
+	}
+
+	// D[{A1,C1}] + C0 -> D[{A1,C1-C0}]
+	template<typename TA, typename TC, typename Tdata>
+	auto Ds_translate(
+		std::map<std::pair<TA,TC>,Tensor<Tdata>> &&Ds_in,
+		const TC &translation, const TC &period)
+	-> std::map<std::pair<TA,TC>,Tensor<Tdata>>
+	{
+		using TAC = std::pair<TA,TC>;
+		using namespace Array_Operator;
+		std::map<TAC,Tensor<Tdata>> Ds_out;
+		for(auto &&D_in : Ds_in)
+		{
+			const TAC key = {D_in.first.first, (D_in.first.second-translation)%period};
+			Ds_out[key] = std::move(D_in.second);
+		}
+		return Ds_out;
+	}
+	// D[{A0,C0}] + {A1,C1} -> D[A0][{A1,C1-C0}]
+	template<typename TA, typename TC, typename Tdata>
+	auto Ds_exchange(
+		std::map<std::pair<TA,TC>,Tensor<Tdata>> &&Ds_in,
+		const std::pair<TA,TC> &key1_origin, const TC &period)
+	-> std::map<TA, std::map<std::pair<TA,TC>,Tensor<Tdata>>>
+	{
+		using TAC = std::pair<TA,TC>;
+		using namespace Array_Operator;
+		std::map<TA, std::map<std::pair<TA,TC>,Tensor<Tdata>>> Ds_out;
+		for(auto &&D_in : Ds_in)
+		{
+			const TA key0 = D_in.first.first;
+			const TAC key1 = {key1_origin.first, (key1_origin.second-D_in.first.second)%period};
+			Ds_out[key0][key1] = std::move(D_in.second);
+		}
+		return Ds_out;
+	}
+
+	template<typename TA, typename TAC, typename Tdata>
+	void add_Ds_omp_try(
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread, 
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result, 
+		omp_lock_t &lock_Ds_result_add)
+	{
+		if( !LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread) && omp_test_lock(&lock_Ds_result_add) )
+		{
+			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result);
+			omp_unset_lock(&lock_Ds_result_add);
+			Ds_result_thread.clear();
+			Ds_result_thread.resize(Ds_result.size());
+		}
+	}
+
+	template<typename TA, typename TAC, typename Tdata>	
+	void add_Ds_omp_wait(
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread, 
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result, 
+		omp_lock_t &lock_Ds_result_add)
+	{					
+		if(!LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread))
+		{
+			omp_set_lock(&lock_Ds_result_add);
+			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result);
+			omp_unset_lock(&lock_Ds_result_add);
+			Ds_result_thread.clear();
+			Ds_result_thread.resize(Ds_result.size());
+		}
 	}
 }
 

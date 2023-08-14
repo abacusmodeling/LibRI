@@ -12,8 +12,10 @@
 #include "unittests/global/Blas-test.hpp"
 #include "unittests/global/Tensor-test-2.hpp"
 #include "unittests/global/Tensor-test-3.hpp"
+#include "unittests/global/Tensor_Multiply-test.hpp"
 #include "unittests/global/Map_Operator-test.hpp"
 #include "unittests/ri/LRI-test.hpp"
+#include "unittests/ri/LRI_Loop3-test.hpp"
 #include "unittests/ri/LRI-speed-test.hpp"
 #include "unittests/ri/Cell_Nearest-test.hpp"
 #include "unittests/physics/Exx-test.hpp"
@@ -45,6 +47,9 @@ namespace Test_All
 		Tensor_Test::test_multiply_2();
 		Tensor_Test::test_operator_all_3();
 
+		Tensor_Multiply_Test::main<double>();
+		Tensor_Multiply_Test::main<std::complex<double>>();
+
 		Map_Operator_Test::test_union_map1();
 		Map_Operator_Test::test_union_map2();
 		Map_Operator_Test::test_intersection_map1();
@@ -57,6 +62,11 @@ namespace Test_All
 		LRI_Test::main<double>(argc, argv);
 		LRI_Test::main<std::complex<float>>(argc, argv);
 		LRI_Test::main<std::complex<double>>(argc, argv);
+
+		LRI_Loop3_Test::main<float>(argc, argv);
+		LRI_Loop3_Test::main<double>(argc, argv);
+		LRI_Loop3_Test::main<std::complex<float>>(argc, argv);
+		LRI_Loop3_Test::main<std::complex<double>>(argc, argv);
 
 		LRI_Speed_Test::test_speed<float>(argc, argv, 1, 1);
 		LRI_Speed_Test::test_speed<double>(argc, argv, 1, 1);
