@@ -136,8 +136,6 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 	this->lri.save_load.save("Ds_"+save_names_suffix[2], {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2});
 }
 
-
-
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"
@@ -161,22 +159,17 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 			this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
 			this->lri.save_load.load("Cs_"+save_names_suffix[0], Label::ab::b);
 
-			this->lri.coefficients = {[](const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2) -> Tdata
-			{
-				switch(label)
-				{
-					case Label::ab_ab::a0b0_a1b1:	case Label::ab_ab::a0b0_a1b2:	return -1;
-					case Label::ab_ab::a0b0_a2b1:	case Label::ab_ab::a0b0_a2b2:	return 1;
-					default:	throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
-				}
-			}};
-
-			this->lri.cal(
+			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
-				 Label::ab_ab::a0b0_a1b2,
-				 Label::ab_ab::a0b0_a2b1,
+				 Label::ab_ab::a0b0_a1b2,},
+				dHs_vec,
+				-1.0);
+
+			this->lri.cal_loop3(
+				{Label::ab_ab::a0b0_a2b1,
 				 Label::ab_ab::a0b0_a2b2},
-				dHs_vec);
+				dHs_vec,
+				1.0);
 
 			this->lri.save_load.save("dCs_"+std::to_string(ipos)+"_"+save_names_suffix[3], Label::ab::a);
 			this->lri.save_load.save("Vs_"+save_names_suffix[1], Label::ab::a0b0);
@@ -184,11 +177,11 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 			this->lri.save_load.load("Cs_"+save_names_suffix[0], Label::ab::a);
 			this->lri.save_load.load("dVs_"+std::to_string(ipos)+"_"+save_names_suffix[4], Label::ab::a0b0);
 
-			this->lri.coefficients = {nullptr};
-			this->lri.cal(
+			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a2b2,
 				 Label::ab_ab::a0b0_a2b1},
-				dHs_vec);
+				dHs_vec,
+				1.0);
 
 			this->post_2D.cal_force(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
@@ -205,11 +198,11 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 		{
 			std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(1);
 
-			this->lri.coefficients = {nullptr};
-			this->lri.cal(
+			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a2b2,
 				 Label::ab_ab::a0b0_a1b2},
-				dHs_vec);
+				dHs_vec,
+				1.0);
 
 			this->lri.save_load.save("dVs_"+std::to_string(ipos)+"_"+save_names_suffix[4], Label::ab::a0b0);
 			this->lri.save_load.save("Cs_"+save_names_suffix[0], Label::ab::b);
@@ -217,22 +210,17 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 			this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
 			this->lri.save_load.load("dCs_"+std::to_string(ipos)+"_"+save_names_suffix[3], Label::ab::b);
 
-			this->lri.coefficients = {[](const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2) -> Tdata
-			{
-				switch(label)
-				{
-					case Label::ab_ab::a0b0_a1b1:	case Label::ab_ab::a0b0_a2b1:	return 1;
-					case Label::ab_ab::a0b0_a1b2:	case Label::ab_ab::a0b0_a2b2:	return -1;
-					default:	throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
-				}
-			}};
-
-			this->lri.cal(
+			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
-				 Label::ab_ab::a0b0_a1b2,
-				 Label::ab_ab::a0b0_a2b1,
+				 Label::ab_ab::a0b0_a2b1},
+				dHs_vec,
+				1.0);
+
+			this->lri.cal_loop3(
+				{Label::ab_ab::a0b0_a1b2,
 				 Label::ab_ab::a0b0_a2b2},
-				dHs_vec);
+				dHs_vec,
+				-1.0);
 
 			this->lri.save_load.save("Cs_"+save_names_suffix[0], Label::ab::a);
 			this->lri.save_load.save("dCs_"+std::to_string(ipos)+"_"+save_names_suffix[3], Label::ab::b);

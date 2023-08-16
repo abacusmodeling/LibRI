@@ -13,6 +13,7 @@
 #include <memory.h>
 #include <cassert>
 #include <stdexcept>
+#include <omp.h>
 
 namespace RI
 {
@@ -66,43 +67,66 @@ namespace LRI_Cal_Aux
 	*/
 
 	template<typename Tdata>
-	inline void add_Ds(Tensor<Tdata> &&D_add, Tensor<Tdata> &D_result)
+	inline void add_Ds(
+		Tensor<Tdata> &&D_add, 
+		Tensor<Tdata> &D_result, 
+		const double fac = 1.0)
 	{
 		if(D_result.empty())
-			D_result = std::move(D_add);
+		{
+			if(1.0==fac)
+				D_result = std::move(D_add);
+			else if(-1.0==fac)
+				D_result = -D_add;
+			else
+				D_result = Tdata(fac) * D_add;
+		}
 		else
-			D_result += D_add;
+		{
+			if(1.0==fac)
+				D_result += D_add;
+			else if(-1.0==fac)
+				D_result -= D_add;
+			else
+				D_result += Tdata(fac) * D_add;
+		}
 	}
 
 	template<typename Tkey, typename Tvalue>
 	void add_Ds(
 		std::map<Tkey, Tvalue> &&Ds_add,
-		std::map<Tkey, Tvalue> &Ds_result)
+		std::map<Tkey, Tvalue> &Ds_result,
+		const double fac = 1.0)
 	{
-		if(Ds_result.empty())
+		if(Ds_result.empty() && 1.0==fac)
 			Ds_result = std::move(Ds_add);
 		else
 		{
 			for(auto &&Ds_add_A : Ds_add)
-				add_Ds(std::move(Ds_add_A.second), Ds_result[Ds_add_A.first]);
+				add_Ds(std::move(Ds_add_A.second), Ds_result[Ds_add_A.first], fac);
 			Ds_add.clear();
 		}
 	}
+
 	template<typename Tvalue>
 	void add_Ds(
 		std::vector<Tvalue> &&Ds_add,
-		std::vector<Tvalue> &Ds_result)
+		std::vector<Tvalue> &Ds_result,
+		const double fac = 1.0)
 	{
-		if(Ds_result.empty())
+		if(Ds_result.empty() && 1.0==fac)
 		{
 			Ds_result = std::move(Ds_add);
 			Ds_add.resize(Ds_result.size());
 		}
 		else
 		{
-			assert(Ds_add.size()==Ds_result.size());
+			if(Ds_result.empty())
+				Ds_result.resize(Ds_add.size());
+			else
+				assert(Ds_add.size()==Ds_result.size());
 			for(std::size_t i=0; i<Ds_result.size(); ++i)
-				add_Ds(std::move(Ds_add[i]), Ds_result[i]);
+				add_Ds(std::move(Ds_add[i]), Ds_result[i], fac);
 			Ds_add.clear();
 			Ds_add.resize(Ds_result.size());
 		}
@@ -199,11 +223,12 @@ namespace LRI_Cal_Aux
 	void add_Ds_omp_try(
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread, 
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result, 
-		omp_lock_t &lock_Ds_result_add)
+		omp_lock_t &lock_Ds_result_add,
+		const double &fac)
 	{
 		if( !LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread) && omp_test_lock(&lock_Ds_result_add) )
 		{
-			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result);
+			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result, fac);
 			omp_unset_lock(&lock_Ds_result_add);
 			Ds_result_thread.clear();
 			Ds_result_thread.resize(Ds_result.size());
@@ -214,12 +239,13 @@ namespace LRI_Cal_Aux
 	void add_Ds_omp_wait(
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread, 
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result, 
-		omp_lock_t &lock_Ds_result_add)
+		omp_lock_t &lock_Ds_result_add,
+		const double &fac)
 	{					
 		if(!LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread))
 		{
 			omp_set_lock(&lock_Ds_result_add);
-			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result);
+			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result, fac);
 			omp_unset_lock(&lock_Ds_result_add);
 			Ds_result_thread.clear();
 			Ds_result_thread.resize(Ds_result.size());
