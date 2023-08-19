@@ -251,6 +251,54 @@ namespace LRI_Cal_Aux
 			Ds_result_thread.resize(Ds_result.size());
 		}
 	}
+
+	template<typename TA, typename Tvalue>
+	std::vector<TA> filter_list_map(
+		const std::vector<TA> &list_in,
+		const std::map<TA, Tvalue> &Ds)
+	{
+		std::vector<TA> list_filter;
+		for(const TA &item : list_in)
+			if(Ds.find(item) != Ds.end())
+				list_filter.push_back(item);
+		return list_filter;
+	}
+
+	template<typename TA, typename TC, typename Tvalue>
+	std::vector<std::pair<TA,TC>> filter_list_map(
+		const std::vector<std::pair<TA,TC>> &list_in,
+		const std::map<TA, Tvalue> &Ds)
+	{
+		std::vector<std::pair<TA,TC>> list_filter;
+		for(const std::pair<TA,TC> &item : list_in)
+			if(Ds.find(item.first) != Ds.end())
+				list_filter.push_back(item);
+		return list_filter;
+	}
+
+	template<typename TA>
+	std::vector<TA> filter_list_set(
+		const std::vector<TA> &list_in,
+		const std::set<TA> &index)
+	{
+		std::vector<TA> list_filter;
+		for(const TA &item : list_in)
+			if(index.find(item) != index.end())
+				list_filter.push_back(item);
+		return list_filter;
+	}
+
+	template<typename TA, typename TC>
+	std::vector<std::pair<TA,TC>> filter_list_set(
+		const std::vector<std::pair<TA,TC>> &list_in,
+		const std::set<TA> &index)
+	{
+		std::vector<std::pair<TA,TC>> list_filter;
+		for(const std::pair<TA,TC> &item : list_in)
+			if(index.find(item.first) != index.end())
+				list_filter.push_back(item);
+		return list_filter;
+	}
 }
 
 }

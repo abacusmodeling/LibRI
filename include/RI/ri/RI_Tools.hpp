@@ -48,6 +48,18 @@ namespace RI_Tools
 		}
 		return Ds_period;
 	}
+
+	template<typename TA, typename TAC, typename Tvalue>
+	std::vector<std::set<TA>> get_index(const std::map<TA, std::map<TAC, Tvalue>> &Ds)
+	{
+		std::vector<std::set<TA>> index(1);
+		std::set<TA> index_i;
+		for(const auto &Ds_A : Ds)
+			for(const auto &Ds_B : Ds_A.second)
+				index_i.insert(Ds_B.first.first);
+		index[0] = std::move(index_i);
+		return index;
+	}
 }
 
 }

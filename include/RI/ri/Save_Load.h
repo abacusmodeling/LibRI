@@ -41,6 +41,7 @@ public:	// private:
 	struct Info
 	{
 		std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_ab;
+		std::unordered_map<Label::ab, std::vector<std::set<TA>>> index_Ds_ab;
 		std::unordered_map<Label::ab, std::array< std::map<TA,std::map<TAC,Tdata_real>> ,3>> csm_uplimits_square_tensor3;
 		std::unordered_map<Label::ab, std::array< std::map<TA,std::map<TAC,Tdata_real>> ,3>> csm_uplimits_norm_tensor3;
 		std::unordered_map<Label::ab, std::map<TA,std::map<TAC,Tdata_real>>> csm_uplimits_square_tensor2;

@@ -14,11 +14,13 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::save(const std::string &name, const Label::ab &label)
 {
 	this->saves[name].Ds_ab.reserve(Label::array_ab.size());
+	this->saves[name].index_Ds_ab.reserve(Label::array_ab.size());
 	this->saves[name].csm_uplimits_square_tensor3.reserve(Label::array_ab.size());
 	this->saves[name].csm_uplimits_norm_tensor3  .reserve(Label::array_ab.size());
 	this->saves[name].csm_uplimits_square_tensor2.reserve(Label::array_ab.size());
 
 	this->saves[name].Ds_ab[label] = std::move(this->lri.Ds_ab[label]);
+	this->saves[name].index_Ds_ab[label] = std::move(this->lri.index_Ds_ab[label]);
 	this->saves[name].csm_uplimits_square_tensor3[label] = std::move(this->lri.csm.uplimits_square_tensor3[label]);
 	this->saves[name].csm_uplimits_norm_tensor3  [label] = std::move(this->lri.csm.uplimits_norm_tensor3  [label]);
 	this->saves[name].csm_uplimits_square_tensor2[label] = std::move(this->lri.csm.uplimits_square_tensor2[label]);
@@ -42,6 +44,7 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Save_Load<TA,Tcell,Ndim,Tdata>::load(const std::string &name, const Label::ab &label)
 {
 	assert(this->lri.Ds_ab[label].empty());
+	assert(this->lri.index_Ds_ab[label].empty());
 	for(std::size_t i=0; i<this->lri.csm.uplimits_square_tensor3[label].size(); ++i)
 		assert(this->lri.csm.uplimits_square_tensor3[label][i].empty());
 	for(std::size_t i=0; i<this->lri.csm.uplimits_norm_tensor3[label].size(); ++i)
@@ -49,6 +52,7 @@ void Save_Load<TA,Tcell,Ndim,Tdata>::load(const std::string &name, const Label::
 	assert(this->lri.csm.uplimits_square_tensor2[label].empty());
 
 	this->lri.Ds_ab[label] = std::move(this->saves.at(name).Ds_ab[label]);
+	this->lri.index_Ds_ab[label] = std::move(this->saves.at(name).index_Ds_ab[label]);
 	this->lri.csm.uplimits_square_tensor3[label] = std::move(this->saves.at(name).csm_uplimits_square_tensor3[label]);
 	this->lri.csm.uplimits_norm_tensor3  [label] = std::move(this->saves.at(name).csm_uplimits_norm_tensor3  [label]);
 	this->lri.csm.uplimits_square_tensor2[label] = std::move(this->saves.at(name).csm_uplimits_square_tensor2[label]);

@@ -41,6 +41,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 	else
 		this->Ds_ab[label] = std::move(Ds_comm);
 
+	this->index_Ds_ab[label] = RI_Tools::get_index(this->Ds_ab[label]);
+
 	this->csm.set_tensor(label, this->Ds_ab[label]);
 }
 
