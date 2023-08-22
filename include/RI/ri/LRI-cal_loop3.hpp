@@ -115,9 +115,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 								if(D_a1b1.empty())	continue;
 
 								// a1a2b0 = a0a1a2 * a0b0
-								const Tensor<Tdata> D_tmp1 = Tensor_Multiply::x1x2y1_x0y0(D_a, D_a0b0);
+								const Tensor<Tdata> D_tmp1 = Tensor_Multiply::x1x2y1_ax1x2_ay1(D_a, D_a0b0);
 								// a2b0b1 = a1a2b0 * a1b1
-								Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1x2y1_x0y0(D_tmp1, D_a1b1);
+								Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1x2y1_ax1x2_ay1(D_tmp1, D_a1b1);
 								LRI_Cal_Aux::add_Ds(std::move(D_tmp2), D_mul);
 							}
 							if(D_mul.empty())	continue;
@@ -128,7 +128,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 								const Tensor<Tdata> D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								// a2b2 = a2b0b1 * b0b1b2
-								Tensor<Tdata> D_tmp3 = Tensor_Multiply::x0y2_x1y0_x2y1(D_mul, D_b);
+								Tensor<Tdata> D_tmp3 = Tensor_Multiply::x0y2_x0ab_aby2(D_mul, D_b);
 								LRI_Cal_Aux::add_Ds(std::move(D_tmp3), Ds_result_fixed[Ab2]);
 							}
 						} // end for Ab01
@@ -176,7 +176,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 								if(D_a1b2.empty())	continue;
 
 								// b0b1a1 = b0b1b2 * a1b2
-								Tensor<Tdata> D_tmp1 = Tensor_Multiply::x0x1y0_x2y1(D_b, D_a1b2);
+								Tensor<Tdata> D_tmp1 = Tensor_Multiply::x0x1y0_x0x1a_y0a(D_b, D_a1b2);
 								LRI_Cal_Aux::add_Ds(std::move(D_tmp1), D_mul);
 							}
 							if(D_mul.empty())	continue;
@@ -187,9 +187,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 								const Tensor<Tdata> &D_a_transpose = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a_transpose.empty())	continue;
 								// b1a1a0 = b0b1a1 * a0b0
-								const Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1x2y0_x0y1(D_mul, D_a0b0);
+								const Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1x2y0_ax1x2_y0a(D_mul, D_a0b0);
 								// a2b1 = a1a0a2 * b1a1a0
-								Tensor<Tdata> D_tmp3 = Tensor_Multiply::x2y0_x0y1_x1y2(D_a_transpose, D_tmp2);
+								Tensor<Tdata> D_tmp3 = Tensor_Multiply::x2y0_abx2_y0ab(D_a_transpose, D_tmp2);
 								LRI_Cal_Aux::add_Ds(std::move(D_tmp3), Ds_result_fixed[Aa2]);
 							}
 						} // end for Aa01
@@ -237,7 +237,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 								if(D_a2b1.empty())	continue;
 
 								// a0a1b1 = a0a1a2 * a2b1
-								Tensor<Tdata> D_tmp1 = Tensor_Multiply::x0x1y1_x2y0(D_a, D_a2b1);
+								Tensor<Tdata> D_tmp1 = Tensor_Multiply::x0x1y1_x0x1a_ay1(D_a, D_a2b1);
 								LRI_Cal_Aux::add_Ds(std::move(D_tmp1), D_mul);
 							}
 							if(D_mul.empty())	continue;
@@ -249,9 +249,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 								if(D_b_transpose.empty())	continue;
 
 								// a1b1b0 = a0a1b1 * a0b0
-								const Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1x2y1_x0y0(D_mul, D_a0b0);
+								const Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1x2y1_ax1x2_ay1(D_mul, D_a0b0);
 								// a1b2 = a1b1b0 * b1b0b2
-								Tensor<Tdata> D_tmp3 = Tensor_Multiply::x0y2_x1y0_x2y1(D_tmp2, D_b_transpose);
+								Tensor<Tdata> D_tmp3 = Tensor_Multiply::x0y2_x0ab_aby2(D_tmp2, D_b_transpose);
 								LRI_Cal_Aux::add_Ds(std::move(D_tmp3), Ds_result_fixed[Ab2]);
 							}
 						} // end for Ab01
@@ -297,7 +297,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 								if(D_a2b2.empty())	continue;
 
 								// b2a1a0 = a2b2 * a1a0a2
-								Tensor<Tdata> D_tmp1 = Tensor_Multiply::x1y0y1_x0y2(D_a2b2, D_a_transpose);
+								Tensor<Tdata> D_tmp1 = Tensor_Multiply::x1y0y1_ax1_y0y1a(D_a2b2, D_a_transpose);
 								LRI_Cal_Aux::add_Ds(std::move(D_tmp1), D_mul);
 							}
 							if(D_mul.empty())	continue;
@@ -311,9 +311,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 								if(D_a0b0.empty())	continue;
 
 								// b0b2a1 = a0b0 * b2a1a0
-								const Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1y0y1_x0y2(D_a0b0, D_mul);
+								const Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1y0y1_ax1_y0y1a(D_a0b0, D_mul);
 								// a1b1 = b0b2a1 * b1b0b2
-								Tensor<Tdata> D_tmp3 = Tensor_Multiply::x2y0_x0y1_x1y2(D_tmp2, D_b_transpose);
+								Tensor<Tdata> D_tmp3 = Tensor_Multiply::x2y0_abx2_y0ab(D_tmp2, D_b_transpose);
 								LRI_Cal_Aux::add_Ds(std::move(D_tmp3), Ds_result_fixed[Ab01]);
 							}
 						} // end for Ab01
