@@ -20,6 +20,7 @@
 #include "unittests/ri/Cell_Nearest-test.hpp"
 #include "unittests/physics/Exx-test.hpp"
 #include "unittests/physics/RPA-test.hpp"
+#include "unittests/physics/GW-test.hpp"
 
 namespace Test_All
 {
@@ -84,5 +85,10 @@ namespace Test_All
 		RPA_Test::main<double>(argc, argv);
 		RPA_Test::main<std::complex<float>>(argc, argv);
 		RPA_Test::main<std::complex<double>>(argc, argv);
+
+		GW_Test::main<float>(argc, argv);
+		GW_Test::main<double>(argc, argv);
+		GW_Test::main<std::complex<float>>(argc, argv);
+		GW_Test::main<std::complex<double>>(argc, argv);
 	}
 }

@@ -64,7 +64,7 @@ void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
 
 	set_Gs_a1(Gs_tau_positive);
 	set_Gs_a2(Gs_tau_negative);
-	this->lri.cal({
+	this->lri.cal_loop3({
 		Label::ab_ab::a1b1_a2b2,
 		Label::ab_ab::a1b2_a2b1},
 		chi0s_vec);
@@ -73,7 +73,7 @@ void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
 	set_Gs_a2(Gs_tau_positive);			// tmp
 	//set_Gs_a1(conj(Gs_tau_negative));
 	//set_Gs_a2(conj(Gs_tau_positive));
-	this->lri.cal({
+	this->lri.cal_loop3({
 		Label::ab_ab::a1b1_a2b2,
 		Label::ab_ab::a1b2_a2b1},
 		chi0s_vec);
