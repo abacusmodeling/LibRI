@@ -25,7 +25,8 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 class Save_Load
 {
 public:
-	using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
+	using TC = std::array<Tcell,Ndim>;
+	using TAC = std::pair<TA,TC>;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
 
 	Save_Load(LRI<TA,Tcell,Ndim,Tdata> &lri_in): lri(lri_in){}
@@ -43,10 +44,7 @@ public:	// private:
 	{
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_ab;
 		std::vector<std::set<TA>> index_Ds_ab;
-		std::array< std::map<TA,std::map<TAC,Tdata_real>> ,3> csm_uplimits_square_tensor3;
-		std::array< std::map<TA,std::map<TAC,Tdata_real>> ,3> csm_uplimits_norm_tensor3;
-		std::map<TA,std::map<TAC,Tdata_real>> csm_uplimits_square_tensor2;
-		//std::map<TA,std::map<TAC,Tdata_real>> csm_uplimits_norm_tensor2;
+		typename CS_Matrix<TA,TC,Tdata_real>::Uplimits csm_uplimits;
 	};
 	std::map<std::string,Info> saves;
 

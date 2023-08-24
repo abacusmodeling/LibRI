@@ -35,7 +35,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_cal_funcs_bx2()
 		if(D_ab_second.empty())	return;	\
 		typename CS_Matrix<TA,TC,Tdata_real>::Step csm_step;	\
 		if(this->csm.threshold.at(label))	\
-			csm_step = this->csm.set_label_A(label, Aa01, Aa2, Ab01, Ab2, period);	\
+			csm_step = this->csm.set_label_A(label, Aa01, Aa2, Ab01, Ab2, period, this->csm_uplimits);	\
 		\
 		if(this->csm.threshold.at(label))	\
 			if(this->csm.filter_4(csm_step))	\

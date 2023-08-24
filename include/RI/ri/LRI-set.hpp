@@ -43,7 +43,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 
 	this->index_Ds_ab[label] = RI_Tools::get_index(this->Ds_ab[label]);
 
-	this->csm.set_tensor(label, this->Ds_ab[label]);
+	this->csm_uplimits[label] = this->csm.cal_uplimits(label, this->Ds_ab[label]);
 }
 
 /*

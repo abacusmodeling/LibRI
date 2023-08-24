@@ -77,6 +77,7 @@ public:		// private:
 
 	std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_ab;		// Ds_ab[A0][{A1,C1}]
 	std::unordered_map<Label::ab, std::vector<std::set<TA>>> index_Ds_ab;					// index_Ds_ab[0]=A1
+	std::unordered_map<Label::ab, typename CS_Matrix<TA,TC,Tdata_real>::Uplimits> csm_uplimits;
 
 public:		// private:
 	using T_cal_func = std::function<void(
