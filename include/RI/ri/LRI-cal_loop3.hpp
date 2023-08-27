@@ -26,6 +26,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 {
 	using namespace Array_Operator;
 
+	const Data_Pack_Wrapper<TA,TC,Tdata> data_wrapper(this->data_pool, this->data_ab_name);
+
 	if(Ds_result.empty())
 		Ds_result.resize(1);
 
@@ -51,11 +53,11 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	}();
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_a_transpose
 		= flag_D_a_transpose
-		? LRI_Cal_Aux::cal_Ds_transpose(this->Ds_ab[Label::ab::a])
+		? LRI_Cal_Aux::cal_Ds_transpose( data_wrapper(Label::ab::a).Ds_ab )
 		: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_b_transpose
 		= flag_D_b_transpose
-		? LRI_Cal_Aux::cal_Ds_transpose(this->Ds_ab[Label::ab::b])
+		? LRI_Cal_Aux::cal_Ds_transpose( data_wrapper(Label::ab::b).Ds_ab )
 		: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
 
 	omp_lock_t lock_Ds_result_add;
@@ -69,12 +71,12 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	#pragma omp parallel
 	{
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_result_thread(1);
-		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->Ds_ab, Ds_result_thread);
+		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->data_pool, this->data_ab_name, Ds_result_thread);
 
-		const std::vector<TA>  list_Aa01_Da = LRI_Cal_Aux::filter_list_map( this->parallel->get_list_Aa01(), this->Ds_ab[Label::ab::a] );
-		const std::vector<TAC> list_Ab01_Db = LRI_Cal_Aux::filter_list_map( this->parallel->get_list_Ab01(), this->Ds_ab[Label::ab::b] );
-		const std::vector<TAC> list_Aa2_Da  = LRI_Cal_Aux::filter_list_set( this->parallel->get_list_Aa2(),  this->index_Ds_ab[Label::ab::a][0] );
-		const std::vector<TAC> list_Ab2_Db  = LRI_Cal_Aux::filter_list_set( this->parallel->get_list_Ab2(),  this->index_Ds_ab[Label::ab::b][0] );
+		const std::vector<TA>  list_Aa01_Da = LRI_Cal_Aux::filter_list_map( this->parallel->get_list_Aa01(), data_wrapper(Label::ab::a).Ds_ab );
+		const std::vector<TAC> list_Ab01_Db = LRI_Cal_Aux::filter_list_map( this->parallel->get_list_Ab01(), data_wrapper(Label::ab::b).Ds_ab );
+		const std::vector<TAC> list_Aa2_Da  = LRI_Cal_Aux::filter_list_set( this->parallel->get_list_Aa2(),  data_wrapper(Label::ab::a).index_Ds_ab[0] );
+		const std::vector<TAC> list_Ab2_Db  = LRI_Cal_Aux::filter_list_set( this->parallel->get_list_Ab2(),  data_wrapper(Label::ab::b).index_Ds_ab[0] );
 
 		for(const Label::ab_ab &label : labels)
 		{
@@ -84,14 +86,14 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 				{
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map( LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
-						this->Ds_ab[Label::ab::a0b0] ),
-						this->Ds_ab[Label::ab::a1b1] );
+						data_wrapper(Label::ab::a0b0).Ds_ab ),
+						data_wrapper(Label::ab::a1b1).Ds_ab );
 					const std::vector<TAC> &list_Aa2 =
 						list_Aa2_Da;
 					const std::vector<TAC>  list_Ab01 = LRI_Cal_Aux::filter_list_set( LRI_Cal_Aux::filter_list_set(
 						list_Ab01_Db,
-						this->index_Ds_ab[Label::ab::a0b0][0]),
-						this->index_Ds_ab[Label::ab::a1b1][0]);
+						data_wrapper(Label::ab::a0b0).index_Ds_ab[0]),
+						data_wrapper(Label::ab::a1b1).index_Ds_ab[0]);
 					const std::vector<TAC> &list_Ab2 =
 						list_Ab2_Db;
 
@@ -145,16 +147,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 				{
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map( LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
-						this->Ds_ab[Label::ab::a0b0] ),
-						this->Ds_ab[Label::ab::a1b2] );
+						data_wrapper(Label::ab::a0b0).Ds_ab ),
+						data_wrapper(Label::ab::a1b2).Ds_ab );
 					const std::vector<TAC> &list_Aa2 =
 						list_Aa2_Da;
 					const std::vector<TAC>  list_Ab01 = LRI_Cal_Aux::filter_list_set( 
 						list_Ab01_Db,
-						this->index_Ds_ab[Label::ab::a0b0][0]);
+						data_wrapper(Label::ab::a0b0).index_Ds_ab[0]);
 					const std::vector<TAC>  list_Ab2 = LRI_Cal_Aux::filter_list_set( 
 						list_Ab2_Db,
-						this->index_Ds_ab[Label::ab::a1b2][0]);
+						data_wrapper(Label::ab::a1b2).index_Ds_ab[0]);
 
 					for(const TAC &Ab01 : list_Ab01)
 					{
@@ -206,14 +208,14 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 				{
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
-						this->Ds_ab[Label::ab::a0b0] );
+						data_wrapper(Label::ab::a0b0).Ds_ab );
 					const std::vector<TAC>  list_Aa2 = LRI_Cal_Aux::filter_list_map( 
 						list_Aa2_Da,
-						this->Ds_ab[Label::ab::a2b1] );
+						data_wrapper(Label::ab::a2b1).Ds_ab );
 					const std::vector<TAC>  list_Ab01 = LRI_Cal_Aux::filter_list_set( LRI_Cal_Aux::filter_list_set(
 						list_Ab01_Db,
-						this->index_Ds_ab[Label::ab::a0b0][0]),
-						this->index_Ds_ab[Label::ab::a2b1][0]);
+						data_wrapper(Label::ab::a0b0).index_Ds_ab[0]),
+						data_wrapper(Label::ab::a2b1).index_Ds_ab[0]);
 					const std::vector<TAC> &list_Ab2 =
 						list_Ab2_Db;
 
@@ -268,16 +270,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 				{
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
-						this->Ds_ab[Label::ab::a0b0] );
+						data_wrapper(Label::ab::a0b0).Ds_ab );
 					const std::vector<TAC>  list_Aa2 = LRI_Cal_Aux::filter_list_map( 
 						list_Aa2_Da,
-						this->Ds_ab[Label::ab::a2b2] );
+						data_wrapper(Label::ab::a2b2).Ds_ab );
 					const std::vector<TAC>  list_Ab01 = LRI_Cal_Aux::filter_list_set( 
 						list_Ab01_Db,
-						this->index_Ds_ab[Label::ab::a0b0][0]);
+						data_wrapper(Label::ab::a0b0).index_Ds_ab[0]);
 					const std::vector<TAC>  list_Ab2 = LRI_Cal_Aux::filter_list_set( 
 						list_Ab2_Db,
-						this->index_Ds_ab[Label::ab::a2b2][0]);
+						data_wrapper(Label::ab::a2b2).index_Ds_ab[0]);
 
 					for(const TA &Aa01 : list_Aa01)
 					{
@@ -330,16 +332,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 				{
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
-						this->Ds_ab[Label::ab::a0b0] );
+						data_wrapper(Label::ab::a0b0).Ds_ab );
 					const std::vector<TAC>  list_Aa2 = LRI_Cal_Aux::filter_list_map( 
 						list_Aa2_Da,
-						this->Ds_ab[Label::ab::a2b2] );
+						data_wrapper(Label::ab::a2b2).Ds_ab );
 					const std::vector<TAC>  list_Ab01 = LRI_Cal_Aux::filter_list_set( 
 						list_Ab01_Db,
-						this->index_Ds_ab[Label::ab::a0b0][0]);
+						data_wrapper(Label::ab::a0b0).index_Ds_ab[0]);
 					const std::vector<TAC>  list_Ab2 = LRI_Cal_Aux::filter_list_set( 
 						list_Ab2_Db,
-						this->index_Ds_ab[Label::ab::a2b2][0]);
+						data_wrapper(Label::ab::a2b2).index_Ds_ab[0]);
 
 					for(const TA &Aa01 : list_Aa01)
 					{
@@ -392,16 +394,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 				{
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map( 
 						list_Aa01_Da,
-						this->Ds_ab[Label::ab::a1b2] );
+						data_wrapper(Label::ab::a1b2).Ds_ab );
 					const std::vector<TAC> &list_Aa2 = LRI_Cal_Aux::filter_list_map(
 						list_Aa2_Da,
-						this->Ds_ab[Label::ab::a2b1] );
+						data_wrapper(Label::ab::a2b1).Ds_ab );
 					const std::vector<TAC>  list_Ab01 = LRI_Cal_Aux::filter_list_set( 
 						list_Ab01_Db,
-						this->index_Ds_ab[Label::ab::a2b1][0]);
+						data_wrapper(Label::ab::a2b1).index_Ds_ab[0]);
 					const std::vector<TAC>  list_Ab2 = LRI_Cal_Aux::filter_list_set( 
 						list_Ab2_Db,
-						this->index_Ds_ab[Label::ab::a1b2][0]);
+						data_wrapper(Label::ab::a1b2).index_Ds_ab[0]);
 
 					for(const TA &Aa01 : list_Aa01)
 					{

@@ -6,6 +6,7 @@
 #pragma once
 
 #include"RI/ri/Label.h"
+#include"RI/ri/Label_Tools.h"
 #include"RI/ri/LRI.h"
 #include"RI/global/MPI_Wrapper.h"
 
@@ -94,7 +95,7 @@ namespace LRI_Loop3_Test
 		lri.csm.set_threshold(1E-10);
 
 		for(const RI::Label::ab &label : RI::Label::array_ab)
-			lri.set_tensors_map2(Ds_ab[label], label, 0);
+			lri.set_tensors_map2(Ds_ab[label], label, 0, RI::Label_Tools::get_name(label));
 		{
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b0_a1b1}, Ds_result);

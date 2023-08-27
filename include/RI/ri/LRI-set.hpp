@@ -29,21 +29,24 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 	const Label::ab &label,
-	const Tdata_real &threshold)
+	const Tdata_real &threshold,
+	const std::string &save_name)
 {
 	//if()
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_period = RI_Tools::cal_period(Ds_local, this->period);
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_comm = this->parallel->comm_tensors_map2(label, std::move(Ds_period));
 
+	this->data_ab_name[label] = save_name;
+
 	if(threshold)
-		this->Ds_ab[label] = RI_Tools::filter(std::move(Ds_comm), filter_funcs[label], threshold);
+		this->data_pool[save_name].Ds_ab = RI_Tools::filter(std::move(Ds_comm), filter_funcs[label], threshold);
 	else
-		this->Ds_ab[label] = std::move(Ds_comm);
+		this->data_pool[save_name].Ds_ab = std::move(Ds_comm);
 
-	this->index_Ds_ab[label] = RI_Tools::get_index(this->Ds_ab[label]);
+	this->data_pool[save_name].index_Ds_ab = RI_Tools::get_index(this->data_pool[save_name].Ds_ab);
 
-	this->csm_uplimits[label] = this->csm.cal_uplimits(label, this->Ds_ab[label]);
+	this->data_pool[save_name].csm_uplimits = this->csm.cal_uplimits(label, this->data_pool[save_name].Ds_ab);
 }
 
 /*

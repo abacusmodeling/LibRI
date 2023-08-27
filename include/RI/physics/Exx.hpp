@@ -38,10 +38,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Cs(
 	const Tdata_real &threshold_C,
 	const std::string &save_name_suffix)
 {
-	this->lri.set_tensors_map2( Cs, Label::ab::a, threshold_C );
-	this->lri.set_tensors_map2( Cs, Label::ab::b, threshold_C );
-	this->lri.save_load.save("Cs_a_"+save_name_suffix, Label::ab::a);
-	this->lri.save_load.save("Cs_b_"+save_name_suffix, Label::ab::b);
+	this->lri.set_tensors_map2( Cs, Label::ab::a, threshold_C, "Cs_a_"+save_name_suffix );
+	this->lri.set_tensors_map2( Cs, Label::ab::b, threshold_C, "Cs_b_"+save_name_suffix );
 	this->flag_finish.C = true;
 }
 
@@ -51,8 +49,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Vs(
 	const Tdata_real &threshold_V,
 	const std::string &save_name_suffix)
 {
-	this->lri.set_tensors_map2( Vs, Label::ab::a0b0, threshold_V );
-	this->lri.save_load.save("Vs_"+save_name_suffix, Label::ab::a0b0);
+	this->lri.set_tensors_map2( Vs, Label::ab::a0b0, threshold_V, "Vs_"+save_name_suffix );
 	this->flag_finish.V = true;
 }
 
@@ -62,14 +59,10 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 	const Tdata_real &threshold_D,
 	const std::string &save_name_suffix)
 {
-	this->lri.set_tensors_map2( Ds, Label::ab::a1b1, threshold_D );
-	this->lri.set_tensors_map2( Ds, Label::ab::a1b2, threshold_D );
-	this->lri.set_tensors_map2( Ds, Label::ab::a2b1, threshold_D );
-	this->lri.set_tensors_map2( Ds, Label::ab::a2b2, threshold_D );
-	this->lri.save_load.save("Ds_a1b1_"+save_name_suffix, Label::ab::a1b1);
-	this->lri.save_load.save("Ds_a1b2_"+save_name_suffix, Label::ab::a1b2);
-	this->lri.save_load.save("Ds_a2b1_"+save_name_suffix, Label::ab::a2b1);
-	this->lri.save_load.save("Ds_a2b2_"+save_name_suffix, Label::ab::a2b2);
+	this->lri.set_tensors_map2( Ds, Label::ab::a1b1, threshold_D, "Ds_a1b1_"+save_name_suffix );
+	this->lri.set_tensors_map2( Ds, Label::ab::a1b2, threshold_D, "Ds_a1b2_"+save_name_suffix );
+	this->lri.set_tensors_map2( Ds, Label::ab::a2b1, threshold_D, "Ds_a2b1_"+save_name_suffix );
+	this->lri.set_tensors_map2( Ds, Label::ab::a2b2, threshold_D, "Ds_a2b2_"+save_name_suffix );
 	this->flag_finish.D = true;
 
 	//if()
@@ -84,10 +77,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dCs(
 {
 	for(std::size_t ipos=0; ipos<Npos; ++ipos)
 	{
-		this->lri.set_tensors_map2( dCs[ipos], Label::ab::a, threshold_dC );
-		this->lri.set_tensors_map2( dCs[ipos], Label::ab::b, threshold_dC );
-		this->lri.save_load.save("dCs_a_"+std::to_string(ipos)+"_"+save_name_suffix, Label::ab::a);
-		this->lri.save_load.save("dCs_b_"+std::to_string(ipos)+"_"+save_name_suffix, Label::ab::b);
+		this->lri.set_tensors_map2( dCs[ipos], Label::ab::a, threshold_dC, "dCs_a_"+std::to_string(ipos)+"_"+save_name_suffix );
+		this->lri.set_tensors_map2( dCs[ipos], Label::ab::b, threshold_dC, "dCs_b_"+std::to_string(ipos)+"_"+save_name_suffix );
 	}
 	this->flag_finish.dC = true;
 }
@@ -100,8 +91,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dVs(
 {
 	for(std::size_t ipos=0; ipos<Npos; ++ipos)
 	{
-		this->lri.set_tensors_map2( dVs[ipos], Label::ab::a0b0, threshold_dV );
-		this->lri.save_load.save("dVs_"+std::to_string(ipos)+"_"+save_name_suffix, Label::ab::a0b0);
+		this->lri.set_tensors_map2( dVs[ipos], Label::ab::a0b0, threshold_dV, "dVs_"+std::to_string(ipos)+"_"+save_name_suffix );
 	}
 	this->flag_finish.dV = true;
 }
@@ -117,13 +107,13 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 	assert(this->flag_finish.V);
 	assert(this->flag_finish.D);
 
-	this->lri.save_load.load("Cs_a_"+save_names_suffix[0], Label::ab::a);
-	this->lri.save_load.load("Cs_b_"+save_names_suffix[0], Label::ab::b);
-	this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-	this->lri.save_load.load("Ds_a1b1_"+save_names_suffix[2], Label::ab::a1b1);
-	this->lri.save_load.load("Ds_a1b2_"+save_names_suffix[2], Label::ab::a1b2);
-	this->lri.save_load.load("Ds_a2b1_"+save_names_suffix[2], Label::ab::a2b1);
-	this->lri.save_load.load("Ds_a2b2_"+save_names_suffix[2], Label::ab::a2b2);
+	this->lri.data_ab_name[Label::ab::a   ] = "Cs_a_"   +save_names_suffix[0];
+	this->lri.data_ab_name[Label::ab::b   ] = "Cs_b_"   +save_names_suffix[0];
+	this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"     +save_names_suffix[1];
+	this->lri.data_ab_name[Label::ab::a1b1] = "Ds_a1b1_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a1b2] = "Ds_a1b2_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a2b1] = "Ds_a2b1_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a2b2] = "Ds_a2b2_"+save_names_suffix[2];
 
 	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Hs_vec(1);
 	this->lri.coefficients = {nullptr};
@@ -140,13 +130,13 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 			this->post_2D.saves["Ds_"+save_names_suffix[2]],
 			this->post_2D.set_tensors_map2(this->Hs) );
 
-	this->lri.save_load.save("Cs_a_"+save_names_suffix[0], Label::ab::a);
-	this->lri.save_load.save("Cs_b_"+save_names_suffix[0], Label::ab::b);
-	this->lri.save_load.save("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-	this->lri.save_load.save("Ds_a1b1_"+save_names_suffix[2], Label::ab::a1b1);
-	this->lri.save_load.save("Ds_a1b2_"+save_names_suffix[2], Label::ab::a1b2);
-	this->lri.save_load.save("Ds_a2b1_"+save_names_suffix[2], Label::ab::a2b1);
-	this->lri.save_load.save("Ds_a2b2_"+save_names_suffix[2], Label::ab::a2b2);
+	this->lri.data_ab_name[Label::ab::a   ] = "Cs_a_"   +save_names_suffix[0];
+	this->lri.data_ab_name[Label::ab::b   ] = "Cs_b_"   +save_names_suffix[0];
+	this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"     +save_names_suffix[1];
+	this->lri.data_ab_name[Label::ab::a1b1] = "Ds_a1b1_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a1b2] = "Ds_a1b2_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a2b1] = "Ds_a2b1_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a2b2] = "Ds_a2b2_"+save_names_suffix[2];
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
@@ -160,10 +150,10 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 	assert(this->flag_finish.dC);
 	assert(this->flag_finish.dV);
 
-	this->lri.save_load.load("Ds_a1b1_"+save_names_suffix[2], Label::ab::a1b1);
-	this->lri.save_load.load("Ds_a1b2_"+save_names_suffix[2], Label::ab::a1b2);
-	this->lri.save_load.load("Ds_a2b1_"+save_names_suffix[2], Label::ab::a2b1);
-	this->lri.save_load.load("Ds_a2b2_"+save_names_suffix[2], Label::ab::a2b2);
+	this->lri.data_ab_name[Label::ab::a1b1] = "Ds_a1b1_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a1b2] = "Ds_a1b2_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a2b1] = "Ds_a2b1_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a2b2] = "Ds_a2b2_"+save_names_suffix[2];
 	for(std::size_t ipos=0; ipos<Npos; ++ipos)
 	{
 		std::map<TA,Tdata> force_ipos;
@@ -171,9 +161,9 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 		{
 			std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(1);
 
-			this->lri.save_load.load("dCs_a_"+std::to_string(ipos)+"_"+save_names_suffix[3], Label::ab::a);
-			this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-			this->lri.save_load.load("Cs_b_"+save_names_suffix[0], Label::ab::b);
+			this->lri.data_ab_name[Label::ab::a   ] = "dCs_a_"+std::to_string(ipos)+"_"+save_names_suffix[3];
+			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"                            +save_names_suffix[1];
+			this->lri.data_ab_name[Label::ab::b   ] = "Cs_b_"                          +save_names_suffix[0];
 
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
@@ -187,11 +177,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 				dHs_vec,
 				1.0);
 
-			this->lri.save_load.save("dCs_a_"+std::to_string(ipos)+"_"+save_names_suffix[3], Label::ab::a);
-			this->lri.save_load.save("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-
-			this->lri.save_load.load("Cs_a_"+save_names_suffix[0], Label::ab::a);
-			this->lri.save_load.load("dVs_"+std::to_string(ipos)+"_"+save_names_suffix[4], Label::ab::a0b0);
+			this->lri.data_ab_name[Label::ab::a   ] = "Cs_a_"                         +save_names_suffix[0];
+			this->lri.data_ab_name[Label::ab::a0b0] = "dVs_" +std::to_string(ipos)+"_"+save_names_suffix[4];
 
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a2b2,
@@ -220,11 +207,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 				dHs_vec,
 				1.0);
 
-			this->lri.save_load.save("dVs_"+std::to_string(ipos)+"_"+save_names_suffix[4], Label::ab::a0b0);
-			this->lri.save_load.save("Cs_b_"+save_names_suffix[0], Label::ab::b);
-
-			this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-			this->lri.save_load.load("dCs_b_"+std::to_string(ipos)+"_"+save_names_suffix[3], Label::ab::b);
+			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"                            +save_names_suffix[1];
+			this->lri.data_ab_name[Label::ab::b   ] = "dCs_b_"+std::to_string(ipos)+"_"+save_names_suffix[3];
 
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
@@ -237,10 +221,6 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 				 Label::ab_ab::a0b0_a2b2},
 				dHs_vec,
 				-1.0);
-
-			this->lri.save_load.save("Cs_a_"+save_names_suffix[0], Label::ab::a);
-			this->lri.save_load.save("dCs_b_"+std::to_string(ipos)+"_"+save_names_suffix[3], Label::ab::b);
-			this->lri.save_load.save("Vs_"+save_names_suffix[1], Label::ab::a0b0);
 
 			this->post_2D.cal_force(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
@@ -255,10 +235,6 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 		}
 		this->force[ipos] = this->post_2D.reduce_force(force_ipos);
 	} // end for(ipos)
-	this->lri.save_load.save("Ds_a1b1_"+save_names_suffix[2], Label::ab::a1b1);
-	this->lri.save_load.save("Ds_a1b2_"+save_names_suffix[2], Label::ab::a1b2);
-	this->lri.save_load.save("Ds_a2b1_"+save_names_suffix[2], Label::ab::a2b1);
-	this->lri.save_load.save("Ds_a2b2_"+save_names_suffix[2], Label::ab::a2b2);
 }
 
 
@@ -290,16 +266,16 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 
 	this->stress = Tensor<Tdata>({Npos, Npos});
 
-	this->lri.save_load.load("Ds_a1b1_"+save_names_suffix[2], Label::ab::a1b1);
-	this->lri.save_load.load("Ds_a2b1_"+save_names_suffix[2], Label::ab::a2b1);
+	this->lri.data_ab_name[Label::ab::a1b1] = "Ds_a1b1_"+save_names_suffix[2];
+	this->lri.data_ab_name[Label::ab::a2b1] = "Ds_a2b1_"+save_names_suffix[2];
 	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
 	{
 		std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(Npos);
 		this->lri.coefficients.resize(Npos);
 
-		this->lri.save_load.load("dCs_a_"+std::to_string(ipos0)+"_"+save_names_suffix[3], Label::ab::a);
-		this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-		this->lri.save_load.load("Cs_b_"+save_names_suffix[0], Label::ab::b);
+		this->lri.data_ab_name[Label::ab::a   ] = "dCs_a_"+std::to_string(ipos0)+"_"+save_names_suffix[3];
+		this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"                             +save_names_suffix[1];
+		this->lri.data_ab_name[Label::ab::b   ] = "Cs_b_"                           +save_names_suffix[0];
 
 		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
 			this->lri.coefficients[ipos1] =
@@ -312,11 +288,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 			 Label::ab_ab::a0b0_a2b1},
 			dHs_vec);
 
-		this->lri.save_load.save("dCs_a_"+std::to_string(ipos0)+"_"+save_names_suffix[3], Label::ab::a);
-		this->lri.save_load.save("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-
-		this->lri.save_load.load("Cs_a_"+save_names_suffix[0], Label::ab::a);
-		this->lri.save_load.load("dVs_"+std::to_string(ipos0)+"_"+save_names_suffix[4], Label::ab::a0b0);
+		this->lri.data_ab_name[Label::ab::a   ] = "Cs_a_"                         +save_names_suffix[0];
+		this->lri.data_ab_name[Label::ab::a0b0] = "dVs_"+std::to_string(ipos0)+"_"+save_names_suffix[4];
 
 		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
 			this->lri.coefficients[ipos1] =
@@ -329,11 +302,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 			 Label::ab_ab::a0b0_a2b1},
 			dHs_vec);
 
-		this->lri.save_load.save("dVs_"+std::to_string(ipos0)+"_"+save_names_suffix[4], Label::ab::a0b0);
-		this->lri.save_load.save("Cs_b_"+save_names_suffix[0], Label::ab::b);
-
-		this->lri.save_load.load("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-		this->lri.save_load.load("dCs_b_"+std::to_string(ipos0)+"_"+save_names_suffix[3], Label::ab::b);
+		this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"                             +save_names_suffix[1];
+		this->lri.data_ab_name[Label::ab::b   ] = "dCs_b_"+std::to_string(ipos0)+"_"+save_names_suffix[3];
 
 		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
 			this->lri.coefficients[ipos1] =
@@ -346,17 +316,11 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 			 Label::ab_ab::a0b0_a2b1},
 			dHs_vec);
 
-		this->lri.save_load.save("Cs_a_"+save_names_suffix[0], Label::ab::a);
-		this->lri.save_load.save("Vs_"+save_names_suffix[1], Label::ab::a0b0);
-		this->lri.save_load.save("dCs_b_"+std::to_string(ipos0)+"_"+save_names_suffix[3], Label::ab::b);
-
 		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
 			this->stress(ipos0,ipos1) = post_2D.cal_energy(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
 				this->post_2D.set_tensors_map2(dHs_vec[ipos1]));
 	}
-	this->lri.save_load.save("Ds_a1b1_"+save_names_suffix[2], Label::ab::a1b1);
-	this->lri.save_load.save("Ds_a2b1_"+save_names_suffix[2], Label::ab::a2b1);
 }
 
 

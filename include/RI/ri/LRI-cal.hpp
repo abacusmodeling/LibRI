@@ -33,7 +33,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	}();
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_b_transpose
 		= flag_D_b_transpose
-		? LRI_Cal_Aux::cal_Ds_transpose(this->Ds_ab[Label::ab::b])
+		? LRI_Cal_Aux::cal_Ds_transpose( this->data_pool.at( this->data_ab_name[Label::ab::b] ).Ds_ab )
 		: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
 
 	assert(!this->coefficients.empty());
@@ -56,7 +56,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 	#pragma omp parallel
 	{
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_result_thread(this->coefficients.size());
-		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->Ds_ab, Ds_result_thread);
+		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->data_pool, this->data_ab_name, Ds_result_thread);
 
 		for(const TA &Aa01 : this->parallel->get_list_Aa01())
 		{

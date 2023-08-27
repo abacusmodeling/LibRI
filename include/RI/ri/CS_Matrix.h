@@ -46,11 +46,12 @@ public:
 
 	template<typename T> Uplimits cal_uplimits( const Label::ab &label, const T &Ds);
 
+	template<typename T_Data_Wrapper>
 	Step set_label_A(
 		const Label::ab_ab &label_in,
 		const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2,
 		const TC &period,
-		const std::unordered_map<Label::ab, CS_Matrix<TA,TC,Tdata>::Uplimits> &uplimits) const;
+		const T_Data_Wrapper &data_wrapper) const;
 
 	bool filter_4(const Step &step                           ) const { return step.a_square * step.first_square * step.second_square * step.b_square < this->threshold.at(step.label); }
 	bool filter_3(const Step &step, const Tdata &uplimit_norm) const { return uplimit_norm                      * step.second_square * step.b_square < this->threshold.at(step.label); }

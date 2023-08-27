@@ -6,13 +6,13 @@
 #pragma once
 
 #include "LRI_Cal_Tools.h"
-#include "../ri/Label.h"
+#include "Label.h"
 #include "../global/Tensor.h"
+#include "Data_Pack.h"
 #include "CS_Matrix.h"
 #include "../parallel/Parallel_LRI_Equally.h"
 #include "RI_Tools.h"
 #include "../global/Global_Func-2.h"
-#include "Save_Load.h"
 
 #include <mpi.h>
 #include <array>
@@ -47,7 +47,8 @@ public:
 	void set_tensors_map2(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 		const Label::ab &label,
-		const Tdata_real &threshold);
+		const Tdata_real &threshold,
+		const std::string &save_name);
 	//void set_tensors_map3(
 	//	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 	//	const std::string &label,
@@ -73,11 +74,8 @@ public:
 public:		// private:
 	TC period;
 	MPI_Comm mpi_comm;
-	Save_Load<TA,Tcell,Ndim,Tdata> save_load;
-
-	std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_ab;		// Ds_ab[A0][{A1,C1}]
-	std::unordered_map<Label::ab, std::vector<std::set<TA>>> index_Ds_ab;					// index_Ds_ab[0]=A1
-	std::unordered_map<Label::ab, typename CS_Matrix<TA,TC,Tdata_real>::Uplimits> csm_uplimits;
+	std::map<std::string, Data_Pack<TA,TC,Tdata>> data_pool;
+	std::unordered_map<Label::ab, std::string> data_ab_name;
 
 public:		// private:
 	using T_cal_func = std::function<void(

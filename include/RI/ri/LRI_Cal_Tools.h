@@ -16,6 +16,9 @@
 namespace RI
 {
 
+	template<typename TA, typename TC, typename Tdata>
+	struct Data_Pack;
+
 template<typename TA, typename TC, typename Tdata>
 class LRI_Cal_Tools
 {
@@ -24,23 +27,34 @@ public:
 
 	LRI_Cal_Tools(
 		const TC &period_in,
-		std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_ab_in,
+		const std::map<std::string, Data_Pack<TA,TC,Tdata>> &data_pool,
+		const std::unordered_map<Label::ab, std::string> &data_ab_name,		
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result_in)
-	:period(period_in), Ds_ab(Ds_ab_in), Ds_result(Ds_result_in){}
+			:period(period_in), Ds_result(Ds_result_in)
+	{
+		this->Ds_ab_ptr.reserve(Label::array_ab.size());
+		for(const auto &name : data_ab_name)
+		{
+			if(!name.second.empty())
+				this->Ds_ab_ptr[name.first] = &data_pool.at(name.second).Ds_ab;
+		}
+	}
 
-	inline Tensor<Tdata> get_Ds_ab(const Label::ab &label,
+	inline const Tensor<Tdata> &get_Ds_ab(
+		const Label::ab &label,
 		const TA &Aa, const TAC &Ab) const
 	{
 		return Global_Func::find(
-			this->Ds_ab.at(label),
+			*this->Ds_ab_ptr.at(label),
 			Aa, Ab);
 	}
-	inline Tensor<Tdata> get_Ds_ab(const Label::ab &label,
+	inline const Tensor<Tdata> &get_Ds_ab(
+		const Label::ab &label,
 		const TAC &Aa, const TAC &Ab) const
 	{
 		using namespace Array_Operator;
 		return Global_Func::find(
-			this->Ds_ab.at(label),
+			*this->Ds_ab_ptr.at(label),
 			Aa.first, TAC{Ab.first, (Ab.second-Aa.second)%this->period});
 	}
 
@@ -115,7 +129,7 @@ public:
 
 public:		// private:
 	const TC &period;
-	const std::unordered_map<Label::ab, std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_ab;
+	std::unordered_map<Label::ab, const std::map<TA, std::map<TAC, Tensor<Tdata>>>*> Ds_ab_ptr;
 	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result;
 };
 
