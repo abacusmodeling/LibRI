@@ -47,8 +47,14 @@ public:
 	void set_tensors_map2(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 		const Label::ab &label,
-		const Tdata_real &threshold,
-		const std::string &save_name);
+		const std::map<std::string, double> &para_in = {},
+		const std::string &save_name_in = "default");
+			// para:
+			//     "flag_period",      true
+			//     "flag_comm",        true
+			//     "flag_filter",      true
+			//     "threshold_filter", 0.0
+			// save_name:              Label_Tools::get_name(label)
 	//void set_tensors_map3(
 	//	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 	//	const std::string &label,

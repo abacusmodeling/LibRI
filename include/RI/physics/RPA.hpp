@@ -30,8 +30,8 @@ void RPA<TA,Tcell,Ndim,Tdata>::set_Cs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
 	const Tdata_real &threshold_C)
 {
-	this->lri.set_tensors_map2( Cs, Label::ab::a, threshold_C, "Cs_a" );
-	this->lri.set_tensors_map2( Cs, Label::ab::b, threshold_C, "Cs_b" );
+	this->lri.set_tensors_map2( Cs, Label::ab::a, {{"threshold_filter", threshold_C}} );
+	this->lri.set_tensors_map2( Cs, Label::ab::b, {{"threshold_filter", threshold_C}} );
 	this->flag_finish.C = true;
 }
 
@@ -49,14 +49,14 @@ void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
 
 	auto set_Gs_a1 = [this, &threshold_G](const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs)
 	{
-		this->lri.set_tensors_map2( Gs, Label::ab::a1b1, threshold_G, "Gs_a1b1" );
-		this->lri.set_tensors_map2( Gs, Label::ab::a1b2, threshold_G, "Gs_a1b2" );
+		this->lri.set_tensors_map2( Gs, Label::ab::a1b1, {{"threshold_filter", threshold_G}} );
+		this->lri.set_tensors_map2( Gs, Label::ab::a1b2, {{"threshold_filter", threshold_G}} );
 	};
 
 	auto set_Gs_a2 = [this, &threshold_G](const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs)
 	{
-		this->lri.set_tensors_map2( Gs, Label::ab::a2b1, threshold_G, "Gs_a2b1" );
-		this->lri.set_tensors_map2( Gs, Label::ab::a2b2, threshold_G, "Gs_a2b2" );
+		this->lri.set_tensors_map2( Gs, Label::ab::a2b1, {{"threshold_filter", threshold_G}} );
+		this->lri.set_tensors_map2( Gs, Label::ab::a2b2, {{"threshold_filter", threshold_G}} );
 	};
 
 	std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> chi0s_vec(1);

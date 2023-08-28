@@ -7,7 +7,9 @@
 
 #include "LRI.h"
 #include "RI_Tools.h"
+#include "Label_Tools.h"
 #include "CS_Matrix.h"
+#include "../global/Map_Operator.h"
 #include <algorithm>
 
 namespace RI
@@ -29,20 +31,34 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
 	const Label::ab &label,
-	const Tdata_real &threshold,
-	const std::string &save_name)
+	const std::map<std::string, double> &para_in,
+	const std::string &save_name_in)
 {
-	//if()
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_period = RI_Tools::cal_period(Ds_local, this->period);
+	const std::map<std::string, double> para_default = {
+		{"flag_period",      true}, 
+		{"flag_comm",        true},
+		{"flag_filter",      true},
+		{"threshold_filter", 0.0}};
+	const std::map<std::string, double> para = Map_Operator::cover(para_default, para_in);
 
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_comm = this->parallel->comm_tensors_map2(label, std::move(Ds_period));
-
+	const std::string save_name = 
+		save_name_in=="default"
+		? Label_Tools::get_name(label)
+		: save_name_in;
 	this->data_ab_name[label] = save_name;
 
-	if(threshold)
-		this->data_pool[save_name].Ds_ab = RI_Tools::filter(std::move(Ds_comm), filter_funcs[label], threshold);
-	else
-		this->data_pool[save_name].Ds_ab = std::move(Ds_comm);
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_new =
+		para.at("flag_period")
+		? RI_Tools::cal_period(Ds_local, this->period)
+		: Ds_local;
+
+	if(para.at("flag_comm"))
+		Ds_new = this->parallel->comm_tensors_map2(label, std::move(Ds_new));
+
+	if(para.at("flag_filter"))
+		Ds_new = RI_Tools::filter(std::move(Ds_new), filter_funcs[label], para.at("threshold_filter"));
+
+	this->data_pool[save_name].Ds_ab = std::move(Ds_new);
 
 	this->data_pool[save_name].index_Ds_ab = RI_Tools::get_index(this->data_pool[save_name].Ds_ab);
 

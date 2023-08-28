@@ -41,6 +41,16 @@ namespace Map_Operator
 		m.insert(ptr2, m2.end());
 		return m;
 	}
+
+	// m2 cover m1
+	template<typename Tkey, typename Tvalue>
+	std::map<Tkey,Tvalue> cover(const std::map<Tkey,Tvalue> &m1, const std::map<Tkey,Tvalue> &m2)
+	{
+		std::map<Tkey,Tvalue> m = m1;
+		for(const auto &item : m2)
+			m[item.first] = item.second;
+		return m;
+	}
 }
 
 }

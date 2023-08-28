@@ -84,7 +84,7 @@ namespace LRI_Speed_Test
 		lri.csm.set_threshold(0);
 
 		for(const RI::Label::ab &label : RI::Label::array_ab)
-			lri.set_tensors_map2(Ds_ab[label], label, 0, RI::Label_Tools::get_name(label));
+			lri.set_tensors_map2(Ds_ab[label], label);
 
 		timeval t_begin;
 		gettimeofday(&t_begin, NULL);

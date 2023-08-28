@@ -38,8 +38,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Cs(
 	const Tdata_real &threshold_C,
 	const std::string &save_name_suffix)
 {
-	this->lri.set_tensors_map2( Cs, Label::ab::a, threshold_C, "Cs_a_"+save_name_suffix );
-	this->lri.set_tensors_map2( Cs, Label::ab::b, threshold_C, "Cs_b_"+save_name_suffix );
+	this->lri.set_tensors_map2( Cs, Label::ab::a, {{"threshold_filter", threshold_C}}, "Cs_a_"+save_name_suffix );
+	this->lri.set_tensors_map2( Cs, Label::ab::b, {{"threshold_filter", threshold_C}}, "Cs_b_"+save_name_suffix );
 	this->flag_finish.C = true;
 }
 
@@ -49,7 +49,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Vs(
 	const Tdata_real &threshold_V,
 	const std::string &save_name_suffix)
 {
-	this->lri.set_tensors_map2( Vs, Label::ab::a0b0, threshold_V, "Vs_"+save_name_suffix );
+	this->lri.set_tensors_map2( Vs, Label::ab::a0b0, {{"threshold_filter", threshold_V}}, "Vs_"+save_name_suffix );
 	this->flag_finish.V = true;
 }
 
@@ -59,10 +59,10 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 	const Tdata_real &threshold_D,
 	const std::string &save_name_suffix)
 {
-	this->lri.set_tensors_map2( Ds, Label::ab::a1b1, threshold_D, "Ds_a1b1_"+save_name_suffix );
-	this->lri.set_tensors_map2( Ds, Label::ab::a1b2, threshold_D, "Ds_a1b2_"+save_name_suffix );
-	this->lri.set_tensors_map2( Ds, Label::ab::a2b1, threshold_D, "Ds_a2b1_"+save_name_suffix );
-	this->lri.set_tensors_map2( Ds, Label::ab::a2b2, threshold_D, "Ds_a2b2_"+save_name_suffix );
+	this->lri.set_tensors_map2( Ds, Label::ab::a1b1, {{"threshold_filter", threshold_D}}, "Ds_a1b1_"+save_name_suffix );
+	this->lri.set_tensors_map2( Ds, Label::ab::a1b2, {{"threshold_filter", threshold_D}}, "Ds_a1b2_"+save_name_suffix );
+	this->lri.set_tensors_map2( Ds, Label::ab::a2b1, {{"threshold_filter", threshold_D}}, "Ds_a2b1_"+save_name_suffix );
+	this->lri.set_tensors_map2( Ds, Label::ab::a2b2, {{"threshold_filter", threshold_D}}, "Ds_a2b2_"+save_name_suffix );
 	this->flag_finish.D = true;
 
 	//if()
@@ -77,8 +77,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dCs(
 {
 	for(std::size_t ipos=0; ipos<Npos; ++ipos)
 	{
-		this->lri.set_tensors_map2( dCs[ipos], Label::ab::a, threshold_dC, "dCs_a_"+std::to_string(ipos)+"_"+save_name_suffix );
-		this->lri.set_tensors_map2( dCs[ipos], Label::ab::b, threshold_dC, "dCs_b_"+std::to_string(ipos)+"_"+save_name_suffix );
+		this->lri.set_tensors_map2( dCs[ipos], Label::ab::a, {{"threshold_filter", threshold_dC}}, "dCs_a_"+std::to_string(ipos)+"_"+save_name_suffix );
+		this->lri.set_tensors_map2( dCs[ipos], Label::ab::b, {{"threshold_filter", threshold_dC}}, "dCs_b_"+std::to_string(ipos)+"_"+save_name_suffix );
 	}
 	this->flag_finish.dC = true;
 }
@@ -91,7 +91,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dVs(
 {
 	for(std::size_t ipos=0; ipos<Npos; ++ipos)
 	{
-		this->lri.set_tensors_map2( dVs[ipos], Label::ab::a0b0, threshold_dV, "dVs_"+std::to_string(ipos)+"_"+save_name_suffix );
+		this->lri.set_tensors_map2( dVs[ipos], Label::ab::a0b0, {{"threshold_filter", threshold_dV}}, "dVs_"+std::to_string(ipos)+"_"+save_name_suffix );
 	}
 	this->flag_finish.dV = true;
 }
