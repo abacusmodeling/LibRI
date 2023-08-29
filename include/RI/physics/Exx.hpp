@@ -8,6 +8,7 @@
 #include "Exx.h"
 #include "../ri/Cell_Nearest.h"
 #include "../ri/Label.h"
+#include "../global/Map_Operator.h"
 
 #include <cassert>
 
@@ -64,6 +65,41 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 	this->lri.set_tensors_map2( Ds, Label::ab::a2b1, {{"threshold_filter", threshold_D}}, "Ds_a2b1_"+save_name_suffix );
 	this->lri.set_tensors_map2( Ds, Label::ab::a2b2, {{"threshold_filter", threshold_D}}, "Ds_a2b2_"+save_name_suffix );
 	this->flag_finish.D = true;
+	this->flag_finish.D_delta = false;
+
+	//if()
+		this->post_2D.saves["Ds_"+save_name_suffix] = this->post_2D.set_tensors_map2(Ds);
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::set_Ds_delta(
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
+	const Tdata_real &threshold_D,
+	const std::string &save_name_suffix)
+{
+	using namespace Map_Operator;
+
+	assert(flag_finish.D);
+	for(const Label::ab label : {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2})
+	{
+		this->lri.set_tensors_map2(
+			Ds,
+			label,
+			{{"flag_filter", false}},
+			"Ds_tmp" );
+		this->lri.set_tensors_map2(
+			this->lri.data_pool["Ds_tmp"].Ds_ab - this->lri.data_pool["Ds_"+Label_Tools::get_name(label)+"_"+save_name_suffix].Ds_ab,
+			label,
+			{{"flag_period", false}, {"flag_comm", false}, {"flag_filter", true}, {"threshold_filter", threshold_D}},
+			"Ds_delta_"+Label_Tools::get_name(label)+"_"+save_name_suffix);
+		this->lri.set_tensors_map2(
+			this->lri.data_pool["Ds_delta_"+Label_Tools::get_name(label)+"_"+save_name_suffix].Ds_ab + this->lri.data_pool["Ds_"+Label_Tools::get_name(label)+"_"+save_name_suffix].Ds_ab,
+			label,
+			{{"flag_period", false}, {"flag_comm", false}, {"flag_filter", false}},
+			"Ds_"+Label_Tools::get_name(label)+"_"+save_name_suffix);
+	}
+	this->flag_finish.D_delta = true;
+	this->flag_finish.D = true;
 
 	//if()
 		this->post_2D.saves["Ds_"+save_name_suffix] = this->post_2D.set_tensors_map2(Ds);
@@ -102,18 +138,32 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 	const std::array<std::string,3> &save_names_suffix)						// "Cs","Vs","Ds"
 {
+	using namespace Map_Operator;
+	
 	assert(this->flag_finish.stru);
-	assert(this->flag_finish.C);
-	assert(this->flag_finish.V);
-	assert(this->flag_finish.D);
 
+	assert(this->flag_finish.C);
 	this->lri.data_ab_name[Label::ab::a   ] = "Cs_a_"   +save_names_suffix[0];
 	this->lri.data_ab_name[Label::ab::b   ] = "Cs_b_"   +save_names_suffix[0];
+
+	assert(this->flag_finish.V);
 	this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"     +save_names_suffix[1];
-	this->lri.data_ab_name[Label::ab::a1b1] = "Ds_a1b1_"+save_names_suffix[2];
-	this->lri.data_ab_name[Label::ab::a1b2] = "Ds_a1b2_"+save_names_suffix[2];
-	this->lri.data_ab_name[Label::ab::a2b1] = "Ds_a2b1_"+save_names_suffix[2];
-	this->lri.data_ab_name[Label::ab::a2b2] = "Ds_a2b2_"+save_names_suffix[2];
+
+	if(!this->flag_finish.D_delta)
+	{
+		assert(this->flag_finish.D);
+		this->lri.data_ab_name[Label::ab::a1b1] = "Ds_a1b1_"+save_names_suffix[2];
+		this->lri.data_ab_name[Label::ab::a1b2] = "Ds_a1b2_"+save_names_suffix[2];
+		this->lri.data_ab_name[Label::ab::a2b1] = "Ds_a2b1_"+save_names_suffix[2];
+		this->lri.data_ab_name[Label::ab::a2b2] = "Ds_a2b2_"+save_names_suffix[2];
+	}
+	else
+	{
+		this->lri.data_ab_name[Label::ab::a1b1] = "Ds_delta_a1b1_"+save_names_suffix[2];
+		this->lri.data_ab_name[Label::ab::a1b2] = "Ds_delta_a1b2_"+save_names_suffix[2];
+		this->lri.data_ab_name[Label::ab::a2b1] = "Ds_delta_a2b1_"+save_names_suffix[2];
+		this->lri.data_ab_name[Label::ab::a2b2] = "Ds_delta_a2b2_"+save_names_suffix[2];
+	}
 
 	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Hs_vec(1);
 	this->lri.coefficients = {nullptr};
@@ -123,20 +173,15 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 		 Label::ab_ab::a0b0_a2b1,
 		 Label::ab_ab::a0b0_a2b2},
 		Hs_vec);
-	this->Hs = std::move(Hs_vec[0]);
+	if(this->flag_finish.D_delta)
+		this->Hs = this->Hs + Hs_vec[0];
+	else
+		this->Hs = std::move(Hs_vec[0]);
 
 	//if()
 		this->energy = this->post_2D.cal_energy(
 			this->post_2D.saves["Ds_"+save_names_suffix[2]],
 			this->post_2D.set_tensors_map2(this->Hs) );
-
-	this->lri.data_ab_name[Label::ab::a   ] = "Cs_a_"   +save_names_suffix[0];
-	this->lri.data_ab_name[Label::ab::b   ] = "Cs_b_"   +save_names_suffix[0];
-	this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"     +save_names_suffix[1];
-	this->lri.data_ab_name[Label::ab::a1b1] = "Ds_a1b1_"+save_names_suffix[2];
-	this->lri.data_ab_name[Label::ab::a1b2] = "Ds_a1b2_"+save_names_suffix[2];
-	this->lri.data_ab_name[Label::ab::a2b1] = "Ds_a2b1_"+save_names_suffix[2];
-	this->lri.data_ab_name[Label::ab::a2b2] = "Ds_a2b2_"+save_names_suffix[2];
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>

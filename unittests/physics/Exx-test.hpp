@@ -27,6 +27,8 @@ namespace Exx_Test
 		exx.cal_Hs();
 		exx.cal_force();
 		exx.cal_stress();
+		exx.set_Ds_delta({}, 1E-4);
+		exx.cal_Hs();
 
 		MPI_Finalize();
 	}

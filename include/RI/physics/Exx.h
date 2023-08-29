@@ -46,6 +46,10 @@ public:
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
 		const Tdata_real &threshold_D,
 		const std::string &save_name_suffix="");
+	void set_Ds_delta(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
+		const Tdata_real &threshold_D,
+		const std::string &save_name_suffix="");
 	void set_dCs(
 		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos> &dCs,
 		const Tdata_real &threshold_dC,
@@ -80,6 +84,7 @@ public:
 		bool C=false;
 		bool V=false;
 		bool D=false;
+		bool D_delta=false;
 		bool dC=false;
 		bool dV=false;
 	};
