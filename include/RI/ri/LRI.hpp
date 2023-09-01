@@ -17,12 +17,12 @@ LRI<TA,Tcell,Ndim,Tdata>::LRI()
 {
 	this->data_ab_name.reserve(Label::array_ab.size());
 
+	auto func_norm_max =
+		[](const Tensor<Tdata> &D, const Tdata_real &threshold) -> bool
+		{	return D.norm(std::numeric_limits<double>::max()) > threshold;	};
 	this->filter_funcs.reserve(Label::array_ab.size());
 	for(const Label::ab &label : Label::array_ab)
-		this->filter_funcs[label]	=
-			[](const Tensor<Tdata> &D,
-				const Tdata_real &threshold) -> bool
-			{	return D.norm(std::numeric_limits<double>::max()) > threshold;	};
+		this->filter_funcs[label] = func_norm_max;
 
 	for(std::size_t i=0; i<Ndim; ++i)
 		this->period[i] = std::numeric_limits<Tcell>::max()/4;		// /4 for not out of range when Array_Operator::operator%

@@ -44,7 +44,9 @@ public:
 	void set_threshold(const Tdata &threshold_in);
 	void set_threshold(const Label::ab_ab &label, const Tdata &threshold_in);
 
+	template<typename T> void cal_uplimits( const Label::ab &label, const T &Ds, CS_Matrix<TA,TC,Tdata>::Uplimits &uplimits);
 	template<typename T> Uplimits cal_uplimits( const Label::ab &label, const T &Ds);
+	template<typename T> Uplimits cal_uplimits( const std::vector<Label::ab> &label_list, const T &Ds);
 
 	template<typename T_Data_Wrapper>
 	Step set_label_A(

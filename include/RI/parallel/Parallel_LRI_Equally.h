@@ -27,6 +27,9 @@ public:
 	std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
 		const Label::ab &label,
 		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const override;
+	std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
+		const std::vector<Label::ab> &label,
+		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const override;
 
 	const std::vector<TA >& get_list_Aa01() const override { return this->list_Aa01; }
 	const std::vector<TAC>& get_list_Aa2 () const override { return this->list_Aa2;  }

@@ -31,11 +31,11 @@ void CS_Matrix<TA,TC,Tdata>::set_threshold(const Label::ab_ab &label, const Tdat
 
 
 template<typename TA, typename TC, typename Tdata> template<typename T>
-CS_Matrix<TA,TC,Tdata>::Uplimits CS_Matrix<TA,TC,Tdata>::cal_uplimits(
+void CS_Matrix<TA,TC,Tdata>::cal_uplimits(
 	const Label::ab &label,
-	const T &Ds)
+	const T &Ds,
+	CS_Matrix<TA,TC,Tdata>::Uplimits &uplimits)
 {
-	Uplimits uplimits;
 	switch(label)
 	{
 		case Label::ab::a:	case Label::ab::b:
@@ -55,6 +55,26 @@ CS_Matrix<TA,TC,Tdata>::Uplimits CS_Matrix<TA,TC,Tdata>::cal_uplimits(
 		default:
 			throw std::invalid_argument("CS_Matrix::set_tensor");
 	}
+}
+
+template<typename TA, typename TC, typename Tdata> template<typename T>
+CS_Matrix<TA,TC,Tdata>::Uplimits CS_Matrix<TA,TC,Tdata>::cal_uplimits(
+	const Label::ab &label,
+	const T &Ds)
+{
+	Uplimits uplimits;
+	this->cal_uplimits(label, Ds, uplimits);
+	return uplimits;
+}
+
+template<typename TA, typename TC, typename Tdata> template<typename T>
+CS_Matrix<TA,TC,Tdata>::Uplimits CS_Matrix<TA,TC,Tdata>::cal_uplimits(
+	const std::vector<Label::ab> &label_list,
+	const T &Ds)
+{
+	Uplimits uplimits;
+	for(const Label::ab &label : label_list)
+		this->cal_uplimits(label, Ds, uplimits);
 	return uplimits;
 }
 

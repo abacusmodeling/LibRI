@@ -38,6 +38,9 @@ public:
 	virtual std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
 		const Label::ab &label,
 		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const =0;
+	virtual std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
+		const std::vector<Label::ab> &label,
+		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const =0;
 
 	virtual const std::vector<TA >& get_list_Aa01() const =0;
 	virtual const std::vector<TAC>& get_list_Aa2 () const =0;

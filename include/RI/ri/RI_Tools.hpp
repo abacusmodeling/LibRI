@@ -26,6 +26,23 @@ namespace RI_Tools
 					Ds_filter[Ds_tmp0.first][Ds_tmp1.first] = Ds_tmp1.second;
 		return Ds_filter;
 	}
+	template<typename TA, typename TAC, typename Tdata>
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> filter(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
+		const std::vector<T_filter_func<Tdata>> &filter_func_list,
+		const Global_Func::To_Real_t<Tdata> &threshold)
+	{
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_filter;
+		for(const auto &Ds_tmp0 : Ds)
+			for(const auto &Ds_tmp1 : Ds_tmp0.second)
+				for(const auto &filter_func : filter_func_list)
+					if(filter_func( Ds_tmp1.second, threshold ))
+					{
+						Ds_filter[Ds_tmp0.first][Ds_tmp1.first] = Ds_tmp1.second;
+						break;
+					}
+		return Ds_filter;
+	}
 
 
 	template<typename TA, typename TC, typename Tdata>

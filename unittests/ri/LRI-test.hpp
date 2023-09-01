@@ -96,6 +96,7 @@ namespace LRI_Test
 
 		for(const RI::Label::ab &label : RI::Label::array_ab)
 			lri.set_tensors_map2(Ds_ab[label], label);
+
 		{
 			std::vector<T_Ds> Ds_result;
 			lri.cal({RI::Label::ab_ab::a0b0_a1b1}, Ds_result);

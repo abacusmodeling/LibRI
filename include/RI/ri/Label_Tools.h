@@ -7,6 +7,7 @@
 
 #include "Label.h"
 #include <string>
+#include <vector>
 #include <stdexcept>
 
 namespace RI
@@ -57,6 +58,15 @@ namespace Label_Tools
 			case Label::ab_ab::a0b1_a1b0:		return "a0b1_a1b0";
 			default:	throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 		}
+	}
+
+	template<typename Tlabel>
+	std::string get_name(const std::vector<Tlabel> &label_list)
+	{
+		std::string name = "";
+		for(const auto &label : label_list)
+			name += Label_Tools::get_name(label) + "_";
+		return name.substr(0, name.size()-1);
 	}
 }
 

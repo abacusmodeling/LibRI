@@ -9,9 +9,11 @@
 #include "../../global/Cereal_Types.h"
 #include <Comm/example/Communicate_Map-2.h>
 #include "../example/Communicate_Map_Period.h"
+#include "../example/Communicate_Map_Combine.h"
 
-#include <map>
 #include <mpi.h>
+#include <map>
+#include <tuple>
 
 namespace RI
 {
@@ -113,6 +115,42 @@ namespace Communicate_Tensors_Map_Judge
 		judge.s1 = s1;
 		judge.s2 = s2;
 		return Communicate_Tensors_Map::comm_map3(mpi_comm, Ds_in, judge);
+	}
+
+
+	template<typename TA, typename TC, typename Tdata>
+	std::map<TA,std::map<std::pair<TA,TC>,Tensor<Tdata>>>
+	comm_map2_combine_origin_period(
+		const MPI_Comm &mpi_comm,
+		const std::map<TA,std::map<std::pair<TA,TC>,Tensor<Tdata>>> &Ds_in,
+		const std::tuple<
+			std::vector<std::tuple< std::set<TA>, std::set<std::pair<TA,TC>> >>,
+			std::vector<std::tuple< std::set<std::pair<TA,TC>>, std::set<std::pair<TA,TC>> >>
+			> &s_list,
+		const TC &period)
+	{
+		Communicate_Map_Combine::Judge_Map2_Combine2<
+			TA, TC,
+			Comm::Communicate_Map::Judge_Map2,
+			Communicate_Map_Period::Judge_Map2_Period
+		> judge_combine;
+
+		std::get<0>(judge_combine.judge_list).resize(std::get<0>(s_list).size());
+		for(int j=0; j<std::get<0>(s_list).size(); ++j)
+		{
+			std::get<0>(judge_combine.judge_list)[j].s0 = std::get<0>(std::get<0>(s_list)[j]);
+			std::get<0>(judge_combine.judge_list)[j].s1 = std::get<1>(std::get<0>(s_list)[j]);
+		}
+
+		std::get<1>(judge_combine.judge_list).resize(std::get<1>(s_list).size());
+		for(int j=0; j<std::get<1>(s_list).size(); ++j)
+		{
+			std::get<1>(judge_combine.judge_list)[j].s0 = std::get<0>(std::get<1>(s_list)[j]);
+			std::get<1>(judge_combine.judge_list)[j].s1 = std::get<1>(std::get<1>(s_list)[j]);
+			std::get<1>(judge_combine.judge_list)[j].period = period;
+		}
+
+		return Communicate_Tensors_Map::comm_map2(mpi_comm, Ds_in, judge_combine);
 	}
 }
 

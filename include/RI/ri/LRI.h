@@ -49,6 +49,11 @@ public:
 		const Label::ab &label,
 		const std::map<std::string, double> &para_in = {},
 		const std::string &save_name_in = "default");
+	void set_tensors_map2(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
+		const std::vector<Label::ab> &label_list,
+		const std::map<std::string, double> &para_in,
+		const std::string &save_name_in = "default");
 			// para:
 			//     "flag_period",      true
 			//     "flag_comm",        true

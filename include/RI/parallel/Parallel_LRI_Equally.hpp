@@ -52,8 +52,7 @@ auto Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::comm_tensors_map2(
 		case Label::ab::a0b0:	case Label::ab::a0b1:
 		case Label::ab::a1b0:	case Label::ab::a1b1:
 			return Communicate_Tensors_Map_Judge::comm_map2(this->mpi_comm, Ds, Global_Func::to_set(this->list_Aa01), Global_Func::to_set(this->list_Ab01));
-		case Label::ab::a0b2:
-		case Label::ab::a1b2:
+		case Label::ab::a0b2:	case Label::ab::a1b2:
 			return Communicate_Tensors_Map_Judge::comm_map2(this->mpi_comm, Ds, Global_Func::to_set(this->list_Aa01), Global_Func::to_set(this->list_Ab2));
 		case Label::ab::a2b0:	case Label::ab::a2b1:
 			return Communicate_Tensors_Map_Judge::comm_map2_period(this->mpi_comm, Ds, Global_Func::to_set(this->list_Aa2), Global_Func::to_set(this->list_Ab01), this->period);
@@ -62,6 +61,50 @@ auto Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::comm_tensors_map2(
 		default:
 			throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 	}
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+auto Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::comm_tensors_map2(
+	const std::vector<Label::ab> &label_list,
+	const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const
+-> std::map<TA,std::map<TAC,Tensor<Tdata>>>
+{
+	std::tuple<
+		std::vector<std::tuple< std::set<TA>, std::set<std::pair<TA,TC>> >>,
+		std::vector<std::tuple< std::set<std::pair<TA,TC>>, std::set<std::pair<TA,TC>> >>
+		> s_list;
+
+	std::vector<bool> flags(6, false);
+	for(const Label::ab &label : label_list)
+	{
+		switch(label)
+		{
+			case Label::ab::a:
+				flags[0]=true;	break;
+			case Label::ab::b:
+				flags[1]=true;	break;
+			case Label::ab::a0b0:	case Label::ab::a0b1:
+			case Label::ab::a1b0:	case Label::ab::a1b1:
+				flags[2]=true;	break;
+			case Label::ab::a0b2:	case Label::ab::a1b2:
+				flags[3]=true;	break;
+			case Label::ab::a2b0:	case Label::ab::a2b1:
+				flags[4]=true;	break;
+			case Label::ab::a2b2:
+				flags[5]=true;	break;
+			default:
+				throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
+		}
+	}
+
+	if(flags[0])	std::get<0>(s_list).push_back(std::make_tuple( Global_Func::to_set(this->list_Aa01), Global_Func::to_set(this->list_Aa2) ));
+	if(flags[1])	std::get<1>(s_list).push_back(std::make_tuple( Global_Func::to_set(this->list_Ab01), Global_Func::to_set(this->list_Ab2) ));
+	if(flags[2])	std::get<0>(s_list).push_back(std::make_tuple( Global_Func::to_set(this->list_Aa01), Global_Func::to_set(this->list_Ab01) ));
+	if(flags[3])	std::get<0>(s_list).push_back(std::make_tuple( Global_Func::to_set(this->list_Aa01), Global_Func::to_set(this->list_Ab2) ));
+	if(flags[4])	std::get<1>(s_list).push_back(std::make_tuple( Global_Func::to_set(this->list_Aa2), Global_Func::to_set(this->list_Ab01) ));
+	if(flags[5])	std::get<1>(s_list).push_back(std::make_tuple( Global_Func::to_set(this->list_Aa2), Global_Func::to_set(this->list_Ab2) ));
+	
+	return Communicate_Tensors_Map_Judge::comm_map2_combine_origin_period(this->mpi_comm, Ds, s_list, this->period);
 }
 
 }
