@@ -36,6 +36,8 @@ namespace Test_All
 
 		Distribute_Equally_Test::test_distribute_atoms(argc, argv);
 		Distribute_Equally_Test::test_distribute_atoms_periods(argc, argv);
+		Distribute_Equally_Test::test_distribute_atoms_repeatable(argc, argv);
+		Distribute_Equally_Test::test_distribute_periods(argc, argv);
 
 		Divide_Atoms_Test::test_divide_atoms();
 		Divide_Atoms_Test::test_divide_atoms_with_period();
