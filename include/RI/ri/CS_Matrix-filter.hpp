@@ -46,8 +46,8 @@ typename CS_Matrix<TA,TC,Tdata>::Step CS_Matrix<TA,TC,Tdata>::set_label_A(
 	};
 	auto get_uplimit_tensor2 = [&get_Aa_Ab, &data_wrapper](const Label::ab &label_ab) -> const Tdata&
 	{
-		const int xa = Label::get_a(label_ab);
-		const int xb = Label::get_b(label_ab);
+		const int xa = Label_Tools::get_a(label_ab);
+		const int xb = Label_Tools::get_b(label_ab);
 		const std::pair<TA,TAC> &Aa_Ab = get_Aa_Ab(xa,xb);
 		const TA &Aa=Aa_Ab.first;
 		const TAC &Ab=Aa_Ab.second;
@@ -58,11 +58,11 @@ typename CS_Matrix<TA,TC,Tdata>::Step CS_Matrix<TA,TC,Tdata>::set_label_A(
 
 	step.label = label_in;
 
-	const int index_a = Label::get_unused_a(step.label);
+	const int index_a = Label_Tools::get_unused_a(step.label);
 	step.a_square = Global_Func::find( data_wrapper(Label::ab::a).csm_uplimits.square_tensor3[index_a], Aa01, Aa2 );
 	step.a_norm   = Global_Func::find( data_wrapper(Label::ab::a).csm_uplimits.norm_tensor3  [index_a], Aa01, Aa2 );
 
-	const int index_b = get_unused_b(step.label);
+	const int index_b = Label_Tools::get_unused_b(step.label);
 	step.b_square = Global_Func::find( data_wrapper(Label::ab::b).csm_uplimits.square_tensor3[index_b], Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%period} );
 	step.b_norm   = Global_Func::find( data_wrapper(Label::ab::b).csm_uplimits.norm_tensor3  [index_b], Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%period} );
 

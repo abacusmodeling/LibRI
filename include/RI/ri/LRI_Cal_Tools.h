@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Label.h"
+#include "Label_Tools.h"
 #include "RI/global/Tensor.h"
 #include "RI/global/Global_Func-1.h"
 #include "RI/global/Array_Operator.h"
@@ -98,7 +99,7 @@ public:
 			const std::vector<Label::ab> &labels_ab = split_b01(label_ab_ab);
 			for(const Label::ab &label_ab : labels_ab)
 			{
-				const int a = Label::get_a(label_ab);
+				const int a = Label_Tools::get_a(label_ab);
 				switch(a)
 				{
 					case 0:	case 1:
