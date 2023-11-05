@@ -22,7 +22,9 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_parallel(
 	this->latvec = latvec_in;
 	this->period = period_in;
 
-	this->lri.set_parallel(this->mpi_comm, this->atoms_pos, this->latvec, this->period);
+	this->lri.set_parallel(
+		this->mpi_comm, this->atoms_pos, this->latvec, this->period,
+		{Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2, Label::ab_ab::a0b0_a2b1, Label::ab_ab::a0b0_a2b2});
 	this->flag_finish.stru = true;
 	//if()
 		// this->post_2D.set_parallel(this->mpi_comm, this->atoms_pos, this->period);
@@ -59,7 +61,7 @@ void G0W0<TA, Tcell, Ndim, Tdata>::cal_Sigc(
 	// setup screened Coulomb interaction
 	this->lri.set_tensors_map2(
 		Wc_tau,
-		Label::ab::a0b0,
+		{Label::ab::a0b0},
 		{{"threshold_filter", threshold_W}} );
 
 	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Sigc_vec(1);

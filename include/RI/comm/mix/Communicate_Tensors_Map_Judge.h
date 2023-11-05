@@ -136,14 +136,14 @@ namespace Communicate_Tensors_Map_Judge
 		> judge_combine;
 
 		std::get<0>(judge_combine.judge_list).resize(std::get<0>(s_list).size());
-		for(int j=0; j<std::get<0>(s_list).size(); ++j)
+		for(std::size_t j=0; j<std::get<0>(s_list).size(); ++j)
 		{
 			std::get<0>(judge_combine.judge_list)[j].s0 = std::get<0>(std::get<0>(s_list)[j]);
 			std::get<0>(judge_combine.judge_list)[j].s1 = std::get<1>(std::get<0>(s_list)[j]);
 		}
 
 		std::get<1>(judge_combine.judge_list).resize(std::get<1>(s_list).size());
-		for(int j=0; j<std::get<1>(s_list).size(); ++j)
+		for(std::size_t j=0; j<std::get<1>(s_list).size(); ++j)
 		{
 			std::get<1>(judge_combine.judge_list)[j].s0 = std::get<0>(std::get<1>(s_list)[j]);
 			std::get<1>(judge_combine.judge_list)[j].s1 = std::get<1>(std::get<1>(s_list)[j]);

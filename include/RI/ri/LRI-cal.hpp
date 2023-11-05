@@ -60,13 +60,13 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 
 		for(const TA &Aa01 : this->parallel->get_list_Aa01())
 		{
-			for(const TAC &Aa2 : this->parallel->get_list_Aa2())
+			for(const TAC &Aa2 : this->parallel->get_list_Aa2(Aa01))
 			{
 				const Tensor<Tdata> D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 				if(D_a.empty())	continue;
 				const Tensor<Tdata> D_a_transpose = LRI_Cal_Aux::tensor3_transpose(D_a);
 
-				const std::vector<TAC> &list_Ab01 = this->parallel->get_list_Ab01();
+				const std::vector<TAC> &list_Ab01 = this->parallel->get_list_Ab01(Aa01, Aa2);
 				#pragma omp for schedule(dynamic) nowait
 				for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 				{
@@ -79,7 +79,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal(
 					Ds_b01.reserve(Label::array_ab_ab.size());
 					Ds_b01_csm.reserve(Label::array_ab_ab.size());
 
-					for(const TAC &Ab2 : this->parallel->get_list_Ab2())
+					for(const TAC &Ab2 : this->parallel->get_list_Ab2(Aa01, Aa2, Ab01))
 					{
 						const Tensor<Tdata> D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 						if(D_b.empty())	continue;

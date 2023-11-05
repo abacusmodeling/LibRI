@@ -20,13 +20,17 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm_in,
 	const std::map<TA,Tatom_pos> &atoms_pos,
 	const std::array<Tatom_pos,Ndim> &latvec,
-	const std::array<Tcell,Ndim> &period_in)
+	const std::array<Tcell,Ndim> &period_in,
+	const std::vector<Label::ab_ab> &labels_all)
 {
 	this->mpi_comm = mpi_comm_in;
 	this->period = period_in;
-	this->parallel->set_parallel( this->mpi_comm, atoms_pos, latvec, this->period );
+	this->parallel->set_parallel(
+		this->mpi_comm, atoms_pos, latvec, this->period,
+		Label_Tools::to_Aab_Aab_set(labels_all));
 }
 
+/*
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_local,
@@ -64,6 +68,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 
 	this->data_pool[save_name].csm_uplimits = this->csm.cal_uplimits(label, this->data_pool[save_name].Ds_ab);
 }
+*/
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(

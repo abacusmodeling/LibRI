@@ -67,6 +67,28 @@ namespace Divide_Atoms
 		return cells;
 	}
 
+	/*
+	traversal_atom_period
+		In: [A0,A1] [3]
+		Out: [[A0,0], [A0,1], [A0,2], [A1,0], [A1,1], [A1,2]]
+	*/
+	template<typename TA, typename Tcell, std::size_t Ndim>
+	std::vector<std::pair<TA,std::array<Tcell,Ndim>>> traversal_atom_period(
+		const std::vector<TA> &atoms,
+		const std::array<Tcell,Ndim> &period)
+	{
+		using TC = std::array<Tcell,Ndim>;
+		using TAC = std::pair<TA,TC>;
+		const std::vector<TC> cells_origin = traversal_period(period);
+		const std::vector<TC> cells = Global_Func::mod_period(cells_origin, period);
+		std::vector<TAC> atoms_periods;
+		atoms_periods.reserve( atoms.size() * cells.size() );
+		for(const TA &atom : atoms)
+			for(const TC &cell : cells)
+				atoms_periods.push_back(std::make_pair(atom,cell));
+		return atoms_periods;
+	}
+
 	template<typename TA>
 	std::vector<TA> divide_atoms(
 		const std::size_t group_rank,
@@ -92,17 +114,8 @@ namespace Divide_Atoms
 		const std::vector<TA> &atoms,
 		const std::array<Tcell,Ndim> &period)
 	{
-		using TC = std::array<Tcell,Ndim>;
-		using TAC = std::pair<TA,TC>;
 		const std::vector<TA> atoms_divide = divide_atoms(group_rank, group_size, atoms);
-		const std::vector<TC> cells_origin = traversal_period(period);
-		const std::vector<TC> cells = Global_Func::mod_period(cells_origin, period);
-		std::vector<TAC> atoms_periods_divide;
-		atoms_periods_divide.reserve( atoms_divide.size() * cells.size() );
-		for(const TA &atom : atoms_divide)
-			for(const TC &cell : cells)
-				atoms_periods_divide.push_back(std::make_pair(atom,cell));
-		return atoms_periods_divide;
+		return traversal_atom_period(atoms_divide, period);
 	}
 
 	template<typename TA, typename Tcell, std::size_t Ndim>

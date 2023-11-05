@@ -21,7 +21,9 @@ void RPA<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const std::array<Tatom_pos,Ndim> &latvec,
 	const std::array<Tcell,Ndim> &period)
 {
-	this->lri.set_parallel(mpi_comm, atoms_pos, latvec, period);
+	this->lri.set_parallel(
+		mpi_comm, atoms_pos, latvec, period,
+		{Label::ab_ab::a1b1_a2b2, Label::ab_ab::a1b2_a2b1});
 	this->flag_finish.stru = true;
 }
 

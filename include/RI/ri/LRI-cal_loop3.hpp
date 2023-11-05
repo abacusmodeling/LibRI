@@ -73,13 +73,12 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_result_thread(1);
 		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->data_pool, this->data_ab_name, Ds_result_thread);
 
-		const std::vector<TA>  list_Aa01_Da = LRI_Cal_Aux::filter_list_map( this->parallel->get_list_Aa01(), data_wrapper(Label::ab::a).Ds_ab );
-		const std::vector<TAC> list_Ab01_Db = LRI_Cal_Aux::filter_list_map( this->parallel->get_list_Ab01(), data_wrapper(Label::ab::b).Ds_ab );
-		const std::vector<TAC> list_Aa2_Da  = LRI_Cal_Aux::filter_list_set( this->parallel->get_list_Aa2(),  data_wrapper(Label::ab::a).index_Ds_ab[0] );
-		const std::vector<TAC> list_Ab2_Db  = LRI_Cal_Aux::filter_list_set( this->parallel->get_list_Ab2(),  data_wrapper(Label::ab::b).index_Ds_ab[0] );
-
 		for(const Label::ab_ab &label : labels)
 		{
+			const std::vector<TA>  list_Aa01_Da = LRI_Cal_Aux::filter_list_map( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].a01, data_wrapper(Label::ab::a).Ds_ab );
+			const std::vector<TAC> list_Ab01_Db = LRI_Cal_Aux::filter_list_map( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].b01, data_wrapper(Label::ab::b).Ds_ab );
+			const std::vector<TAC> list_Aa2_Da  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].a2,  data_wrapper(Label::ab::a).index_Ds_ab[0] );
+			const std::vector<TAC> list_Ab2_Db  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].b2,  data_wrapper(Label::ab::b).index_Ds_ab[0] );
 			switch(label)
 			{
 				case Label::ab_ab::a0b0_a1b1:
@@ -140,8 +139,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							                     Ds_result_thread[0][Aa2.first]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Ab2
-					break;
-				} // end case a0b0_a1b1
+				} break; // end case a0b0_a1b1
 
 				case Label::ab_ab::a0b0_a1b2:
 				{
@@ -201,8 +199,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							                     Ds_result_thread[0]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Ab01
-					break;
-				} // end case a0b0_a1b2				
+				} break; // end case a0b0_a1b2				
 
 				case Label::ab_ab::a0b0_a2b1:
 				{
@@ -263,8 +260,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							                     Ds_result_thread[0][Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
-					break;
-				} // end case a0b0_a2b1
+				} break; // end case a0b0_a2b1
 
 				case Label::ab_ab::a0b0_a2b2:
 				{
@@ -325,8 +321,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							                     Ds_result_thread[0][Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
-					break;
-				} // end case a0b0_a2b2
+				} break; // end case a0b0_a2b2
 
 				case Label::ab_ab::a1b1_a2b2:
 				{
@@ -387,8 +382,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							                     Ds_result_thread[0][Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
-					break;
-				} // end case a0b0_a2b2
+				} break; // end case a0b0_a2b2
 
 				case Label::ab_ab::a1b2_a2b1:
 				{
@@ -447,8 +441,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Ab01
-					break;
-				} // end case a1b2_a2b1						
+				} break; // end case a1b2_a2b1						
 
 				default:
 					throw std::invalid_argument(std::string(__FILE__)+std::to_string(__LINE__));

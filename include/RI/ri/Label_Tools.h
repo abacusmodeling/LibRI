@@ -195,6 +195,14 @@ namespace Label_Tools
 			default:	throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 		}
 	}
+
+	inline std::set<Label::Aab_Aab> to_Aab_Aab_set(const std::vector<Label::ab_ab> &labels)
+	{
+		std::set<Label::Aab_Aab> Aab_Aab_set;
+		for(const Label::ab_ab &label : labels)
+			Aab_Aab_set.insert(to_Aab_Aab(label));
+		return Aab_Aab_set;
+	}
 }
 
 }

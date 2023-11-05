@@ -37,15 +37,25 @@ namespace LRI_Loop3_Test
 			const MPI_Comm &mpi_comm_in,
 			const std::map<TA,TatomR> &atomsR,
 			const std::array<TatomR,Ndim> &latvec,
-			const std::array<Tcell,Ndim> &period_in) override
+			const std::array<Tcell,Ndim> &period_in,
+			const std::set<RI::Label::Aab_Aab> &labels) override
 		{
 			this->mpi_comm = mpi_comm_in;
 			this->period = period_in;
 			const int Aa01=1, Ab01=2, Aa2=5, Ab2=6;
+
 			this->list_Aa01 = {Aa01};
 			this->list_Aa2={{Aa2,{0}}};
 			this->list_Ab01={{Ab01,{0}}};
 			this->list_Ab2={{Ab2,{0}}};
+
+			for(const RI::Label::Aab_Aab &label : labels)
+			{
+				this->list_A[label].a01 = {Aa01};
+				this->list_A[label].a2  = {{Aa2,{0}}};
+				this->list_A[label].b01 = {{Ab01,{0}}};
+				this->list_A[label].b2  = {{Ab2,{0}}};
+			}
 		}
 	};
 
@@ -90,12 +100,12 @@ namespace LRI_Loop3_Test
 
 		RI::LRI<int,int,Ndim,Tdata> lri;
 		lri.parallel = std::make_shared<Parallel_LRI_test<int,int,Ndim,Tdata>>();
-		lri.set_parallel(MPI_COMM_WORLD, {}, {}, {1});
+		lri.set_parallel( MPI_COMM_WORLD, {}, {}, {1}, RI::Global_Func::to_vector(RI::Label::array_ab_ab) );
 
 		lri.csm.set_threshold(1E-10);
 
 		for(const RI::Label::ab &label : RI::Label::array_ab)
-			lri.set_tensors_map2(Ds_ab[label], label);
+			lri.set_tensors_map2(Ds_ab[label], {label});
 
 		{
 			std::vector<T_Ds> Ds_result;

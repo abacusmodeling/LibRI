@@ -27,7 +27,9 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_parallel(
 	this->latvec = latvec_in;
 	this->period = period_in;
 
-	this->lri.set_parallel(this->mpi_comm, this->atoms_pos, this->latvec, this->period);
+	this->lri.set_parallel(
+		this->mpi_comm, this->atoms_pos, this->latvec, this->period,
+		{Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2, Label::ab_ab::a0b0_a2b1, Label::ab_ab::a0b0_a2b2});
 	this->flag_finish.stru = true;
 	//if()
 		this->post_2D.set_parallel(this->mpi_comm, this->atoms_pos, this->period);
@@ -55,7 +57,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Vs(
 {
 	this->lri.set_tensors_map2(
 		Vs,
-		Label::ab::a0b0,
+		{Label::ab::a0b0},
 		{{"threshold_filter", threshold_V}},
 		"Vs_"+save_name_suffix );
 	this->flag_finish.V = true;
@@ -137,7 +139,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dVs(
 	for(std::size_t ipos=0; ipos<Npos; ++ipos)
 		this->lri.set_tensors_map2(
 			dVs[ipos],
-			Label::ab::a0b0,
+			{Label::ab::a0b0},
 			{{"threshold_filter", threshold_dV}},
 			"dVs_"+std::to_string(ipos)+"_"+save_name_suffix );
 	this->flag_finish.dV = true;

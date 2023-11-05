@@ -58,7 +58,7 @@ void CS_Matrix<TA,TC,Tdata>::cal_uplimits(
 }
 
 template<typename TA, typename TC, typename Tdata> template<typename T>
-CS_Matrix<TA,TC,Tdata>::Uplimits CS_Matrix<TA,TC,Tdata>::cal_uplimits(
+typename CS_Matrix<TA,TC,Tdata>::Uplimits CS_Matrix<TA,TC,Tdata>::cal_uplimits(
 	const Label::ab &label,
 	const T &Ds)
 {
@@ -68,7 +68,7 @@ CS_Matrix<TA,TC,Tdata>::Uplimits CS_Matrix<TA,TC,Tdata>::cal_uplimits(
 }
 
 template<typename TA, typename TC, typename Tdata> template<typename T>
-CS_Matrix<TA,TC,Tdata>::Uplimits CS_Matrix<TA,TC,Tdata>::cal_uplimits(
+typename CS_Matrix<TA,TC,Tdata>::Uplimits CS_Matrix<TA,TC,Tdata>::cal_uplimits(
 	const std::vector<Label::ab> &label_list,
 	const T &Ds)
 {
