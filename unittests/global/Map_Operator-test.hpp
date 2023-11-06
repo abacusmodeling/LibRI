@@ -13,7 +13,7 @@
 
 namespace Map_Operator_Test
 {
-	void test_union_map1()
+	static void test_union_map1()
 	{
 		std::map<int,double> m1, m2;
 		m1[2]=2;	m1[1]=1;
@@ -27,7 +27,7 @@ namespace Map_Operator_Test
 		}*/
 	}
 
-	void test_union_map2()
+	static void test_union_map2()
 	{
 		std::map<int,std::map<std::string,double>> m1, m2;
 		m1[2]["a"]=2;	m1[1]["b"]=1;
@@ -41,7 +41,7 @@ namespace Map_Operator_Test
 		}*/
 	}
 
-	void test_intersection_map1()
+	static void test_intersection_map1()
 	{
 		std::map<int,double> m1, m2;
 		m1[2]=2;	m1[1]=1;
@@ -53,7 +53,7 @@ namespace Map_Operator_Test
 		}*/
 	}
 
-	void test_intersection_map2()
+	static void test_intersection_map2()
 	{
 		std::map<int,std::map<std::string,double>> m1, m2;
 		m1[2]["a"]=2;	m1[1]["b"]=1;
@@ -65,7 +65,7 @@ namespace Map_Operator_Test
 		}*/
 	}
 
-	void test_intersection_map3()
+	static void test_intersection_map3()
 	{
 		std::map<int,std::map<std::string,double>> m1;
 		std::map<int,std::map<std::string,std::string>> m2;
@@ -78,7 +78,7 @@ namespace Map_Operator_Test
 		}*/
 	}
 
-	void test_transform_map()
+	static void test_transform_map()
 	{
 		std::map<int,std::map<std::string,double>> m;
 		m[0]["c"]=0;	m[1]["b"]=10;	m[1]["c"]=20;
@@ -91,7 +91,7 @@ namespace Map_Operator_Test
 		}*/
 	}
 
-	void test_for_each_map()
+	static void test_for_each_map()
 	{
 		std::map<int,std::map<std::string,double>> m;
 		m[0]["c"]=0;	m[1]["b"]=10;	m[1]["c"]=20;

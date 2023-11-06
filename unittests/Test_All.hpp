@@ -24,7 +24,7 @@
 
 namespace Test_All
 {
-	void test_all(int argc, char *argv[])
+	static void test_all(int argc, char *argv[])
 	{
 		Communicate_Tensors_Test::test_comm_judge_map(argc, argv);
 		Communicate_Tensors_Test::test_comm_judge_map2(argc, argv);

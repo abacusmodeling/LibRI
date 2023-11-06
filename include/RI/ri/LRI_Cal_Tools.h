@@ -70,7 +70,7 @@ public:
 		return this->Ds_result[icoef][Aa.first][TAC{Ab.first, (Ab.second-Aa.second)%period}];
 	}
 
-	inline static std::vector<Label::ab> split_b01(const Label::ab_ab &label)
+	inline std::vector<Label::ab> split_b01(const Label::ab_ab &label) const
 	{
 		switch(label)
 		{
@@ -96,7 +96,7 @@ public:
 	{
 		const auto judge_label = [this, &Aa01, &Aa2, &Ab01](const Label::ab_ab &label_ab_ab) -> bool
 		{
-			const std::vector<Label::ab> &labels_ab = split_b01(label_ab_ab);
+			const std::vector<Label::ab> &labels_ab = this->split_b01(label_ab_ab);
 			for(const Label::ab &label_ab : labels_ab)
 			{
 				const int a = Label_Tools::get_a(label_ab);

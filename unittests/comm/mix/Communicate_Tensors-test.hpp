@@ -17,7 +17,7 @@
 
 namespace Communicate_Tensors_Test
 {
-	RI::Tensor<double> init_Tensor(const double d)
+	inline RI::Tensor<double> init_Tensor(const double d)
 	{
 		RI::Tensor<double> t({1});
 		t(0) = d;
@@ -43,7 +43,7 @@ namespace Communicate_Tensors_Test
 		rank 4:
 	*/
 
-	void test_comm_judge_map(int argc, char *argv[])
+	static void test_comm_judge_map(int argc, char *argv[])
 	{
 		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
@@ -76,7 +76,7 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 
-	void test_comm_judge_map2(int argc, char *argv[])
+	static void test_comm_judge_map2(int argc, char *argv[])
 	{
 		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
@@ -113,7 +113,7 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 
-	void test_comm_judge_map3(int argc, char *argv[])
+	static void test_comm_judge_map3(int argc, char *argv[])
 	{
 		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
@@ -151,7 +151,7 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 
-	void test_comm_judge_map2_first(int argc, char *argv[])
+	static void test_comm_judge_map2_first(int argc, char *argv[])
 	{
 		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
@@ -186,7 +186,7 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 
-	void test_comm_judge_map3_first(int argc, char *argv[])
+	static void test_comm_judge_map3_first(int argc, char *argv[])
 	{
 		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
@@ -222,7 +222,7 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 
-	void test_comm_judge_map2_period(int argc, char *argv[])
+	static void test_comm_judge_map2_period(int argc, char *argv[])
 	{
 		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
@@ -262,7 +262,7 @@ namespace Communicate_Tensors_Test
 		MPI_Finalize();
 	}
 
-	void test_comm_judge_map3_period(int argc, char *argv[])
+	static void test_comm_judge_map3_period(int argc, char *argv[])
 	{
 		int mpi_init_provide;	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 		const int rank_mine = RI::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);

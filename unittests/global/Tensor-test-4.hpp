@@ -15,7 +15,7 @@
 
 namespace Tensor_Test
 {
-	void test_cereal(int argc, char *argv[])
+	static void test_cereal(int argc, char *argv[])
 	{
 		int mpi_init_provide;
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);

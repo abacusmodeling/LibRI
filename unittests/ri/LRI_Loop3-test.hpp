@@ -60,7 +60,7 @@ namespace LRI_Loop3_Test
 	};
 
 	template<typename Tdata>
-	static RI::Tensor<Tdata> init_tensor(const RI::Shape_Vector &shape)
+	RI::Tensor<Tdata> init_tensor(const RI::Shape_Vector &shape)
 	{
 		RI::Tensor<Tdata> D(shape);
 		for(std::size_t i=0; i<D.data->size(); ++i)

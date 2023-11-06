@@ -15,7 +15,7 @@ namespace RI
 
 namespace Label_Tools
 {
-	static std::string get_name(const Label::ab &label)
+	inline std::string get_name(const Label::ab &label)
 	{
 		switch(label)
 		{
@@ -34,7 +34,7 @@ namespace Label_Tools
 		}
 	}
 
-	static std::string get_name(const Label::ab_ab &label)
+	inline std::string get_name(const Label::ab_ab &label)
 	{
 		switch(label)
 		{
@@ -60,7 +60,7 @@ namespace Label_Tools
 		}
 	}
 
-	static std::string get_name(const Label::Aab &label)
+	inline std::string get_name(const Label::Aab &label)
 	{
 		switch(label)
 		{
@@ -74,7 +74,7 @@ namespace Label_Tools
 		}
 	}
 
-	static std::string get_name(const Label::Aab_Aab &label)
+	inline std::string get_name(const Label::Aab_Aab &label)
 	{
 		switch(label)
 		{

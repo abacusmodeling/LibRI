@@ -11,7 +11,7 @@
 
 namespace Split_Processes_Test
 {
-	void test_split_all(int argc, char *argv[], const std::vector<std::size_t> &task_sizes)
+	static void test_split_all(int argc, char *argv[], const std::vector<std::size_t> &task_sizes)
 	{
 		MPI_Init(&argc, &argv);
 
@@ -28,9 +28,9 @@ namespace Split_Processes_Test
 		MPI_Finalize();
 	}
 
-	void test_split_all(int argc, char *argv[])
+	static void test_split_all(int argc, char *argv[])
 	{
-		//test_split_all(argc, argv, {8,12});
+		test_split_all(argc, argv, {8,12});
 		/*
 		mpirun -n 6								// num_average 恰好为4，完美均分
 			rank 0
@@ -60,7 +60,7 @@ namespace Split_Processes_Test
 		*/
 
 
-		//test_split_all(argc, argv, {4,5,6});
+		test_split_all(argc, argv, {4,5,6});
 		/*
 		mpirun -n 7								// num_average 各维度、各进程不同，尽量均分
 			rank 0
@@ -100,7 +100,7 @@ namespace Split_Processes_Test
 				0	1	|	0	1
 		*/
 
-		//test_split_all(argc, argv, {2,10});		// task_sizes[0] << task_sizes[1], 按照第1维划分
+		test_split_all(argc, argv, {2,10});		// task_sizes[0] << task_sizes[1], 按照第1维划分
 		/*
 		mpirun -n 3
 			rank 0
@@ -117,7 +117,7 @@ namespace Split_Processes_Test
 				0	1	|	2	3
 		*/
 
-		//test_split_all(argc, argv, {2,3});
+		test_split_all(argc, argv, {2,3});
 		/*
 		mpirun -n 7								// task_sizes > rank_size, 01进程被分到同一task
 			rank 0

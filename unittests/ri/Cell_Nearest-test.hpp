@@ -12,7 +12,7 @@
 
 namespace Cell_Nearest_Test
 {
-	void main()
+	static void main()
 	{
 		using TA = std::string;
 		using Tcell = int;

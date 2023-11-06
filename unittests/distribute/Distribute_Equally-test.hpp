@@ -13,7 +13,7 @@
 
 namespace Distribute_Equally_Test
 {
-	void test_distribute_atoms(int argc, char *argv[])
+	static void test_distribute_atoms(int argc, char *argv[])
 	{
 		MPI_Init(&argc, &argv);
 
@@ -57,7 +57,7 @@ namespace Distribute_Equally_Test
 			{ 3, 0	 }|	{ 3, -1	 }|	{ 4, 0	 }|	{ 4, -1	 }|
 	*/
 
-	void test_distribute_atoms_periods(int argc, char *argv[])
+	static void test_distribute_atoms_periods(int argc, char *argv[])
 	{
 		MPI_Init(&argc, &argv);
 
@@ -101,7 +101,7 @@ namespace Distribute_Equally_Test
 			{ 3, -1	 }|	{ 4, 0	 }|	{ 4, -1	 }|
 	*/
 
-	void test_distribute_atoms_repeatable(int argc, char *argv[])
+	static void test_distribute_atoms_repeatable(int argc, char *argv[])
 	{
 		auto test_repeatable = [&](const bool repeatable)
 		{
@@ -151,7 +151,7 @@ namespace Distribute_Equally_Test
 		*/
 	}
 
-	void test_distribute_periods(int argc, char *argv[])
+	static void test_distribute_periods(int argc, char *argv[])
 	{
 		MPI_Init(&argc, &argv);
 

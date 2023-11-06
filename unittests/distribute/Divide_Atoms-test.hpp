@@ -10,7 +10,7 @@
 
 namespace Divide_Atoms_Test
 {
-    void test_divide_atoms()
+    static void test_divide_atoms()
     {
         const std::size_t group_size = 6;
         std::vector<std::size_t> atoms(31);
@@ -29,7 +29,7 @@ namespace Divide_Atoms_Test
     */
 
 
-    void test_divide_atoms_with_period()
+    static void test_divide_atoms_with_period()
     {
         const std::size_t group_size = 6;
         std::vector<std::size_t> atoms(31);
@@ -49,7 +49,7 @@ namespace Divide_Atoms_Test
     */
 
 
-    void test_divide_atoms_periods()
+    static void test_divide_atoms_periods()
     {
         const std::size_t group_size = 6;
         std::vector<std::size_t> atoms(31);

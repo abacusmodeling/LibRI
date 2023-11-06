@@ -139,7 +139,7 @@ namespace Blas_Test
 		// 35      365
 	}
 
-	void syrk()
+	static void syrk()
 	{
 		const RI::Tensor<double> m = Tensor_Test::init_matrix<double>(2,3);
 
@@ -187,7 +187,7 @@ namespace Blas_Test
 	}
 #endif
 
-	void test_all()
+	static void test_all()
 	{
 		nrm2<float>();
 		nrm2<double>();

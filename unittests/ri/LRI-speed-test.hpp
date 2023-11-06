@@ -21,7 +21,7 @@
 namespace LRI_Speed_Test
 {
 	template<typename Tdata>
-	static RI::Tensor<Tdata> init_tensor(const RI::Shape_Vector &shape)
+	RI::Tensor<Tdata> init_tensor(const RI::Shape_Vector &shape)
 	{
 		RI::Tensor<Tdata> D(shape);
 		for(std::size_t i=0; i<D.data->size(); ++i)
@@ -29,7 +29,7 @@ namespace LRI_Speed_Test
 		return D;
 	}
 
-	static double time_during(const timeval &t_begin)
+	inline double time_during(const timeval &t_begin)
 	{
 		timeval t_end;
 		gettimeofday(&t_end, NULL);

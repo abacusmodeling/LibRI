@@ -38,6 +38,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 			{
 				case Label::ab_ab::a0b0_a1b2:	case Label::ab_ab::a0b0_a2b2:	case Label::ab_ab::a1b2_a2b1:
 					return true;
+				default: ;
 			}
 		return false;
 	}();
@@ -48,6 +49,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 			{
 				case Label::ab_ab::a0b0_a2b1:	case Label::ab_ab::a0b0_a2b2:
 					return true;
+				default: ;
 			}
 		return false;
 	}();
