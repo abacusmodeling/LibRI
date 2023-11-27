@@ -8,6 +8,7 @@
 #include "Label.h"
 #include <string>
 #include <vector>
+#include <set>
 #include <stdexcept>
 
 namespace RI

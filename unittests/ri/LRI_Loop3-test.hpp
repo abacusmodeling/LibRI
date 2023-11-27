@@ -104,10 +104,13 @@ namespace LRI_Loop3_Test
 
 		lri.csm.set_threshold(1E-10);
 
-		for(const RI::Label::ab &label : RI::Label::array_ab)
-			lri.set_tensors_map2(Ds_ab[label], {label});
+		//for(const RI::Label::ab &label : RI::Label::array_ab)
+		//	lri.set_tensors_map2(Ds_ab[label], {label});
 
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b0, RI::Label::ab::a1b1})
+				lri.set_tensors_map2(Ds_ab[label], {label});			
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b0_a1b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb2});
@@ -121,6 +124,9 @@ namespace LRI_Loop3_Test
 		}
 /*
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b1, RI::Label::ab::a1b0})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b1_a1b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb2});
@@ -134,6 +140,9 @@ namespace LRI_Loop3_Test
 		}
 */
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b0, RI::Label::ab::a2b1})
+				lri.set_tensors_map2(Ds_ab[label], {label});			
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b0_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb2});
@@ -147,6 +156,9 @@ namespace LRI_Loop3_Test
 		}
 /*
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b1, RI::Label::ab::a2b0})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b1_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb2});
@@ -160,6 +172,9 @@ namespace LRI_Loop3_Test
 		}
 
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b0, RI::Label::ab::a2b1})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b0_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb2});
@@ -173,6 +188,9 @@ namespace LRI_Loop3_Test
 		}
 
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b1, RI::Label::ab::a2b0})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b1_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb2});
@@ -186,6 +204,9 @@ namespace LRI_Loop3_Test
 		}
 */
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b0, RI::Label::ab::a1b2})
+				lri.set_tensors_map2(Ds_ab[label], {label});						
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b0_a1b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb1});
@@ -199,6 +220,9 @@ namespace LRI_Loop3_Test
 		}
 /*
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b1, RI::Label::ab::a1b2})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b1_a1b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb0});
@@ -212,6 +236,9 @@ namespace LRI_Loop3_Test
 		}
 
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b2, RI::Label::ab::a1b0})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b2_a1b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb1});
@@ -225,6 +252,9 @@ namespace LRI_Loop3_Test
 		}
 
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b2, RI::Label::ab::a1b1})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b2_a1b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb0});
@@ -238,6 +268,9 @@ namespace LRI_Loop3_Test
 		}
 */
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b0, RI::Label::ab::a2b2})
+				lri.set_tensors_map2(Ds_ab[label], {label});						
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b0_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb1});
@@ -251,6 +284,9 @@ namespace LRI_Loop3_Test
 		}
 /*
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b1, RI::Label::ab::a2b2})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b1_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb0});
@@ -264,6 +300,9 @@ namespace LRI_Loop3_Test
 		}
 
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b2, RI::Label::ab::a2b0})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b2_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb1});
@@ -277,6 +316,9 @@ namespace LRI_Loop3_Test
 		}
 
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b2, RI::Label::ab::a2b1})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b2_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb0});
@@ -290,6 +332,9 @@ namespace LRI_Loop3_Test
 		}
 
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b0, RI::Label::ab::a2b2})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b0_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb1});
@@ -303,6 +348,9 @@ namespace LRI_Loop3_Test
 		}
 */
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b1, RI::Label::ab::a2b2})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b1_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb0});
@@ -316,6 +364,9 @@ namespace LRI_Loop3_Test
 		}
 /*
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b2, RI::Label::ab::a2b0})
+				lri.set_tensors_map2(Ds_ab[label], {label});
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b2_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb1});
@@ -329,6 +380,9 @@ namespace LRI_Loop3_Test
 		}
 */
 		{
+			lri.data_ab_name.clear();	lri.data_pool.clear();
+			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b2, RI::Label::ab::a2b1})
+				lri.set_tensors_map2(Ds_ab[label], {label});						
 			std::vector<T_Ds> Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b2_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb0});
