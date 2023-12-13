@@ -384,7 +384,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							                     Ds_result_thread[0][Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
-				} break; // end case a0b0_a2b2
+				} break; // end case a1b1_a2b2
 
 				case Label::ab_ab::a1b2_a2b1:
 				{
@@ -438,7 +438,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 							// D_result = D_mul2 * D_mul1
 							// a0b0 = b1a1a0 * b0b1a1
-							Ds_result_thread[0][Aa01][Ab01] = Tensor_Multiply::x2y0_abx2_y0ab(D_mul2, D_mul1);
+							Tensor<Tdata> D_mul3 = Tensor_Multiply::x2y0_abx2_y0ab(D_mul2, D_mul1);
+							LRI_Cal_Aux::add_Ds( std::move(D_mul3),
+							                     Ds_result_thread[0][Aa01][Ab01]);
 						} // end for Aa01
 
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);

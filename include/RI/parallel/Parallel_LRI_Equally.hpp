@@ -68,7 +68,7 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel_loop3(
 		atoms.b2 = atoms_period_vec;
 		switch(label)
 		{
-			case Label::Aab_Aab::a01b01_a01b01:	
+			case Label::Aab_Aab::a01b01_a01b01:
 				atoms.a2  = atoms_split_list2[0];
 				atoms.b01 = atoms_split_list2[1];
 				break;
@@ -89,7 +89,7 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel_loop3(
 				atoms.b01 = atoms_split_list1.second[0];
 				break;
 			default:
-				throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));				
+				throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 		}
 	}
 }
@@ -175,7 +175,7 @@ auto Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::comm_tensors_map2(
 	if(flags[3])	std::get<0>(s_list).push_back(std::make_tuple( Global_Func::to_set(this->list_Aa01), Global_Func::to_set(this->list_Ab2) ));
 	if(flags[4])	std::get<1>(s_list).push_back(std::make_tuple( Global_Func::to_set(this->list_Aa2), Global_Func::to_set(this->list_Ab01) ));
 	if(flags[5])	std::get<1>(s_list).push_back(std::make_tuple( Global_Func::to_set(this->list_Aa2), Global_Func::to_set(this->list_Ab2) ));
-	
+
 	return Communicate_Tensors_Map_Judge::comm_map2_combine_origin_period(this->mpi_comm, Ds, s_list, this->period);
 }
 

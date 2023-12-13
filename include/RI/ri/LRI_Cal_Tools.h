@@ -29,7 +29,7 @@ public:
 	LRI_Cal_Tools(
 		const TC &period_in,
 		const std::map<std::string, Data_Pack<TA,TC,Tdata>> &data_pool,
-		const std::unordered_map<Label::ab, std::string> &data_ab_name,		
+		const std::unordered_map<Label::ab, std::string> &data_ab_name,
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result_in)
 			:period(period_in), Ds_result(Ds_result_in)
 	{
@@ -126,7 +126,7 @@ public:
 				labels_filter.push_back(label);
 		}
 		return labels_filter;
-	}	
+	}
 
 public:		// private:
 	const TC &period;

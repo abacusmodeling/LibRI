@@ -17,7 +17,7 @@ class Cell_Nearest
 public:
 	using Tatom_pos = std::array<Tpos,Npos>;		// tmp
 	using TC = std::array<Tcell,Ndim>;
-	
+
 	void init(
 		const std::map<TA,Tatom_pos> &atoms_pos,
 		const std::array<Tatom_pos,Ndim> &latvec_in,

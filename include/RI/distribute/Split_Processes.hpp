@@ -69,11 +69,11 @@ namespace Split_Processes
 		const std::size_t rank_size = static_cast<std::size_t>(MPI_Wrapper::mpi_get_size(mc));
 		const std::size_t task_product = std::accumulate(
 			task_sizes.begin(), task_sizes.end(), std::size_t(1), std::multiplies<std::size_t>() );		// double for numerical range
-		const double num_average = 
+		const double num_average =
 			task_product < rank_size
 			? 1.0		// if task_product<rank_size, then num_average<1, then group_size>task_sizes[0]. Set group_size=task_sizes[0]
 			: std::pow(static_cast<double>(task_product)/rank_size, 1.0/task_sizes.size());
-		const std::size_t group_size = 
+		const std::size_t group_size =
 			task_sizes[0] < num_average
 			? 1			// if task_sizes[0]<<task_sizes[1:], then group_size<0.5. Set group_size=1
 			: static_cast<std::size_t>(std::round(task_sizes[0]/num_average));

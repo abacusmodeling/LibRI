@@ -20,11 +20,11 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tpos, std::size
 void Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos>::init(
 	const std::map<TA,Tatom_pos> &atoms_pos,
 	const std::array<Tatom_pos,Ndim> &latvec_in,
-	const std::array<Tcell,Ndim> &period_in)	
+	const std::array<Tcell,Ndim> &period_in)
 {
 	using namespace Array_Operator;
 	this->period = period_in;
-	
+
 	Tensor<Tpos> latvec({Ndim, Npos});
 	for(std::size_t idim=0; idim<Ndim; ++idim)
 		for(std::size_t ipos=0; ipos<Npos; ++ipos)

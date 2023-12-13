@@ -68,8 +68,8 @@ namespace LRI_Cal_Aux
 
 	template<typename Tdata>
 	inline void add_Ds(
-		Tensor<Tdata> &&D_add, 
-		Tensor<Tdata> &D_result, 
+		Tensor<Tdata> &&D_add,
+		Tensor<Tdata> &D_result,
 		const double fac = 1.0)
 	{
 		if(D_result.empty())
@@ -221,8 +221,8 @@ namespace LRI_Cal_Aux
 
 	template<typename TA, typename TAC, typename Tdata>
 	void add_Ds_omp_try(
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread, 
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result, 
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread,
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result,
 		omp_lock_t &lock_Ds_result_add,
 		const double &fac)
 	{
@@ -235,13 +235,13 @@ namespace LRI_Cal_Aux
 		}
 	}
 
-	template<typename TA, typename TAC, typename Tdata>	
+	template<typename TA, typename TAC, typename Tdata>
 	void add_Ds_omp_wait(
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread, 
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result, 
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread,
+		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result,
 		omp_lock_t &lock_Ds_result_add,
 		const double &fac)
-	{					
+	{
 		if(!LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread))
 		{
 			omp_set_lock(&lock_Ds_result_add);

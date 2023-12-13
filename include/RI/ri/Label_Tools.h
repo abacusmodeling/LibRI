@@ -118,7 +118,7 @@ namespace Label_Tools
 			default:	throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 		}
 	}
-	
+
 	inline int get_unused_a(const Label::ab_ab &label)
 	{
 		switch(label)
@@ -189,10 +189,10 @@ namespace Label_Tools
 				return Label::Aab_Aab::a01b01_a01b2;
 			case Label::ab_ab::a1b0_a2b1:	case Label::ab_ab::a1b1_a2b0:	case Label::ab_ab::a0b0_a2b1:	case Label::ab_ab::a0b1_a2b0:
 				return Label::Aab_Aab::a01b01_a2b01;
-			case Label::ab_ab::a1b1_a2b2:	case Label::ab_ab::a0b1_a2b2:	case Label::ab_ab::a1b0_a2b2:	case Label::ab_ab::a0b0_a2b2:	
+			case Label::ab_ab::a1b1_a2b2:	case Label::ab_ab::a0b1_a2b2:	case Label::ab_ab::a1b0_a2b2:	case Label::ab_ab::a0b0_a2b2:
 				return Label::Aab_Aab::a01b01_a2b2;
 			case Label::ab_ab::a1b2_a2b1:	case Label::ab_ab::a0b2_a2b1:	case Label::ab_ab::a1b2_a2b0:	case Label::ab_ab::a0b2_a2b0:
-				return Label::Aab_Aab::a01b2_a2b01;			
+				return Label::Aab_Aab::a01b2_a2b01;
 			default:	throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 		}
 	}

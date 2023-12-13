@@ -133,7 +133,7 @@ namespace CS_Matrix_Tools
 				uplimits[i2] = D_sub.norm(2);
 			}
 			return uplimits.max();
-		};	
+		};
 
 		auto norm = [](const Tensor<Tdata> &D) -> Tlim
 		{

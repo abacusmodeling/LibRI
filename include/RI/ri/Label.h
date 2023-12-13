@@ -39,7 +39,7 @@ namespace Label
 		Aab::a, Aab::b,
 		Aab::a01b01, Aab::a01b2,
 		Aab::a2b01,  Aab::a2b2
-	};			
+	};
 
 	enum class ab_ab
 	{
@@ -65,7 +65,7 @@ namespace Label
 		ab_ab::a0b0_a1b2, ab_ab::a0b2_a1b0,
 		ab_ab::a0b0_a1b1, ab_ab::a0b1_a1b0
 	};
-	
+
 	enum class Aab_Aab
 	{
 		a01b01_a01b01,
