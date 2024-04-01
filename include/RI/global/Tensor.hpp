@@ -179,6 +179,17 @@ Tensor<T> Tensor<T>::transpose() const
 }
 
 template<typename T>
+Tensor<T> Tensor<T>::dagger() const
+{
+	assert(this->shape.size() == 2);
+	Tensor<T> t({ this->shape[1], this->shape[0] });
+	for (std::size_t i0 = 0; i0 < this->shape[0]; ++i0)
+		for (std::size_t i1 = 0; i1 < this->shape[1]; ++i1)
+			t(i1, i0) = std::conj((*this)(i0, i1));
+	return t;
+}
+
+template<typename T>
 Global_Func::To_Real_t<T> Tensor<T>::norm(const double p) const
 {
 	using T_res = Global_Func::To_Real_t<T>;
