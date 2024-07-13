@@ -120,13 +120,11 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dCs(
 	const std::string &save_name_suffix)
 {
 	for(std::size_t ipos=0; ipos<Npos; ++ipos)
-	{
 		this->lri.set_tensors_map2(
 			dCs[ipos],
 			{Label::ab::a, Label::ab::b},
 			{{"threshold_filter", threshold_dC}},
 			"dCs_"+std::to_string(ipos)+"_"+save_name_suffix );
-	}
 	this->flag_finish.dC = true;
 }
 
@@ -143,6 +141,37 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dVs(
 			{{"threshold_filter", threshold_dV}},
 			"dVs_"+std::to_string(ipos)+"_"+save_name_suffix );
 	this->flag_finish.dV = true;
+}
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::set_dCRs(
+	const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dCRs,
+	const Tdata_real &threshold_dCR,
+	const std::string &save_name_suffix)
+{
+	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
+		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
+			this->lri.set_tensors_map2(
+				dCRs[ipos0][ipos1],
+				{Label::ab::a, Label::ab::b},
+				{{"threshold_filter", threshold_dCR}},
+				"dCRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_name_suffix );
+	this->flag_finish.dCR = true;
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::set_dVRs(
+	const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dVRs,
+	const Tdata_real &threshold_dVR,
+	const std::string &save_name_suffix)
+{
+	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
+		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
+			this->lri.set_tensors_map2(
+				dVRs[ipos0][ipos1],
+				{Label::ab::a0b0},
+				{{"threshold_filter", threshold_dVR}},
+				"dVRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_name_suffix );
+	this->flag_finish.dVR = true;
 }
 
 
@@ -288,6 +317,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 }
 
 
+/*
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"
@@ -370,6 +400,61 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
 				this->post_2D.set_tensors_map2(dHs_vec[ipos1]));
 	}
+}
+*/
+
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
+	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCRs","dVRs"
+{
+	assert(this->flag_finish.stru);
+	assert(this->flag_finish.C);
+	assert(this->flag_finish.V);
+	assert(this->flag_finish.D);
+	assert(this->flag_finish.dCR);
+	assert(this->flag_finish.dVR);
+
+	this->stress = Tensor<Tdata>({Npos, Npos});
+
+	this->lri.data_ab_name[Label::ab::a1b1] = this->lri.data_ab_name[Label::ab::a2b1] = "Ds_"+save_names_suffix[2];
+	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
+		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
+		{
+			std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(1);
+
+			this->lri.data_ab_name[Label::ab::a   ] = "dCRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_names_suffix[3];
+			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
+			this->lri.data_ab_name[Label::ab::b   ] = "Cs_"+save_names_suffix[0];
+
+			this->lri.cal_loop3(
+				{Label::ab_ab::a0b0_a1b1,
+				Label::ab_ab::a0b0_a2b1},
+				dHs_vec,
+				1.0);
+
+			this->lri.data_ab_name[Label::ab::a   ] = "Cs_"+save_names_suffix[0];
+			this->lri.data_ab_name[Label::ab::a0b0] = "dVRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_names_suffix[4];
+
+			this->lri.cal_loop3(
+				{Label::ab_ab::a0b0_a1b1,
+				Label::ab_ab::a0b0_a2b1},
+				dHs_vec,
+				1.0);
+
+			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
+			this->lri.data_ab_name[Label::ab::b   ] = "dCRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_names_suffix[3];
+
+			this->lri.cal_loop3(
+				{Label::ab_ab::a0b0_a1b1,
+				Label::ab_ab::a0b0_a2b1},
+				dHs_vec,
+				1.0);
+
+				this->stress(ipos0,ipos1) = post_2D.cal_energy(
+					this->post_2D.saves["Ds_"+save_names_suffix[2]],
+					this->post_2D.set_tensors_map2(dHs_vec[0]));
+		}
 }
 
 }

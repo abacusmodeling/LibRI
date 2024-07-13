@@ -58,6 +58,14 @@ public:
 		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos> &dVs,
 		const Tdata_real &threshold_dV,
 		const std::string &save_name_suffix="");
+	void set_dCRs(
+		const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dCRs,
+		const Tdata_real &threshold_dCR,
+		const std::string &save_name_suffix="");
+	void set_dVRs(
+		const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dVRs,
+		const Tdata_real &threshold_dVR,
+		const std::string &save_name_suffix="");
 	void set_csm_threshold(
 		const Tdata_real &threshold) { this->lri.csm.set_threshold(threshold); }
 
@@ -66,7 +74,7 @@ public:
 	void cal_force(
 		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCs","dVs"
 	void cal_stress(
-		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCs","dVs"
+		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCRs","dVRs"
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Hs;
 	Tdata energy = 0;
@@ -87,6 +95,8 @@ public:
 		bool D_delta=false;
 		bool dC=false;
 		bool dV=false;
+		bool dCR=false;
+		bool dVR=false;
 	};
 	Flag_Finish flag_finish;
 
