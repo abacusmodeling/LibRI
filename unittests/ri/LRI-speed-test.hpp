@@ -81,7 +81,6 @@ namespace LRI_Speed_Test
 
 		RI::LRI<int,int,Ndim,Tdata> lri;
 		lri.set_parallel(MPI_COMM_WORLD, atoms_pos, {}, {1}, RI::Global_Func::to_vector(RI::Label::array_ab_ab));
-		lri.csm.set_threshold(0);
 
 		for(const RI::Label::ab &label : RI::Label::array_ab)
 			lri.set_tensors_map2(Ds_ab[label], {label});

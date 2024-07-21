@@ -6,6 +6,7 @@
 #pragma once
 
 #include "../global/Tensor.h"
+#include "CS_Matrix.h"
 #include "../global/Global_Func-1.h"
 
 #include <vector>
@@ -23,6 +24,7 @@ struct Data_Pack
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_ab;					// Ds_ab[A0][{A1,C1}]
 	std::vector<std::set<TA>> index_Ds_ab;								// index_Ds_ab[0]=A1
+	typename CS_Matrix<TA,TC,Tdata_real>::Uplimits csm_uplimits;
 };
 
 

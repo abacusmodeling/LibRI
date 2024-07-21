@@ -68,7 +68,6 @@ void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
 	};
 
 	std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> chi0s_vec(1);
-	this->lri.coefficients = {nullptr};
 
 	set_Gs_a1(Gs_tau_positive);
 	set_Gs_a2(Gs_tau_negative);

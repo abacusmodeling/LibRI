@@ -66,8 +66,6 @@ public:
 		const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dVRs,
 		const Tdata_real &threshold_dVR,
 		const std::string &save_name_suffix="");
-	void set_csm_threshold(
-		const Tdata_real &threshold) { this->lri.csm.set_threshold(threshold); }
 
 	void cal_Hs(
 		const std::array<std::string,3> &save_names_suffix={"","",""});		// "Cs","Vs","Ds"

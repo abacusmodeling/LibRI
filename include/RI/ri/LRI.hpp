@@ -26,9 +26,6 @@ LRI<TA,Tcell,Ndim,Tdata>::LRI()
 
 	for(std::size_t i=0; i<Ndim; ++i)
 		this->period[i] = std::numeric_limits<Tcell>::max()/4;		// /4 for not out of range when Array_Operator::operator%
-
-	this->set_cal_funcs_b01();
-	this->set_cal_funcs_bx2();
 }
 
 }

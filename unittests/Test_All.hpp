@@ -14,7 +14,7 @@
 #include "unittests/global/Tensor-test-3.hpp"
 #include "unittests/global/Tensor_Multiply-test.hpp"
 #include "unittests/global/Map_Operator-test.hpp"
-#include "unittests/ri/LRI-loop4-test.hpp"
+//#include "unittests/ri/LRI-loop4-test.hpp"
 #include "unittests/ri/LRI-loop3-test.hpp"
 #include "unittests/ri/LRI-speed-test.hpp"
 #include "unittests/ri/Cell_Nearest-test.hpp"
@@ -61,10 +61,10 @@ namespace Test_All
 		Map_Operator_Test::test_transform_map();
 		Map_Operator_Test::test_for_each_map();
 
-		LRI_Loop4_Test::main<float>(argc, argv);
-		LRI_Loop4_Test::main<double>(argc, argv);
-		LRI_Loop4_Test::main<std::complex<float>>(argc, argv);
-		LRI_Loop4_Test::main<std::complex<double>>(argc, argv);
+//		LRI_Loop4_Test::main<float>(argc, argv);
+//		LRI_Loop4_Test::main<double>(argc, argv);
+//		LRI_Loop4_Test::main<std::complex<float>>(argc, argv);
+//		LRI_Loop4_Test::main<std::complex<double>>(argc, argv);
 
 		LRI_Loop3_Test::main<float>(argc, argv);
 		LRI_Loop3_Test::main<double>(argc, argv);

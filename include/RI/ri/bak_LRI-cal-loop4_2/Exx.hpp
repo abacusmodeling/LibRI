@@ -202,6 +202,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 	}
 
 	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Hs_vec(1);
+	this->lri.coefficients = {nullptr};
 	this->lri.cal_loop3(
 		{Label::ab_ab::a0b0_a1b1,
 		 Label::ab_ab::a0b0_a1b2,
@@ -315,6 +316,92 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 	} // end for(ipos)
 }
 
+
+/*
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
+	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"
+{
+	assert(this->flag_finish.stru);
+	assert(this->flag_finish.C);
+	assert(this->flag_finish.V);
+	assert(this->flag_finish.D);
+	assert(this->flag_finish.dC);
+	assert(this->flag_finish.dV);
+
+	Cell_Nearest<TA,Tcell,Ndim,Tpos,Npos> cell_nearest;
+	cell_nearest.init(this->atoms_pos, this->latvec, this->period);
+
+	using namespace Array_Operator;
+	auto get_delta_pos = [this, &cell_nearest](
+		const TA &Ax, const TA &Ay, const std::array<Tcell,Ndim> &celly, const std::size_t &ipos1)
+		-> Tpos
+	{
+		Tpos delta_pos = this->atoms_pos[Ay][ipos1] - this->atoms_pos[Ax][ipos1];
+		const std::array<Tcell,Ndim> celly_nearest = cell_nearest.get_cell_nearest_discrete(Ax, Ay, celly);
+		for(std::size_t idim=0; idim<Ndim; ++idim)
+			delta_pos += celly_nearest[idim] * this->latvec[idim][ipos1];
+		return delta_pos;
+	};
+
+	this->stress = Tensor<Tdata>({Npos, Npos});
+
+	this->lri.data_ab_name[Label::ab::a1b1] = this->lri.data_ab_name[Label::ab::a2b1] = "Ds_"+save_names_suffix[2];
+	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
+	{
+		std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(Npos);
+		this->lri.coefficients.resize(Npos);
+
+		this->lri.data_ab_name[Label::ab::a   ] = "dCs_"+std::to_string(ipos0)+"_"+save_names_suffix[3];
+		this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
+		this->lri.data_ab_name[Label::ab::b   ] = "Cs_"+save_names_suffix[0];
+
+		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
+			this->lri.coefficients[ipos1] =
+				[this,ipos1,&get_delta_pos](
+					const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2) -> Tdata
+				{	return get_delta_pos(Aa01, Aa2.first, Aa2.second, ipos1);	};
+
+		this->lri.cal(
+			{Label::ab_ab::a0b0_a1b1,
+			 Label::ab_ab::a0b0_a2b1},
+			dHs_vec);
+
+		this->lri.data_ab_name[Label::ab::a   ] = "Cs_"+save_names_suffix[0];
+		this->lri.data_ab_name[Label::ab::a0b0] = "dVs_"+std::to_string(ipos0)+"_"+save_names_suffix[4];
+
+		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
+			this->lri.coefficients[ipos1] =
+				[this,ipos1,&get_delta_pos](
+					const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2) -> Tdata
+				{	return get_delta_pos(Aa01, Ab01.first, Ab01.second, ipos1);	};
+
+		this->lri.cal(
+			{Label::ab_ab::a0b0_a1b1,
+			 Label::ab_ab::a0b0_a2b1},
+			dHs_vec);
+
+		this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
+		this->lri.data_ab_name[Label::ab::b   ] = "dCs_"+std::to_string(ipos0)+"_"+save_names_suffix[3];
+
+		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
+			this->lri.coefficients[ipos1] =
+				[this,ipos1,&get_delta_pos](
+					const Label::ab_ab &label, const TA &Aa01, const TAC &Aa2, const TAC &Ab01, const TAC &Ab2) -> Tdata
+				{	return get_delta_pos(Ab01.first, Ab2.first, (Ab2.second-Ab01.second)%this->period, ipos1); };
+
+		this->lri.cal(
+			{Label::ab_ab::a0b0_a1b1,
+			 Label::ab_ab::a0b0_a2b1},
+			dHs_vec);
+
+		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
+			this->stress(ipos0,ipos1) = post_2D.cal_energy(
+				this->post_2D.saves["Ds_"+save_names_suffix[2]],
+				this->post_2D.set_tensors_map2(dHs_vec[ipos1]));
+	}
+}
+*/
 
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
