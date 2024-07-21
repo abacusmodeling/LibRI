@@ -53,6 +53,16 @@ namespace Map_Operator
 		return m;
 	}
 
+	// -m_in
+	template<typename Tkey, typename Tvalue>
+	std::map<Tkey,Tvalue> operator-(const std::map<Tkey,Tvalue> &m_in)
+	{
+		std::map<Tkey,Tvalue> m;
+		for(const auto &item : m_in)
+			m.emplace_hint(m.end(), item.first, -item.second);
+		return m;
+	}
+
 	// m1-m2
 	template<typename Tkey, typename Tvalue>
 	std::map<Tkey,Tvalue> operator-(const std::map<Tkey,Tvalue> &m1, const std::map<Tkey,Tvalue> &m2)
@@ -85,16 +95,6 @@ namespace Map_Operator
 			m.emplace_hint(m.end(), ptr2->first, -ptr2->second);
 			++ptr2;
 		}
-		return m;
-	}
-
-	// -m_in
-	template<typename Tkey, typename Tvalue>
-	std::map<Tkey,Tvalue> operator-(const std::map<Tkey,Tvalue> &m_in)
-	{
-		std::map<Tkey,Tvalue> m;
-		for(const auto &item : m_in)
-			m.emplace_hint(m.end(), item.first, -item.second);
 		return m;
 	}
 }

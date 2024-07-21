@@ -18,7 +18,7 @@ namespace RI
 {
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void LRI<TA,Tcell,Ndim,Tdata>::cal(
+void LRI<TA,Tcell,Ndim,Tdata>::cal_loop4(
 	const std::vector<Label::ab_ab> &labels,
 	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result)
 {

@@ -7,8 +7,8 @@
 
 #include "RI/comm/mix/Communicate_Tensors_Map_Judge.h"
 #include "RI/global/MPI_Wrapper.h"
-#include "unittests/print_stl.h"
 #include "unittests/global/Tensor-test.h"
+#include "unittests/print_stl.h"
 
 #include <mpi.h>
 #include <map>

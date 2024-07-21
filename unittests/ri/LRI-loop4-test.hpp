@@ -27,7 +27,7 @@
 						for(std::size_t ib2=0; ib2<Nb2; ++ib2)
 
 
-namespace LRI_Test
+namespace LRI_Loop4_Test
 {
 	template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 	class Parallel_LRI_test: public RI::Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>
@@ -109,7 +109,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b0_a1b1}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b0_a1b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb2});
 			FOR_ia012_ib012
 				D_test(ia2,ib2) +=
@@ -122,7 +122,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b1_a1b0}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b1_a1b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb2});
 			FOR_ia012_ib012
 				D_test(ia2,ib2) +=
@@ -135,7 +135,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b0_a2b1}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b0_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb2});
 			FOR_ia012_ib012
 				D_test(ia1,ib2) +=
@@ -148,7 +148,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b1_a2b0}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b1_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb2});
 			FOR_ia012_ib012
 				D_test(ia1,ib2) +=
@@ -161,7 +161,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a1b0_a2b1}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a1b0_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb2});
 			FOR_ia012_ib012
 				D_test(ia0,ib2) +=
@@ -174,7 +174,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a1b1_a2b0}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a1b1_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb2});
 			FOR_ia012_ib012
 				D_test(ia0,ib2) +=
@@ -187,7 +187,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b0_a1b2}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b0_a1b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb1});
 			FOR_ia012_ib012
 				D_test(ia2,ib1) +=
@@ -200,7 +200,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b1_a1b2}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b1_a1b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb0});
 			FOR_ia012_ib012
 				D_test(ia2,ib0) +=
@@ -213,7 +213,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b2_a1b0}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b2_a1b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb1});
 			FOR_ia012_ib012
 				D_test(ia2,ib1) +=
@@ -226,7 +226,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b2_a1b1}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b2_a1b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb0});
 			FOR_ia012_ib012
 				D_test(ia2,ib0) +=
@@ -239,7 +239,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b0_a2b2}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b0_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb1});
 			FOR_ia012_ib012
 				D_test(ia1,ib1) +=
@@ -252,7 +252,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b1_a2b2}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b1_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb0});
 			FOR_ia012_ib012
 				D_test(ia1,ib0) +=
@@ -265,7 +265,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b2_a2b0}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b2_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb1});
 			FOR_ia012_ib012
 				D_test(ia1,ib1) +=
@@ -278,7 +278,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a0b2_a2b1}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a0b2_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb0});
 			FOR_ia012_ib012
 				D_test(ia1,ib0) +=
@@ -291,7 +291,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a1b0_a2b2}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a1b0_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb1});
 			FOR_ia012_ib012
 				D_test(ia0,ib1) +=
@@ -304,7 +304,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a1b1_a2b2}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a1b1_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb0});
 			FOR_ia012_ib012
 				D_test(ia0,ib0) +=
@@ -317,7 +317,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a1b2_a2b0}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a1b2_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb1});
 			FOR_ia012_ib012
 				D_test(ia0,ib1) +=
@@ -330,7 +330,7 @@ namespace LRI_Test
 
 		{
 			std::vector<T_Ds> Ds_result;
-			lri.cal({RI::Label::ab_ab::a1b2_a2b1}, Ds_result);
+			lri.cal_loop4({RI::Label::ab_ab::a1b2_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb0});
 			FOR_ia012_ib012
 				D_test(ia0,ib0) +=

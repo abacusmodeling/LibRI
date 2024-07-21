@@ -63,7 +63,6 @@ std::ostream &operator<<(std::ostream &os, const RI::Tensor<T> &t)
 	}
 }
 
-
 //int main1()
 //{
 //	RI::Tensor<double> t1({2,3});

@@ -12,6 +12,21 @@
 #include <tuple>
 #include <iostream>
 
+	template<typename T>
+	std::ostream &operator<<(std::ostream &os, const std::vector<T> &v);
+	template<typename T0, typename T1>
+	std::ostream &operator<<(std::ostream &os, const std::tuple<T0,T1> &t);
+	template<typename T>
+	std::ostream &operator<<(std::ostream &os, const std::set<T> &s);
+	template<typename T, std::size_t N>
+	std::ostream &operator<<(std::ostream &os, const std::array<T,N> &v);
+	template<typename Tkey, typename Tvalue>
+	std::ostream &operator<<(std::ostream &os, const std::pair<Tkey,Tvalue> &p);
+	template<typename Tkey, typename Tvalue>
+	std::ostream &operator<<(std::ostream &os, const std::map<Tkey,Tvalue> &m);
+	template<typename T0, typename T1>
+	std::ostream &operator<<(std::ostream &os, const std::tuple<T0,T1> &t);
+
 template<typename T>
 std::ostream &operator<<(std::ostream &os, const std::vector<T> &v)
 {

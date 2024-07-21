@@ -66,7 +66,7 @@ public:
 	//	const std::string &label,
 	//	const Tdata &threshold);
 
-	void cal(
+	void cal_loop4(
 		const std::vector<Label::ab_ab> &lables,
 		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result);
 	void cal_loop3(
@@ -107,7 +107,7 @@ public:		// private:
 
 #include "LRI.hpp"
 #include "LRI-set.hpp"
-#include "LRI-cal.hpp"
-#include "LRI-cal-b01.hpp"
-#include "LRI-cal-bx2.hpp"
+#include "LRI-cal-loop4.hpp"
+#include "LRI-cal-loop4-b01.hpp"
+#include "LRI-cal-loop4-bx2.hpp"
 #include "LRI-cal_loop3.hpp"
