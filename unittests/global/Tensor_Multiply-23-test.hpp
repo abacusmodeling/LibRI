@@ -30,6 +30,25 @@ namespace Tensor_Multiply_Test
 				}
 	}
 
+	// Txy(x0,y0,y1) = Tx(x0,a) * Ty(y0,y1,a)
+	template<typename Tdata>
+	void x0y0y1_x0a_y0y1a_test()
+	{
+		const std::size_t X0=2, Y0=3, Y1=4, A=5;
+		const RI::Tensor<Tdata> Tx = init_tensor<Tdata>({X0,A});
+		const RI::Tensor<Tdata> Ty = init_tensor<Tdata>({Y0,Y1,A});
+		const RI::Tensor<Tdata> Txy = RI::Tensor_Multiply::x0y0y1_x0a_y0y1a(Tx,Ty);
+		FOR_0(x0,X0)
+			FOR_0(y0,Y0)
+				FOR_0(y1,Y1)
+				{
+					Tdata result = 0;
+					FOR_0(a,A)
+						result += Tx(x0,a) * Ty(y0,y1,a);
+					assert(Txy(x0,y0,y1) == result);
+				}
+	}
+
 }
 
 #undef FOR_0

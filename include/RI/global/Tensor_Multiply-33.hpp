@@ -46,6 +46,23 @@ namespace Tensor_Multiply
 		return Txy;
 	}
 
+	// Txy(x2,y2) = Tx(a,b,x2) * Ty(a,b,y2)
+	template<typename Tdata>
+	Tensor<Tdata> x2y2_abx2_aby2(const Tensor<Tdata> &Tx, const Tensor<Tdata> &Ty)
+	{
+		assert(Tx.shape.size()==3);
+		assert(Ty.shape.size()==3);
+		Tensor<Tdata> Txy({Tx.shape[2], Ty.shape[2]});
+		Blas_Interface::gemm(
+			'T', 'N',
+			Tx.shape[2],
+			Ty.shape[2],
+			Tx.shape[0] * Tx.shape[1],
+			Tdata(1.0), Tx.ptr(), Ty.ptr(),
+			Tdata(0.0), Txy.ptr());
+		return Txy;
+	}
+
 }
 
 }

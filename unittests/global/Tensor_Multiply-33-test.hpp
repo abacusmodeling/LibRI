@@ -49,6 +49,25 @@ namespace Tensor_Multiply_Test
 			}
 	}
 
+	// Txy(x2,y2) = Tx(a,b,x2) * Ty(a,b,y2)
+	template<typename Tdata>
+	void x2y2_abx2_aby2_test()
+	{
+		const std::size_t X2=2, Y2=3, A=4, B=5;
+		const RI::Tensor<Tdata> Tx = init_tensor<Tdata>({A,B,X2});
+		const RI::Tensor<Tdata> Ty = init_tensor<Tdata>({A,B,Y2});
+		const RI::Tensor<Tdata> Txy = RI::Tensor_Multiply::x2y2_abx2_aby2(Tx,Ty);
+		FOR_0(x2,X2)
+			FOR_0(y2,Y2)
+			{
+				Tdata result = 0;
+				FOR_0(a,A)
+					FOR_0(b,B)
+						result += Tx(a,b,x2) * Ty(a,b,y2);
+				assert(Txy(x2,y2) == result);
+			}
+	}
+
 }
 
 #undef FOR_0

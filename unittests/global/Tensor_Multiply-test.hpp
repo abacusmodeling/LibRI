@@ -30,11 +30,13 @@ namespace Tensor_Multiply_Test
 	void main()
 	{
 		x1y0y1_ax1_y0y1a_test<Tdata>();
+		x0y0y1_x0a_y0y1a_test<Tdata>();
 		x1x2y1_ax1x2_ay1_test<Tdata>();
 		x0x1y0_x0x1a_y0a_test<Tdata>();
 		x1x2y0_ax1x2_y0a_test<Tdata>();
 		x0x1y1_x0x1a_ay1_test<Tdata>();
 		x0y2_x0ab_aby2_test<Tdata>();
 		x2y0_abx2_y0ab_test<Tdata>();
+		x2y2_abx2_aby2_test<Tdata>();
 	}
 }
