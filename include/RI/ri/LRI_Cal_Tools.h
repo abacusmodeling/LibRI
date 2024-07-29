@@ -29,9 +29,8 @@ public:
 	LRI_Cal_Tools(
 		const TC &period_in,
 		const std::map<std::string, Data_Pack<TA,TC,Tdata>> &data_pool,
-		const std::unordered_map<Label::ab, std::string> &data_ab_name,
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result_in)
-			:period(period_in), Ds_result(Ds_result_in)
+		const std::unordered_map<Label::ab, std::string> &data_ab_name)
+			:period(period_in)
 	{
 		this->Ds_ab_ptr.reserve(Label::array_ab.size());
 		for(const auto &name : data_ab_name)
@@ -57,17 +56,6 @@ public:
 		return Global_Func::find(
 			*this->Ds_ab_ptr.at(label),
 			Aa.first, TAC{Ab.first, (Ab.second-Aa.second)%this->period});
-	}
-
-	inline Tensor<Tdata> &get_D_result(const std::size_t icoef, const TA &Aa, const TAC &Ab)
-	{
-		return this->Ds_result[icoef][Aa][Ab];
-	}
-
-	inline Tensor<Tdata> &get_D_result(const std::size_t icoef, const TAC &Aa, const TAC &Ab)
-	{
-		using namespace Array_Operator;
-		return this->Ds_result[icoef][Aa.first][TAC{Ab.first, (Ab.second-Aa.second)%period}];
 	}
 
 	inline std::vector<Label::ab> split_b01(const Label::ab_ab &label) const
@@ -131,7 +119,6 @@ public:
 public:		// private:
 	const TC &period;
 	std::unordered_map<Label::ab, const std::map<TA, std::map<TAC, Tensor<Tdata>>>*> Ds_ab_ptr;
-	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result;
 };
 
 }

@@ -109,7 +109,7 @@ namespace LRI_Loop3_Test
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b0, RI::Label::ab::a1b1})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b0_a1b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb2});
 			FOR_ia012_ib012
@@ -118,14 +118,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b0][Aa01][{Ab01,{0}}](ia0,ib0)
 					* Ds_ab[RI::Label::ab::a1b1][Aa01][{Ab01,{0}}](ia1,ib1)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b0_a1b1\t"<<(Ds_result[0][Aa2][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b0_a1b1\t"<<(Ds_result[Aa2][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b1, RI::Label::ab::a1b0})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b1_a1b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb2});
 			FOR_ia012_ib012
@@ -134,14 +134,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b1][Aa01][{Ab01,{0}}](ia0,ib1)
 					* Ds_ab[RI::Label::ab::a1b0][Aa01][{Ab01,{0}}](ia1,ib0)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b1_a1b0\t"<<(Ds_result[0][Aa2][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b1_a1b0\t"<<(Ds_result[Aa2][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b0, RI::Label::ab::a2b1})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b0_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb2});
 			FOR_ia012_ib012
@@ -150,14 +150,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b0][Aa01][{Ab01,{0}}](ia0,ib0)
 					* Ds_ab[RI::Label::ab::a2b1][Aa2][{Ab01,{0}}](ia2,ib1)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b0_a2b1\t"<<(Ds_result[0][Aa01][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b0_a2b1\t"<<(Ds_result[Aa01][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b1, RI::Label::ab::a2b0})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b1_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb2});
 			FOR_ia012_ib012
@@ -166,14 +166,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b1][Aa01][{Ab01,{0}}](ia0,ib1)
 					* Ds_ab[RI::Label::ab::a2b0][Aa2][{Ab01,{0}}](ia2,ib0)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b1_a2b0\t"<<(Ds_result[0][Aa01][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b1_a2b0\t"<<(Ds_result[Aa01][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b0, RI::Label::ab::a2b1})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b0_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb2});
 			FOR_ia012_ib012
@@ -182,14 +182,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a1b0][Aa01][{Ab01,{0}}](ia1,ib0)
 					* Ds_ab[RI::Label::ab::a2b1][Aa2][{Ab01,{0}}](ia2,ib1)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a1b0_a2b1\t"<<(Ds_result[0][Aa01][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a1b0_a2b1\t"<<(Ds_result[Aa01][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b1, RI::Label::ab::a2b0})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b1_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb2});
 			FOR_ia012_ib012
@@ -198,14 +198,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a1b1][Aa01][{Ab01,{0}}](ia1,ib1)
 					* Ds_ab[RI::Label::ab::a2b0][Aa2][{Ab01,{0}}](ia2,ib0)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a1b1_a2b0\t"<<(Ds_result[0][Aa01][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a1b1_a2b0\t"<<(Ds_result[Aa01][{Ab2,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b0, RI::Label::ab::a1b2})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b0_a1b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb1});
 			FOR_ia012_ib012
@@ -214,14 +214,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b0][Aa01][{Ab01,{0}}](ia0,ib0)
 					* Ds_ab[RI::Label::ab::a1b2][Aa01][{Ab2,{0}}](ia1,ib2)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b0_a1b2\t"<<(Ds_result[0][Aa2][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b0_a1b2\t"<<(Ds_result[Aa2][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b1, RI::Label::ab::a1b2})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b1_a1b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb0});
 			FOR_ia012_ib012
@@ -230,14 +230,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b1][Aa01][{Ab01,{0}}](ia0,ib1)
 					* Ds_ab[RI::Label::ab::a1b2][Aa01][{Ab2,{0}}](ia1,ib2)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b1_a1b2\t"<<(Ds_result[0][Aa2][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b1_a1b2\t"<<(Ds_result[Aa2][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b2, RI::Label::ab::a1b0})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b2_a1b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb1});
 			FOR_ia012_ib012
@@ -246,14 +246,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b2][Aa01][{Ab2,{0}}](ia0,ib2)
 					* Ds_ab[RI::Label::ab::a1b0][Aa01][{Ab01,{0}}](ia1,ib0)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b2_a1b0\t"<<(Ds_result[0][Aa2][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b2_a1b0\t"<<(Ds_result[Aa2][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b2, RI::Label::ab::a1b1})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b2_a1b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na2,Nb0});
 			FOR_ia012_ib012
@@ -262,14 +262,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b2][Aa01][{Ab2,{0}}](ia0,ib2)
 					* Ds_ab[RI::Label::ab::a1b1][Aa01][{Ab01,{0}}](ia1,ib1)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b2_a1b1\t"<<(Ds_result[0][Aa2][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b2_a1b1\t"<<(Ds_result[Aa2][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b0, RI::Label::ab::a2b2})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b0_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb1});
 			FOR_ia012_ib012
@@ -278,14 +278,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b0][Aa01][{Ab01,{0}}](ia0,ib0)
 					* Ds_ab[RI::Label::ab::a2b2][Aa2][{Ab2,{0}}](ia2,ib2)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b0_a2b2\t"<<(Ds_result[0][Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b0_a2b2\t"<<(Ds_result[Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b1, RI::Label::ab::a2b2})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b1_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb0});
 			FOR_ia012_ib012
@@ -294,14 +294,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b1][Aa01][{Ab01,{0}}](ia0,ib1)
 					* Ds_ab[RI::Label::ab::a2b2][Aa2][{Ab2,{0}}](ia2,ib2)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b1_a2b2\t"<<(Ds_result[0][Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b1_a2b2\t"<<(Ds_result[Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b2, RI::Label::ab::a2b0})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b2_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb1});
 			FOR_ia012_ib012
@@ -310,14 +310,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b2][Aa01][{Ab2,{0}}](ia0,ib2)
 					* Ds_ab[RI::Label::ab::a2b0][Aa2][{Ab01,{0}}](ia2,ib0)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b2_a2b0\t"<<(Ds_result[0][Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b2_a2b0\t"<<(Ds_result[Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a0b2, RI::Label::ab::a2b1})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a0b2_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na1,Nb0});
 			FOR_ia012_ib012
@@ -326,14 +326,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a0b2][Aa01][{Ab2,{0}}](ia0,ib2)
 					* Ds_ab[RI::Label::ab::a2b1][Aa2][{Ab01,{0}}](ia2,ib1)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a0b2_a2b1\t"<<(Ds_result[0][Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a0b2_a2b1\t"<<(Ds_result[Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b0, RI::Label::ab::a2b2})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b0_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb1});
 			FOR_ia012_ib012
@@ -342,14 +342,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a1b0][Aa01][{Ab01,{0}}](ia1,ib0)
 					* Ds_ab[RI::Label::ab::a2b2][Aa2][{Ab2,{0}}](ia2,ib2)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a1b0_a2b2\t"<<(Ds_result[0][Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a1b0_a2b2\t"<<(Ds_result[Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b1, RI::Label::ab::a2b2})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b1_a2b2}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb0});
 			FOR_ia012_ib012
@@ -358,14 +358,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a1b1][Aa01][{Ab01,{0}}](ia1,ib1)
 					* Ds_ab[RI::Label::ab::a2b2][Aa2][{Ab2,{0}}](ia2,ib2)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a1b1_a2b2\t"<<(Ds_result[0][Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a1b1_a2b2\t"<<(Ds_result[Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b2, RI::Label::ab::a2b0})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b2_a2b0}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb1});
 			FOR_ia012_ib012
@@ -374,14 +374,14 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a1b2][Aa01][{Ab2,{0}}](ia1,ib2)
 					* Ds_ab[RI::Label::ab::a2b0][Aa2][{Ab01,{0}}](ia2,ib0)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a1b2_a2b0\t"<<(Ds_result[0][Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a1b2_a2b0\t"<<(Ds_result[Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		{
 			lri.data_ab_name.clear();	lri.data_pool.clear();
 			for(const RI::Label::ab &label : {RI::Label::ab::a, RI::Label::ab::b, RI::Label::ab::a1b2, RI::Label::ab::a2b1})
 				lri.set_tensors_map2(Ds_ab[label], {label});
-			std::vector<T_Ds> Ds_result;
+			T_Ds Ds_result;
 			lri.cal_loop3({RI::Label::ab_ab::a1b2_a2b1}, Ds_result);
 			RI::Tensor<Tdata> D_test({Na0,Nb0});
 			FOR_ia012_ib012
@@ -390,7 +390,7 @@ namespace LRI_Loop3_Test
 					* Ds_ab[RI::Label::ab::a1b2][Aa01][{Ab2,{0}}](ia1,ib2)
 					* Ds_ab[RI::Label::ab::a2b1][Aa2][{Ab01,{0}}](ia2,ib1)
 					* Ds_ab[RI::Label::ab::b][Ab01][{Ab2,{0}}](ib0,ib1,ib2);
-			std::cout<<"a1b2_a2b1\t"<<(Ds_result[0][Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
+			std::cout<<"a1b2_a2b1\t"<<(Ds_result[Aa01][{Ab01,{0}}] - D_test).norm(2)<<std::endl;
 		}
 
 		MPI_Finalize();

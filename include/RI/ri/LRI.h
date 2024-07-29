@@ -58,7 +58,7 @@ public:
 
 	void cal_loop3(
 		const std::vector<Label::ab_ab> &labels,
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 		const double fac_add_Ds = 1.0);
 
 public:

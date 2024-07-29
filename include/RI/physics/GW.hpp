@@ -64,14 +64,13 @@ void G0W0<TA, Tcell, Ndim, Tdata>::cal_Sigc(
 		{Label::ab::a0b0},
 		{{"threshold_filter", threshold_W}} );
 
-	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Sigc_vec(1);
+	this->Sigc_tau.clear();
 	this->lri.cal_loop3(
 		{Label::ab_ab::a0b0_a1b1,
 		 Label::ab_ab::a0b0_a1b2,
 		 Label::ab_ab::a0b0_a2b1,
 		 Label::ab_ab::a0b0_a2b2},
-		Sigc_vec);
-	this->Sigc_tau = std::move(Sigc_vec[0]);
+		this->Sigc_tau);
 }
 
 } // namespace RI

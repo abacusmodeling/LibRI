@@ -21,15 +21,12 @@ namespace RI
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	const std::vector<Label::ab_ab> &labels,
-	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result,
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 	const double fac_add_Ds)
 {
 	using namespace Array_Operator;
 
 	const Data_Pack_Wrapper<TA,TC,Tdata> data_wrapper(this->data_pool, this->data_ab_name);
-
-	if(Ds_result.empty())
-		Ds_result.resize(1);
 
 	const bool flag_D_a_transpose = [&labels]() -> bool
 	{
@@ -83,8 +80,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 	#pragma omp parallel
 	{
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_result_thread(1);
-		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->data_pool, this->data_ab_name, Ds_result_thread);
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_result_thread;
+		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->data_pool, this->data_ab_name);
 
 		for(const Label::ab_ab &label : labels)
 		{
@@ -151,7 +148,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( LRI_Cal_Aux::Ds_translate(std::move(Ds_result_fixed), Aa2.second, this->period),
-							                     Ds_result_thread[0][Aa2.first]);
+							                     Ds_result_thread[Aa2.first]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Ab2
 				} break; // end case a0b0_a1b1
@@ -211,7 +208,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( LRI_Cal_Aux::Ds_translate(std::move(Ds_result_fixed), Aa2.second, this->period),
-							                     Ds_result_thread[0][Aa2.first]);
+							                     Ds_result_thread[Aa2.first]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Ab2
 				} break; // end case a0b1_a1b0
@@ -273,7 +270,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( LRI_Cal_Aux::Ds_exchange(std::move(Ds_result_fixed), Ab01, this->period),
-							                     Ds_result_thread[0]);
+							                     Ds_result_thread);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b0_a1b2
@@ -333,7 +330,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( LRI_Cal_Aux::Ds_exchange(std::move(Ds_result_fixed), Ab01, this->period),
-							                     Ds_result_thread[0]);
+							                     Ds_result_thread);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b1_a1b2
@@ -393,7 +390,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( LRI_Cal_Aux::Ds_exchange(std::move(Ds_result_fixed), Ab01, this->period),
-							                     Ds_result_thread[0]);
+							                     Ds_result_thread);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b2_a1b0
@@ -453,7 +450,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( LRI_Cal_Aux::Ds_exchange(std::move(Ds_result_fixed), Ab01, this->period),
-							                     Ds_result_thread[0]);
+							                     Ds_result_thread);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b2_a1b1
@@ -516,7 +513,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( std::move(Ds_result_fixed),
-							                     Ds_result_thread[0][Aa01]);
+							                     Ds_result_thread[Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a0b0_a2b1
@@ -577,7 +574,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( std::move(Ds_result_fixed),
-							                     Ds_result_thread[0][Aa01]);
+							                     Ds_result_thread[Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a0b1_a2b0
@@ -638,7 +635,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( std::move(Ds_result_fixed),
-							                     Ds_result_thread[0][Aa01]);
+							                     Ds_result_thread[Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a1b0_a2b1
@@ -699,7 +696,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( std::move(Ds_result_fixed),
-							                     Ds_result_thread[0][Aa01]);
+							                     Ds_result_thread[Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a1b1_a2b0
@@ -762,7 +759,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( std::move(Ds_result_fixed),
-							                     Ds_result_thread[0][Aa01]);
+							                     Ds_result_thread[Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a0b0_a2b2
@@ -823,7 +820,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( std::move(Ds_result_fixed),
-							                     Ds_result_thread[0][Aa01]);
+							                     Ds_result_thread[Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a0b1_a2b2
@@ -884,7 +881,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( std::move(Ds_result_fixed),
-							                     Ds_result_thread[0][Aa01]);
+							                     Ds_result_thread[Aa01]);
 
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 
@@ -948,7 +945,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds( std::move(Ds_result_fixed),
-							                     Ds_result_thread[0][Aa01]);
+							                     Ds_result_thread[Aa01]);
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a1b1_a2b2
@@ -1009,7 +1006,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							// a0b0 = b1a1a0 * b0b1a1
 							Tensor<Tdata> D_mul3 = Tensor_Multiply::x2y0_abx2_y0ab(D_mul2, D_mul1);
 							LRI_Cal_Aux::add_Ds( std::move(D_mul3),
-							                     Ds_result_thread[0][Aa01][Ab01]);
+							                     Ds_result_thread[Aa01][Ab01]);
 						} // end for Aa01
 
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
@@ -1070,7 +1067,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							// b1a1 = a1a0b0 * a0b0b1
 							Tensor<Tdata> D_mul3 = Tensor_Multiply::x0y2_x0ab_aby2(D_mul2, D_mul1);
 							LRI_Cal_Aux::add_Ds( std::move(D_mul3),
-							                     Ds_result_thread[0][Aa01][Ab01]);
+							                     Ds_result_thread[Aa01][Ab01]);
 						} // end for Aa01
 
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
@@ -1131,7 +1128,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							// a1b0 = b1a0a1 * b0b1a0
 							Tensor<Tdata> D_mul3 = Tensor_Multiply::x2y0_abx2_y0ab(D_mul2, D_mul1);
 							LRI_Cal_Aux::add_Ds( std::move(D_mul3),
-							                     Ds_result_thread[0][Aa01][Ab01]);
+							                     Ds_result_thread[Aa01][Ab01]);
 						} // end for Aa01
 
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
@@ -1192,7 +1189,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							// a0b1 = a0a1b0 * a1b0b1
 							Tensor<Tdata> D_mul3 = Tensor_Multiply::x0y2_x0ab_aby2(D_mul2, D_mul1);
 							LRI_Cal_Aux::add_Ds( std::move(D_mul3),
-							                     Ds_result_thread[0][Aa01][Ab01]);
+							                     Ds_result_thread[Aa01][Ab01]);
 						} // end for Aa01
 
 						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);

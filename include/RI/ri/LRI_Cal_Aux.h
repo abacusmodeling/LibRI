@@ -108,6 +108,7 @@ namespace LRI_Cal_Aux
 		}
 	}
 
+	/*
 	template<typename Tvalue>
 	void add_Ds(
 		std::vector<Tvalue> &&Ds_add,
@@ -131,7 +132,8 @@ namespace LRI_Cal_Aux
 			Ds_add.resize(Ds_result.size());
 		}
 	}
-
+	*/
+	/*
 	template<typename T>
 	inline bool judge_Ds_empty(const std::vector<T> &Ds)
 	{
@@ -140,6 +142,7 @@ namespace LRI_Cal_Aux
 				return false;
 		return true;
 	}
+	*/
 
 	inline int judge_x(const Label::ab_ab &label)
 	{
@@ -221,34 +224,32 @@ namespace LRI_Cal_Aux
 
 	template<typename TA, typename TAC, typename Tdata>
 	void add_Ds_omp_try(
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread,
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &&Ds_result_thread,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 		omp_lock_t &lock_Ds_result_add,
 		const double &fac)
 	{
-		if( !LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread) && omp_test_lock(&lock_Ds_result_add) )
+		if( !Ds_result_thread.empty() && omp_test_lock(&lock_Ds_result_add) )
 		{
 			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result, fac);
 			omp_unset_lock(&lock_Ds_result_add);
 			Ds_result_thread.clear();
-			Ds_result_thread.resize(Ds_result.size());
 		}
 	}
 
 	template<typename TA, typename TAC, typename Tdata>
 	void add_Ds_omp_wait(
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &&Ds_result_thread,
-		std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> &Ds_result,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &&Ds_result_thread,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 		omp_lock_t &lock_Ds_result_add,
 		const double &fac)
 	{
-		if(!LRI_Cal_Aux::judge_Ds_empty(Ds_result_thread))
+		if(!Ds_result_thread.empty())
 		{
 			omp_set_lock(&lock_Ds_result_add);
 			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result, fac);
 			omp_unset_lock(&lock_Ds_result_add);
 			Ds_result_thread.clear();
-			Ds_result_thread.resize(Ds_result.size());
 		}
 	}
 

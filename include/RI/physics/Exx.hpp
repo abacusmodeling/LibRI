@@ -201,17 +201,14 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 			this->lri.data_ab_name[label] = "Ds_delta_"+save_names_suffix[2];
 	}
 
-	std::vector<std::map<TA, std::map<TAC, Tensor<Tdata>>>> Hs_vec(1);
+	if(!this->flag_finish.D_delta)
+		this->Hs.clear();
 	this->lri.cal_loop3(
 		{Label::ab_ab::a0b0_a1b1,
 		 Label::ab_ab::a0b0_a1b2,
 		 Label::ab_ab::a0b0_a2b1,
 		 Label::ab_ab::a0b0_a2b2},
-		Hs_vec);
-	if(this->flag_finish.D_delta)
-		this->Hs = this->Hs + Hs_vec[0];
-	else
-		this->Hs = std::move(Hs_vec[0]);
+		this->Hs);
 
 	//if()
 		this->energy = this->post_2D.cal_energy(
@@ -237,7 +234,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 		std::map<TA,Tdata> force_ipos;
 
 		{
-			std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(1);
+			std::map<TA,std::map<TAC,Tensor<Tdata>>> dHs;
 
 			this->lri.data_ab_name[Label::ab::a   ] = "dCs_"+std::to_string(ipos)+"_"+save_names_suffix[3];
 			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
@@ -246,13 +243,13 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				 Label::ab_ab::a0b0_a1b2,},
-				dHs_vec,
+				dHs,
 				-1.0);
 
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a2b1,
 				 Label::ab_ab::a0b0_a2b2},
-				dHs_vec,
+				dHs,
 				1.0);
 
 			this->lri.data_ab_name[Label::ab::a   ] = "Cs_"+save_names_suffix[0];
@@ -261,12 +258,12 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a2b2,
 				 Label::ab_ab::a0b0_a2b1},
-				dHs_vec,
+				dHs,
 				1.0);
 
 			this->post_2D.cal_force(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
-				this->post_2D.set_tensors_map2(std::move(dHs_vec[0])),
+				this->post_2D.set_tensors_map2(std::move(dHs)),
 				true,
 				force_ipos );
 
@@ -277,12 +274,12 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 		}
 
 		{
-			std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(1);
+			std::map<TA,std::map<TAC,Tensor<Tdata>>> dHs;
 
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a2b2,
 				 Label::ab_ab::a0b0_a1b2},
-				dHs_vec,
+				dHs,
 				1.0);
 
 			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
@@ -291,18 +288,18 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				 Label::ab_ab::a0b0_a2b1},
-				dHs_vec,
+				dHs,
 				1.0);
 
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b2,
 				 Label::ab_ab::a0b0_a2b2},
-				dHs_vec,
+				dHs,
 				-1.0);
 
 			this->post_2D.cal_force(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
-				this->post_2D.set_tensors_map2(std::move(dHs_vec[0])),
+				this->post_2D.set_tensors_map2(std::move(dHs)),
 				false,
 				force_ipos );
 
@@ -334,7 +331,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
 		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
 		{
-			std::vector<std::map<TA,std::map<TAC,Tensor<Tdata>>>> dHs_vec(1);
+			std::map<TA,std::map<TAC,Tensor<Tdata>>> dHs;
 
 			this->lri.data_ab_name[Label::ab::a   ] = "dCRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_names_suffix[3];
 			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
@@ -343,7 +340,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				Label::ab_ab::a0b0_a2b1},
-				dHs_vec,
+				dHs,
 				1.0);
 
 			this->lri.data_ab_name[Label::ab::a   ] = "Cs_"+save_names_suffix[0];
@@ -352,7 +349,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				Label::ab_ab::a0b0_a2b1},
-				dHs_vec,
+				dHs,
 				1.0);
 
 			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
@@ -361,12 +358,12 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				Label::ab_ab::a0b0_a2b1},
-				dHs_vec,
+				dHs,
 				1.0);
 
 				this->stress(ipos0,ipos1) = post_2D.cal_energy(
 					this->post_2D.saves["Ds_"+save_names_suffix[2]],
-					this->post_2D.set_tensors_map2(dHs_vec[0]));
+					this->post_2D.set_tensors_map2(dHs));
 		}
 }
 
