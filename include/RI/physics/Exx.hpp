@@ -177,7 +177,9 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dVRs(
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
-	const std::array<std::string,3> &save_names_suffix)						// "Cs","Vs","Ds"
+	const std::array<std::string, 3>& save_names_suffix,						// "Cs","Vs","Ds"
+	const std::map<std::pair<TA, TA>, std::set<TC>>& irreducible_sector,
+	const bool if_cal_energy)
 {
 	using namespace Map_Operator;
 
@@ -208,9 +210,11 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 		 Label::ab_ab::a0b0_a1b2,
 		 Label::ab_ab::a0b0_a2b1,
 		 Label::ab_ab::a0b0_a2b2},
-		this->Hs);
+		this->Hs,
+		1.0/*fac_add_Ds*/,
+		irreducible_sector);
 
-	//if()
+	if (if_cal_energy)
 		this->energy = this->post_2D.cal_energy(
 			this->post_2D.saves["Ds_"+save_names_suffix[2]],
 			this->post_2D.set_tensors_map2(this->Hs) );

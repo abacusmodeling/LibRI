@@ -68,7 +68,9 @@ public:
 		const std::string &save_name_suffix="");
 
 	void cal_Hs(
-		const std::array<std::string,3> &save_names_suffix={"","",""});		// "Cs","Vs","Ds"
+		const std::array<std::string, 3>& save_names_suffix = { "","","" },		// "Cs","Vs","Ds"
+		const std::map<std::pair<TA, TA>, std::set<TC>>& irreducible_sector = {},
+		const bool if_cal_energy = true);
 	void cal_force(
 		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCs","dVs"
 	void cal_stress(

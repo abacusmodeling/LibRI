@@ -9,7 +9,7 @@
 #include "LRI_Cal_Aux.h"
 #include "../global/Array_Operator.h"
 #include "../global/Tensor_Multiply.h"
-
+#include "../symmetry/Symmetry_Filter.h"
 #include <omp.h>
 #ifdef __MKL_RI
 #include <mkl_service.h>
@@ -22,8 +22,10 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	const std::vector<Label::ab_ab> &labels,
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-	const double fac_add_Ds)
+	const double fac_add_Ds,
+	const std::map<std::pair<TA, TA>, std::set<TC>>& irreducible_sector)
 {
+	std::cout << "using loop3 LibRI" << std::endl;
 	using namespace Array_Operator;
 
 	const Data_Pack_Wrapper<TA,TC,Tdata> data_wrapper(this->data_pool, this->data_ab_name);
@@ -70,6 +72,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 		? LRI_Cal_Aux::cal_Ds_transpose( data_wrapper(Label::ab::b).Ds_ab )
 		: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
 
+	Symmetry_Filter<TA, Tcell, Ndim, Tdata> symmetry_filter(this->period, irreducible_sector);
+
 	omp_lock_t lock_Ds_result_add;
 	omp_init_lock(&lock_Ds_result_add);
 
@@ -110,7 +114,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 					for(const TAC &Aa2 : list_Aa2)
 					{
-						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
+						if (!symmetry_filter.is_I_in_irreducible_sector(Aa2.first)) continue;
+
+						std::map<TAC, Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
@@ -138,6 +144,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							// D_result = D_mul * D_b
 							for(const TAC &Ab2 : list_Ab2)
 							{
+								// if ((Ab2-Aa2) exceeds the irreducible sector) continue (known Ab01)
+								if (!symmetry_filter.in_irreducible_sector(Aa2, Ab2))	continue;
+
 								const Tensor<Tdata> D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								// a2b2 = a2b0b1 * b0b1b2
@@ -232,7 +241,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 					for(const TAC &Ab01 : list_Ab01)
 					{
-						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
+						if (!symmetry_filter.is_J_in_irreducible_sector(Ab01.first)) continue;
+
+						std::map<TAC, Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
@@ -258,7 +269,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							// D_result = D_mul * D_a * D_a0b0
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								const Tensor<Tdata> &D_a_transpose = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
+								// if ((Ab01-Aa2) exceeds the irreducible sector) continue
+								if (!symmetry_filter.in_irreducible_sector(Aa2, Ab01))	continue;
+
+								const Tensor<Tdata>& D_a_transpose = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a_transpose.empty())	continue;
 								// b1a1a0 = b0b1a1 * a0b0
 								const Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1x2y0_ax1x2_y0a(D_mul, D_a0b0);
@@ -474,7 +488,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
+						if (!symmetry_filter.is_I_in_irreducible_sector(Aa01)) continue;
+
+						std::map<TAC, Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
@@ -500,8 +516,11 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							// D_result = D_mul * D_a0b0 * D_b
 							for(const TAC &Ab2 : list_Ab2)
 							{
+								// if ((Ab2-Aa01) exceeds the irreducible sector) continue
+								if (!symmetry_filter.in_irreducible_sector(Aa01, Ab2))	continue;
+								
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
-								if(D_b.empty())	continue;
+								if (D_b.empty())	continue;
 
 								// b0b1a1 = a0b0 * b1a1a0
 								const Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1y0y1_ax1_y0y1a(D_a0b0, D_mul);
@@ -720,7 +739,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
+						if (!symmetry_filter.is_I_in_irreducible_sector(Aa01))	continue;
+
+						std::map<TAC, Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib2=0; ib2<list_Ab2.size(); ++ib2)
@@ -744,7 +765,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							// D_result = D_mul * D_a0b0 * D_b
 							for(const TAC &Ab01 : list_Ab01)
 							{
-								const Tensor<Tdata> &D_b_transpose = Global_Func::find(Ds_b_transpose, Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%this->period});
+								// if ((Ab01-Aa01) exceeds the irreducible sector) continu
+								if (!symmetry_filter.in_irreducible_sector(Aa01, Ab01))	continue;
+
+								const Tensor<Tdata>& D_b_transpose = Global_Func::find(Ds_b_transpose, Ab01.first, TAC{ Ab2.first, (Ab2.second - Ab01.second) % this->period });
 								if(D_b_transpose.empty())	continue;
 								const Tensor<Tdata> D_a0b0 = tools.get_Ds_ab(Label::ab::a0b0, Aa01, Ab01);
 								if(D_a0b0.empty())	continue;
