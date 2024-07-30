@@ -25,7 +25,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	const double fac_add_Ds,
 	const std::map<std::pair<TA, TA>, std::set<TC>>& irreducible_sector)
 {
-	std::cout << "using loop3 LibRI" << std::endl;
 	using namespace Array_Operator;
 
 	const Data_Pack_Wrapper<TA,TC,Tdata> data_wrapper(this->data_pool, this->data_ab_name);
