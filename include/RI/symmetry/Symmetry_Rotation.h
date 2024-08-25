@@ -1,4 +1,7 @@
+#pragma once
+
 #include <RI/global/Tensor.h>
+
 namespace RI
 {
 	namespace Sym

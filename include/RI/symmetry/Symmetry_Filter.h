@@ -1,27 +1,30 @@
+#pragma once
+
+#include "../global/Array_Operator.h"
+
 #include <array>
 #include <map>
 #include <set>
-#include <tuple>
+
 #define NO_SEC_RETURN_TRUE if(this->irreducible_sector_.empty()) return true;
-#include "../global/Array_Operator.h"
+
 namespace RI
 {
-	using namespace Array_Operator;
-	template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+	template<typename TA, typename TC, typename Tdata>
 	class Symmetry_Filter
 	{
-		using TC = std::array<Tcell, Ndim>;
 		using TAC = std::pair<TA, TC>;
-
 		using TIJ = std::pair<TA, TA>;
 		using TIJR = std::pair<TIJ, TC>;
 		using Tsec = std::map<TIJ, std::set<TC>>;
-	public:
+
+	  public:
 		Symmetry_Filter(const TC& period_in, const Tsec& irsec)
 			:period(period_in), irreducible_sector_(irsec) {}
 		bool in_irreducible_sector(const TA& Aa, const TAC& Ab) const
 		{
 			NO_SEC_RETURN_TRUE;
+			using namespace Array_Operator;
 			const TIJ& ap = { Aa, Ab.first };
 			if (irreducible_sector_.find(ap) != irreducible_sector_.end())
 				if (irreducible_sector_.at(ap).find(Ab.second % this->period) != irreducible_sector_.at(ap).end())
@@ -31,6 +34,7 @@ namespace RI
 		bool in_irreducible_sector(const TAC& Aa, const TAC& Ab) const
 		{
 			NO_SEC_RETURN_TRUE;
+			using namespace Array_Operator;
 			const TC dR = (Ab.second - Aa.second) % this->period;
 			const std::pair<TA, TA> ap = { Aa.first, Ab.first };
 			if (irreducible_sector_.find(ap) != irreducible_sector_.end())
@@ -60,9 +64,12 @@ namespace RI
 		{
 			return { {I.first,J.first}, (J.second - I.second) % this->period };
 		}
-	private:
-		const Tsec& irreducible_sector_;
+
+	  public:	// private:
 		const TC& period;
+		const Tsec& irreducible_sector_;
 	};
 
 }
+
+#undef NO_SEC_RETURN_TRUE

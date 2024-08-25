@@ -18,6 +18,7 @@ namespace Exx_Test
 
 		RI::Exx<int,int,1,Tdata> exx;
 		exx.set_parallel(MPI_COMM_WORLD, {{1,{0}},{2,{4}}}, {}, {1});
+		exx.set_symmetry(false, {});
 		exx.set_Cs({}, 1E-4);
 		exx.set_Vs({}, 1E-4);
 		exx.set_Ds({}, 1E-4);

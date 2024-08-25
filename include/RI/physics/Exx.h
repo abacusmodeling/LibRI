@@ -34,6 +34,10 @@ public:
 		const std::array<Tatom_pos,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period);
 
+	void set_symmetry(
+		const bool flag_symmetry,
+		const std::map<std::pair<TA,TA>, std::set<TC>> &irreducible_sector);
+
 	void set_Cs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
 		const Tdata_real &threshold_C,

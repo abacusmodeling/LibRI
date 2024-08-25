@@ -9,6 +9,7 @@
 #include "../ri/Cell_Nearest.h"
 #include "../ri/Label.h"
 #include "../global/Map_Operator.h"
+#include "../symmetry/Filter_Atom_Symmetry.h"
 
 #include <cassert>
 
@@ -33,6 +34,18 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_parallel(
 	this->flag_finish.stru = true;
 	//if()
 		this->post_2D.set_parallel(this->mpi_comm, this->atoms_pos, this->period);
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::set_symmetry(
+	const bool flag_symmetry,
+	const std::map<std::pair<TA,TA>, std::set<TC>> &irreducible_sector)
+{
+	if(flag_symmetry)
+		this->lri.filter_atom = std::make_shared<Filter_Atom_Symmetry<TA,TC,Tdata>>(
+			this->period, irreducible_sector);
+	else
+		this->lri.filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
