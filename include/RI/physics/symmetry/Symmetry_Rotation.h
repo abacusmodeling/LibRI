@@ -1,6 +1,6 @@
 #pragma once
 
-#include <RI/global/Tensor.h>
+#include "../../global/Tensor.h"
 
 namespace RI
 {

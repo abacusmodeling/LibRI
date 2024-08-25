@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ri/Filter_Atom.h"
+#include "../../ri/Filter_Atom.h"
 #include "Symmetry_Filter.h"
 
 namespace RI

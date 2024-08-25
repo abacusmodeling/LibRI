@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../global/Array_Operator.h"
+#include "../../global/Array_Operator.h"
 
 #include <array>
 #include <map>

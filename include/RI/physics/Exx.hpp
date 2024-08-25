@@ -9,7 +9,7 @@
 #include "../ri/Cell_Nearest.h"
 #include "../ri/Label.h"
 #include "../global/Map_Operator.h"
-#include "../symmetry/Filter_Atom_Symmetry.h"
+#include "./symmetry/Filter_Atom_Symmetry.h"
 
 #include <cassert>
 
