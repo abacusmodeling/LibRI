@@ -13,6 +13,7 @@
 #include <mpi.h>
 #include <array>
 #include <map>
+#include <set>
 
 namespace RI
 {
@@ -33,6 +34,10 @@ public:
 		const std::map<TA,Tatom_pos> &atoms_pos,
 		const std::array<Tatom_pos,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period);
+
+	void set_symmetry(
+		const bool flag_symmetry,
+		const std::map<std::pair<TA,TA>, std::set<TC>> &irreducible_sector);
 
 	void set_Cs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,

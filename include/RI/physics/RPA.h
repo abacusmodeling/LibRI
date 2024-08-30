@@ -12,6 +12,7 @@
 #include <mpi.h>
 #include <array>
 #include <map>
+#include <set>
 
 namespace RI
 {
@@ -20,7 +21,8 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 class RPA
 {
 public:
-	using TAC = std::pair<TA,std::array<Tcell,Ndim>>;
+	using TC = std::array<Tcell,Ndim>;
+	using TAC = std::pair<TA,TC>;
 	using Tdata_real = Global_Func::To_Real_t<Tdata>;
 	using Tatom_pos = std::array<double,Ndim>;		// tmp
 
@@ -29,6 +31,10 @@ public:
 		const std::map<TA,Tatom_pos> &atoms_pos,
 		const std::array<Tatom_pos,Ndim> &latvec,
 		const std::array<Tcell,Ndim> &period);
+
+	void set_symmetry(
+		const bool flag_symmetry,
+		const std::map<std::pair<TA,TA>, std::set<TC>> &irreducible_sector);
 
 	void set_Cs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
