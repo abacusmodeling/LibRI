@@ -96,7 +96,7 @@ void Exx_Post_2D<TA,TC,Tdata>::cal_force(
 			if(flag_add)
 				force[E_map_A.first] += E_map_B.second;
 			else
-				force[std::get<0>(E_map_B.first)] -= E_map_B.second;
+				force[std::get<0>(E_map_B.first)] += E_map_B.second;
 }
 
 template<typename TA, typename TC, typename Tdata>

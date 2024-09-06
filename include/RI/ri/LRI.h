@@ -12,6 +12,7 @@
 #include "../parallel/Parallel_LRI_Equally.h"
 #include "RI_Tools.h"
 #include "../global/Global_Func-2.h"
+#include "Filter_Atom.h"
 
 #include <mpi.h>
 #include <array>
@@ -66,6 +67,7 @@ public:
 		parallel = std::make_shared<Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>>();
 	std::unordered_map< Label::ab, RI_Tools::T_filter_func<Tdata> >
 		filter_funcs;
+	std::shared_ptr<Filter_Atom<TA,TAC>> filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
 
 public:		// private:
 	TC period;

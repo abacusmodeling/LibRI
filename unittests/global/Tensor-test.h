@@ -7,7 +7,10 @@
 
 #include "RI/global/Tensor.h"
 
-static std::ostream &operator<<(std::ostream &os, const RI::Shape_Vector &v)
+namespace RI
+{
+
+static std::ostream &operator<<(std::ostream &os, const Shape_Vector &v)
 {
 	for(std::size_t i=0; i<v.size(); ++i)
 		os<<v[i]<<"\t";
@@ -15,7 +18,7 @@ static std::ostream &operator<<(std::ostream &os, const RI::Shape_Vector &v)
 }
 
 template<typename T>
-std::ostream &operator<<(std::ostream &os, const RI::Tensor<T> &t)
+std::ostream &operator<<(std::ostream &os, const Tensor<T> &t)
 {
 	switch(t.shape.size())
 	{
@@ -63,6 +66,7 @@ std::ostream &operator<<(std::ostream &os, const RI::Tensor<T> &t)
 	}
 }
 
+}
 //int main1()
 //{
 //	RI::Tensor<double> t1({2,3});

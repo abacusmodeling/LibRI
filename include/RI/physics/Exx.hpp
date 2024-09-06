@@ -9,6 +9,7 @@
 #include "../ri/Cell_Nearest.h"
 #include "../ri/Label.h"
 #include "../global/Map_Operator.h"
+#include "./symmetry/Filter_Atom_Symmetry.h"
 
 #include <cassert>
 
@@ -33,6 +34,18 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_parallel(
 	this->flag_finish.stru = true;
 	//if()
 		this->post_2D.set_parallel(this->mpi_comm, this->atoms_pos, this->period);
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::set_symmetry(
+	const bool flag_symmetry,
+	const std::map<std::pair<TA,TA>, std::set<TC>> &irreducible_sector)
+{
+	if(flag_symmetry)
+		this->lri.filter_atom = std::make_shared<Filter_Atom_Symmetry<TA,TC,Tdata>>(
+			this->period, irreducible_sector);
+	else
+		this->lri.filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
@@ -214,6 +227,9 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 		this->energy = this->post_2D.cal_energy(
 			this->post_2D.saves["Ds_"+save_names_suffix[2]],
 			this->post_2D.set_tensors_map2(this->Hs) );
+
+	if(!this->flag_save_result.Hs)
+		this->Hs.clear();
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
@@ -234,7 +250,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 		std::map<TA,Tdata> force_ipos;
 
 		{
-			std::map<TA,std::map<TAC,Tensor<Tdata>>> dHs;
+			this->dHs[ipos][0].clear();
 
 			this->lri.data_ab_name[Label::ab::a   ] = "dCs_"+std::to_string(ipos)+"_"+save_names_suffix[3];
 			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
@@ -243,13 +259,13 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				 Label::ab_ab::a0b0_a1b2,},
-				dHs,
+				this->dHs[ipos][0],
 				-1.0);
 
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a2b1,
 				 Label::ab_ab::a0b0_a2b2},
-				dHs,
+				this->dHs[ipos][0],
 				1.0);
 
 			this->lri.data_ab_name[Label::ab::a   ] = "Cs_"+save_names_suffix[0];
@@ -258,29 +274,32 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a2b2,
 				 Label::ab_ab::a0b0_a2b1},
-				dHs,
+				this->dHs[ipos][0],
 				1.0);
 
 			this->post_2D.cal_force(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
-				this->post_2D.set_tensors_map2(std::move(dHs)),
+				this->post_2D.set_tensors_map2(this->dHs[ipos][0]),
 				true,
 				force_ipos );
 
-//			mul(D)
-//			this->Fs[ipos] = this->post_2D.cal_F(dHs);
-//			this->stress[ipos] = this->post_2D.cal_sttress(dHs);
-	//		this->Fs[ipos][I] = \sum_J \sum_{i,j} dHs(i,j) * D(i,j)
+			//mul(D)
+			//this->Fs[ipos] = this->post_2D.cal_F(dHs);
+			//this->stress[ipos] = this->post_2D.cal_sttress(dHs);
+			//this->Fs[ipos][I] = \sum_J \sum_{i,j} dHs(i,j) * D(i,j)
+
+			if(!this->flag_save_result.dHs)
+				this->dHs[ipos][0].clear();
 		}
 
 		{
-			std::map<TA,std::map<TAC,Tensor<Tdata>>> dHs;
+			this->dHs[ipos][1].clear();
 
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a2b2,
 				 Label::ab_ab::a0b0_a1b2},
-				dHs,
-				1.0);
+				this->dHs[ipos][1],
+				-1.0);
 
 			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
 			this->lri.data_ab_name[Label::ab::b   ] = "dCs_"+std::to_string(ipos)+"_"+save_names_suffix[3];
@@ -288,25 +307,28 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				 Label::ab_ab::a0b0_a2b1},
-				dHs,
-				1.0);
+				this->dHs[ipos][1],
+				-1.0);
 
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b2,
 				 Label::ab_ab::a0b0_a2b2},
-				dHs,
-				-1.0);
+				this->dHs[ipos][1],
+				1.0);
 
 			this->post_2D.cal_force(
 				this->post_2D.saves["Ds_"+save_names_suffix[2]],
-				this->post_2D.set_tensors_map2(std::move(dHs)),
+				this->post_2D.set_tensors_map2(this->dHs[ipos][1]),
 				false,
 				force_ipos );
 
-//			mul(D)
-//			this->Fs[ipos] -= this->post_2D.cal_F(dHs);
-//			this->stress[ipos] -= this->post_2D.cal_sttress(dHs);
-	//		this->Fs[ipos][J] = \sum_I \sum_{i,j} dHs(i,j) * D(i,j)
+			//mul(D)
+			//this->Fs[ipos] -= this->post_2D.cal_F(dHs);
+			//this->stress[ipos] -= this->post_2D.cal_sttress(dHs);
+			//this->Fs[ipos][J] = \sum_I \sum_{i,j} dHs(i,j) * D(i,j)
+
+			if(!this->flag_save_result.dHs)
+				this->dHs[ipos][1].clear();
 		}
 		this->force[ipos] = this->post_2D.reduce_force(force_ipos);
 	} // end for(ipos)
@@ -331,7 +353,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
 		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
 		{
-			std::map<TA,std::map<TAC,Tensor<Tdata>>> dHs;
+			this->dHRs[ipos0][ipos1].clear();
 
 			this->lri.data_ab_name[Label::ab::a   ] = "dCRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_names_suffix[3];
 			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
@@ -340,7 +362,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				Label::ab_ab::a0b0_a2b1},
-				dHs,
+				this->dHRs[ipos0][ipos1],
 				1.0);
 
 			this->lri.data_ab_name[Label::ab::a   ] = "Cs_"+save_names_suffix[0];
@@ -349,7 +371,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				Label::ab_ab::a0b0_a2b1},
-				dHs,
+				this->dHRs[ipos0][ipos1],
 				1.0);
 
 			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
@@ -358,12 +380,15 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 			this->lri.cal_loop3(
 				{Label::ab_ab::a0b0_a1b1,
 				Label::ab_ab::a0b0_a2b1},
-				dHs,
+				this->dHRs[ipos0][ipos1],
 				1.0);
 
-				this->stress(ipos0,ipos1) = post_2D.cal_energy(
-					this->post_2D.saves["Ds_"+save_names_suffix[2]],
-					this->post_2D.set_tensors_map2(dHs));
+			this->stress(ipos0,ipos1) = post_2D.cal_energy(
+				this->post_2D.saves["Ds_"+save_names_suffix[2]],
+				this->post_2D.set_tensors_map2(this->dHRs[ipos0][ipos1]));
+
+			if(!this->flag_save_result.dHRs)
+				this->dHRs[ipos0][ipos1].clear();
 		}
 }
 
