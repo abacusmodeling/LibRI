@@ -80,9 +80,11 @@ public:
 		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCRs","dVRs"
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Hs;
+	std::array<std::array< std::map<TA, std::map<TAC, Tensor<Tdata>>> ,2>,Npos> dHs;
+	std::array<std::array< std::map<TA, std::map<TAC, Tensor<Tdata>>> ,Npos>,Npos> dHRs;
 	Tdata energy = 0;
 	std::array<std::map<TA,Tdata>,Ndim> force;
-	Tensor<Tdata> stress;
+	Tensor<Tdata> stress = Tensor<Tdata>({Npos, Npos});
 
 	Exx_Post_2D<TA,TC,Tdata> post_2D;
 
@@ -102,6 +104,14 @@ public:
 		bool dVR=false;
 	};
 	Flag_Finish flag_finish;
+
+	struct Flag_Save_Result
+	{
+		bool Hs=true;
+		bool dHs=false;
+		bool dHRs=false;
+	};
+	Flag_Save_Result flag_save_result;
 
 	MPI_Comm mpi_comm;
 	std::map<TA,Tatom_pos> atoms_pos;
