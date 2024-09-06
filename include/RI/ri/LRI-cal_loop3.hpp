@@ -9,7 +9,7 @@
 #include "LRI_Cal_Aux.h"
 #include "../global/Array_Operator.h"
 #include "../global/Tensor_Multiply.h"
-
+#include "../symmetry/Symmetry_Filter.h"
 #include <omp.h>
 #ifdef __MKL_RI
 #include <mkl_service.h>
@@ -22,7 +22,8 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	const std::vector<Label::ab_ab> &labels,
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-	const double fac_add_Ds)
+	const double fac_add_Ds,
+	const std::map<std::pair<TA, TA>, std::set<TC>>& irreducible_sector)
 {
 	using namespace Array_Operator;
 
@@ -69,6 +70,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 		= flag_D_b_transpose
 		? LRI_Cal_Aux::cal_Ds_transpose( data_wrapper(Label::ab::b).Ds_ab )
 		: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
+
+	this->filter_atom.reset(new Symmetry_Filter<TA, Tcell, Ndim, Tdata>(this->period, irreducible_sector));
 
 	omp_lock_t lock_Ds_result_add;
 	omp_init_lock(&lock_Ds_result_add);
@@ -529,7 +532,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 							{
 								if(this->filter_atom->filter_for32(label,Aa01,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
-								if(D_b.empty())	continue;
+								if (D_b.empty())	continue;
 
 								// b0b1a1 = a0b0 * b1a1a0
 								const Tensor<Tdata> D_tmp2 = Tensor_Multiply::x1y0y1_ax1_y0y1a(D_a0b0, D_mul);
