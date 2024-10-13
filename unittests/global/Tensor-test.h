@@ -61,6 +61,27 @@ std::ostream &operator<<(std::ostream &os, const Tensor<T> &t)
 			os<<"]"<<std::endl;
 			return os;
 		}
+		case 4:
+		{
+			os<<"{"<<std::endl;
+			for(std::size_t i0=0; i0<t.shape[0]; ++i0)
+			{
+				os<<"["<<std::endl;
+				for(std::size_t i1=0; i1<t.shape[1]; ++i1)
+				{
+					for(std::size_t i2=0; i2<t.shape[2]; ++i2)
+					{
+						for(std::size_t i3=0; i3<t.shape[3]; ++i3)
+							os<<t(i0,i1,i2,i3)<<"\t";
+						os<<std::endl;
+					}
+					os<<std::endl;
+				}
+				os<<"]"<<std::endl;
+			}
+			os<<"}"<<std::endl;
+			return os;
+		}
 		default:
 			throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
 	}

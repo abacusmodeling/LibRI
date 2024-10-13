@@ -90,7 +90,7 @@ T& Tensor<T>::operator() (const std::size_t i0, const std::size_t i1, const std:
 template<typename T>
 T& Tensor<T>::operator() (const std::size_t i0, const std::size_t i1, const std::size_t i2, const std::size_t i3) const
 {
-	assert(this->shape.size()==3);
+	assert(this->shape.size()==4);
 	assert(i0>=0);	assert(i0<this->shape[0]);
 	assert(i1>=0);	assert(i1<this->shape[1]);
 	assert(i2>=0);	assert(i2<this->shape[2]);
