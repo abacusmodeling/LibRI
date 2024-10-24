@@ -7,7 +7,7 @@
 
 #define __LIBRI_VERSION_MAJOR		2
 #define __LIBRI_VERSION_MINOR		1
-#define __LIBRI_VERSION_PATCH		0
+#define __LIBRI_VERSION_PATCH		1
 
 #define __LIBRI_VERSION				(  __LIBRI_VERSION_MAJOR * 10000 \
 									 + __LIBRI_VERSION_MINOR * 100 \

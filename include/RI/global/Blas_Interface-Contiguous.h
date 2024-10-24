@@ -134,7 +134,7 @@ namespace Blas_Interface
 					default:	throw std::invalid_argument("trans cannot be "+std::to_string(trans)+". "+std::string(__FILE__)+" line "+std::to_string(__LINE__));
 				}
 			default:	throw std::invalid_argument("ordering cannot be "+std::to_string(ordering)+". "+std::string(__FILE__)+" line "+std::to_string(__LINE__));
-		}		
+		}
 	}
 	template<typename T>
 	inline void imatcopy (const char ordering, const char trans, size_t rows, size_t cols, const T alpha, T * AB)

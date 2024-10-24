@@ -22,7 +22,7 @@ extern "C"
 	void spotri_(const char*const uplo, const int*const n, float*const A, const int*const lda, int*const info);
 	void dpotri_(const char*const uplo, const int*const n, double*const A, const int*const lda, int*const info);
 	void cpotri_(const char*const uplo, const int*const n, std::complex<float>*const A, const int*const lda, int*const info);
-	void zpotri_(const char*const uplo, const int*const n, std::complex<double>*const A, const int*const lda, int*const info);		
+	void zpotri_(const char*const uplo, const int*const n, std::complex<double>*const A, const int*const lda, int*const info);
 
 	// solve the eigenproblem Ax=ex, where A is Symmetric
 	void ssyev_(const char*const jobz, const char*const uplo,

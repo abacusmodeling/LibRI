@@ -19,10 +19,10 @@ namespace Lapack_Interface
 	{
 		return potrf(uplo, n, A, n);
 	}
-	
+
 	// potri takes potrf's output to perform matrix inversion
 	template<typename T>
-	inline int potri( const char &uplo, const int &n, T*const A )	
+	inline int potri( const char &uplo, const int &n, T*const A )
 	{
 		return potri(uplo, n, A, n);
 	}

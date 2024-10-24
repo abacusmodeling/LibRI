@@ -28,12 +28,12 @@ public:
 		for(auto ptr_in=v_in.begin(); ptr_in<v_in.end(); )
 			*(ptr_this++) = *(ptr_in++);
 	}
-	
+
 	const std::size_t* begin() const noexcept { return this->v; }
 	const std::size_t* end() const noexcept { return this->v+size_; }
 	std::size_t size() const noexcept { return size_; }
 	bool empty() const noexcept{ return !size_; }
-	
+
 	std::size_t& operator[] (const std::size_t i)
 	{
 		assert(i<size_);

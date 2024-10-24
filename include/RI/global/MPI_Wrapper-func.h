@@ -48,7 +48,7 @@ namespace MPI_Wrapper
 	inline MPI_Datatype mpi_get_datatype(const bool							&v) { return MPI_CXX_BOOL; }
 	inline MPI_Datatype mpi_get_datatype(const std::complex<float>			&v) { return MPI_CXX_FLOAT_COMPLEX; }
 	inline MPI_Datatype mpi_get_datatype(const std::complex<double>			&v) { return MPI_CXX_DOUBLE_COMPLEX; }
-	inline MPI_Datatype mpi_get_datatype(const std::complex<long double>	&v) { return MPI_CXX_LONG_DOUBLE_COMPLEX; }	
+	inline MPI_Datatype mpi_get_datatype(const std::complex<long double>	&v) { return MPI_CXX_LONG_DOUBLE_COMPLEX; }
 
 	//inline int mpi_get_count(const MPI_Status &status, const MPI_Datatype &datatype)
 	//{

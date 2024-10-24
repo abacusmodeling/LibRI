@@ -146,7 +146,7 @@ auto LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
 							{
 								if(this->csm.threshold.at(label))
 									this->csm.set_label_A(label, Aa01, Aa2, Ab01, Ab2, period);
-									
+
 								if(this->csm.threshold.at(label))
 									if(this->csm.filter_4())
 										continue;
@@ -373,7 +373,7 @@ auto LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
 							tensor3_merge(D_mul3,false),
 							tensor3_merge(D_b,true));}
 					);
-					
+
 					F_bx2( {Label::ab_ab::a0b0_a1b2, Label::ab_ab::a0b1_a1b2},
 						// D_mul2(ia1,ia2,ibx) = D_a(ia0,ia1,ia2) * D_ab(ia0,ibx)
 						[&](){ return
@@ -465,7 +465,7 @@ auto LRI<TA,Tcell,Ndim,Tdata>::cal(const std::vector<Label::ab_ab> &labels)
 							tensor3_merge(D_mul3,false),
 							tensor3_merge(D_bx,false));}
 					);
-					
+
 					F_bx2( {Label::ab_ab::a1b0_a2b2, Label::ab_ab::a1b1_a2b2},
 						// D_mul2(ia0,ibx,ia2) = D_ab(ia1,ibx) * D_a(ia0,ia1,ia2)
 						[&](){ return

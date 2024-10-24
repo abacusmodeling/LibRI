@@ -26,13 +26,13 @@ namespace Tensor_Algorithm
 		{
 			for( std::size_t i0=0; i0!=m.shape[0]; ++i0 )
 				for( std::size_t i1=0; i1<i0; ++i1 )
-					m(i0,i1) = m(i1,i0);			
+					m(i0,i1) = m(i1,i0);
 		}
 		else if(uplo=='L')
 		{
 			for( std::size_t i0=0; i0!=m.shape[0]; ++i0 )
 				for( std::size_t i1=i0+1; i1<m.shape[1]; ++i1 )
-					m(i0,i1) = m(i1,i0);			
+					m(i0,i1) = m(i1,i0);
 		}
 		else
 		{

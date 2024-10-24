@@ -16,7 +16,7 @@ namespace MPI_Wrapper
 	extern inline int mpi_get_size(const MPI_Comm &mpi_comm);
 
 	template<typename T> extern inline MPI_Datatype mpi_get_datatype(const T&v);
-	
+
 	template<typename T> extern inline void mpi_reduce(T &data, const MPI_Op &op, const int &root, const MPI_Comm &mpi_comm);
 	template<typename T> extern inline void mpi_allreduce(T &data, const MPI_Op &op, const MPI_Comm &mpi_comm);
 	template<typename T> extern inline void mpi_reduce(T*const ptr, const int &count, const MPI_Op &op, const int &root, const MPI_Comm &mpi_comm);

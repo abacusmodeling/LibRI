@@ -44,13 +44,13 @@ namespace Cell_Nearest_Test
 			period = {2,1};
 			test();
 			/*
-				C	C	0		0	
-					H	-0.8	0.2	
-				H	C	0.8		-0.2	
-					H	0		0	
+				C	C	0		0
+					H	-0.8	0.2
+				H	C	0.8		-0.2
+					H	0		0
 
-				0	0		0	0	
-				1	0		1	0	
+				0	0		0	0
+				1	0		1	0
 			*/
 		}
 
@@ -62,13 +62,13 @@ namespace Cell_Nearest_Test
 			period = {2,1};
 			test();
 			/*
-				C	C	0		0	
-					H	0.8		0.2	
-				H	C	-0.8	-0.2	
-					H	0		0	
+				C	C	0		0
+					H	0.8		0.2
+				H	C	-0.8	-0.2
+					H	0		0
 
-				0	0		0	0	
-				1	0		-1	0		
+				0	0		0	0
+				1	0		-1	0
 			*/
 		}
 
@@ -80,15 +80,15 @@ namespace Cell_Nearest_Test
 			period = {2,1};
 			test();
 			/*
-				C	C	0		0	
-					H	1.8		0.2	
+				C	C	0		0
+					H	1.8		0.2
 
-				H	C	-1.8	-0.2	
-					H	0		0	
+				H	C	-1.8	-0.2
+					H	0		0
 
 
-				0	0		-2	0	
-				1	0		-1	0		
+				0	0		-2	0
+				1	0		-1	0
 			*/
 		}
 	}

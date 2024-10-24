@@ -19,10 +19,10 @@ namespace Tensor_Test
 	{
 		int mpi_init_provide;
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
-		
+
 		assert(Comm::MPI_Wrapper::mpi_get_size(MPI_COMM_WORLD)>=2);
 		const int rank_mine = Comm::MPI_Wrapper::mpi_get_rank(MPI_COMM_WORLD);
-		
+
 		if(rank_mine==0)
 		{
 			const RI::Tensor<double> m = Tensor_Test::init_real_1<double>();

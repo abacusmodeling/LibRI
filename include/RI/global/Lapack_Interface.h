@@ -29,50 +29,50 @@ namespace Lapack_Interface
 		const char uplo_changed = Blas_Interface::change_uplo(uplo);
 		spotrf_( &uplo_changed, &n, A, &lda, &info );
 		return info;
-	}	
+	}
 	inline int potrf( const char &uplo, const int &n, double*const A, const int &lda )
 	{
 		int info;
 		const char uplo_changed = Blas_Interface::change_uplo(uplo);
 		dpotrf_( &uplo_changed, &n, A, &lda, &info );
 		return info;
-	}	
+	}
 	inline int potrf( const char &uplo, const int &n, std::complex<float>*const A, const int &lda )
 	{
 		int info;
 		const char uplo_changed = Blas_Interface::change_uplo(uplo);
 		cpotrf_( &uplo_changed, &n, A, &lda, &info );
 		return info;
-	}	
+	}
 	inline int potrf( const char &uplo, const int &n, std::complex<double>*const A, const int &lda )
 	{
 		int info;
 		const char uplo_changed = Blas_Interface::change_uplo(uplo);
 		zpotrf_( &uplo_changed, &n, A, &lda, &info );
 		return info;
-	}	
+	}
 
 	// potri takes potrf's output to perform matrix inversion
 	inline int potri( const char &uplo, const int &n, float*const A, const int &lda )
 	{
 		int info;
 		const char uplo_changed = Blas_Interface::change_uplo(uplo);
-		spotri_( &uplo_changed, &n, A, &lda, &info);	
-		return info;	
-	}	
+		spotri_( &uplo_changed, &n, A, &lda, &info);
+		return info;
+	}
 	inline int potri( const char &uplo, const int &n, double*const A, const int &lda )
 	{
 		int info;
 		const char uplo_changed = Blas_Interface::change_uplo(uplo);
-		dpotri_( &uplo_changed, &n, A, &lda, &info);	
-		return info;	
+		dpotri_( &uplo_changed, &n, A, &lda, &info);
+		return info;
 	}
 	inline int potri( const char &uplo, const int &n, std::complex<float>*const A, const int &lda )
 	{
 		int info;
 		const char uplo_changed = Blas_Interface::change_uplo(uplo);
-		cpotri_( &uplo_changed, &n, A, &lda, &info);	
-		return info;	
+		cpotri_( &uplo_changed, &n, A, &lda, &info);
+		return info;
 	}
 	inline int potri( const char &uplo, const int &n, std::complex<double>*const A, const int &lda )
 	{
@@ -149,7 +149,7 @@ namespace Lapack_Interface
 		const int lwork = std::real(work_tmp);
 		std::vector<std::complex<T>> WORK(std::max(1,lwork));
 		return heev(jobz, uplo, n, A, lda, W, WORK.data(), lwork, RWORK.data());
-	}	
+	}
 }
 
 }

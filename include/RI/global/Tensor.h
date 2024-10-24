@@ -17,7 +17,7 @@
 
 namespace RI
 {
-	
+
 template<typename T>
 class Tensor
 {
