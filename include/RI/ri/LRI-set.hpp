@@ -9,6 +9,7 @@
 #include "RI_Tools.h"
 #include "Label_Tools.h"
 #include "../global/Map_Operator.h"
+#include "../global/MPI_Wrapper-func.h"
 #include <algorithm>
 
 namespace RI
@@ -38,7 +39,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 {
 	const std::map<std::string, double> para_default = {
 		{"flag_period",      true},
-		{"flag_comm",        true},
+		{"flag_comm",        (MPI_Wrapper::mpi_get_size(this->mpi_comm)>1)
+		                     ? true : false},
 		{"flag_filter",      true},
 		{"threshold_filter", 0.0}};
 	const std::map<std::string, double> para = Map_Operator::cover(para_default, para_in);
