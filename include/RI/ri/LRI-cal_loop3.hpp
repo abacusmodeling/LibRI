@@ -27,48 +27,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	using namespace Array_Operator;
 
 	const Data_Pack_Wrapper<TA,TC,Tdata> data_wrapper(this->data_pool, this->data_ab_name);
+	const LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->data_pool, this->data_ab_name);
 
-	const bool flag_D_a_transpose = [&labels]() -> bool
-	{
-		for(const Label::ab_ab &label : labels)
-			switch(label)
-			{
-				case Label::ab_ab::a0b1_a1b0:
-				case Label::ab_ab::a0b0_a1b2:
-				case Label::ab_ab::a0b2_a1b1:
-				case Label::ab_ab::a0b0_a2b1:
-				case Label::ab_ab::a1b1_a2b0:
-				case Label::ab_ab::a0b0_a2b2:
-				case Label::ab_ab::a0b1_a2b2:
-				case Label::ab_ab::a1b2_a2b1:
-				case Label::ab_ab::a0b2_a2b0:
-				case Label::ab_ab::a1b1_a2b2:
-					return true;
-				default: ;
-			}
-		return false;
-	}();
-	const bool flag_D_b_transpose = [&labels]() -> bool
-	{
-		for(const Label::ab_ab &label : labels)
-			switch(label)
-			{
-				case Label::ab_ab::a0b0_a2b2:
-				case Label::ab_ab::a1b0_a2b2:
-				case Label::ab_ab::a1b1_a2b2:
-					return true;
-				default: ;
-			}
-		return false;
-	}();
-	const std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_a_transpose
-		= flag_D_a_transpose
-		? LRI_Cal_Aux::cal_Ds_transpose( data_wrapper(Label::ab::a).Ds_ab )
-		: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
-	const std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_b_transpose
-		= flag_D_b_transpose
-		? LRI_Cal_Aux::cal_Ds_transpose( data_wrapper(Label::ab::b).Ds_ab )
-		: std::map<TA, std::map<TAC, Tensor<Tdata>>>{};
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_a_transpose, Ds_b_transpose;
+	std::tie(Ds_a_transpose, Ds_b_transpose) = tools.cal_Ds_transpose(labels);
 
 	omp_lock_t lock_Ds_result_add;
 	omp_init_lock(&lock_Ds_result_add);
@@ -81,7 +43,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	#pragma omp parallel
 	{
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_result_thread;
-		LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->data_pool, this->data_ab_name);
 
 		for(const Label::ab_ab &label : labels)
 		{

@@ -8,6 +8,7 @@
 #include "../global/Tensor.h"
 #include "Label.h"
 #include "../global/Map_Operator.h"
+#include "../global/Array_Operator.h"
 
 #include <map>
 #include <memory.h>
