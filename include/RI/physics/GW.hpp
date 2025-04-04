@@ -5,6 +5,7 @@
 #pragma once
 
 #include "GW.h"
+#include "../ri/Label_Tools.h"
 #include "../ri/Label.h"
 #include "./symmetry/Filter_Atom_Symmetry.h"
 
@@ -55,27 +56,32 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_Cs(
 	this->flag_finish.C = true;
 }
 
-
 template <typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA, Tcell, Ndim, Tdata>::cal_Sigc(
-	const std::map<TA, std::map<TAC, Tensor<Tdata>>> gf_tau,
-	const Tdata_real &threshold_G,
+void G0W0<TA, Tcell, Ndim, Tdata>::set_Wc(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> Wc_tau,
 	const Tdata_real &threshold_W)
 {
-	assert(this->flag_finish.stru);
-	assert(this->flag_finish.C);
-	// setup Green's function
-	this->lri.set_tensors_map2(
-		gf_tau,
-		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
-		{{"threshold_filter", threshold_G}} );
-
 	// setup screened Coulomb interaction
 	this->lri.set_tensors_map2(
 		Wc_tau,
 		{Label::ab::a0b0},
 		{{"threshold_filter", threshold_W}} );
+	this->flag_finish.W = true;
+}
+
+template <typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void G0W0<TA, Tcell, Ndim, Tdata>::cal_Sigc(
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>> gf_tau,
+	const Tdata_real &threshold_G)
+{
+	assert(this->flag_finish.stru);
+	assert(this->flag_finish.C);
+	assert(this->flag_finish.W);
+	// setup Green's function
+	this->lri.set_tensors_map2(
+		gf_tau,
+		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
+		{{"threshold_filter", threshold_G}} );
 
 	this->Sigc_tau.clear();
 	this->lri.cal_loop3(
@@ -84,6 +90,27 @@ void G0W0<TA, Tcell, Ndim, Tdata>::cal_Sigc(
 		 Label::ab_ab::a0b0_a2b1,
 		 Label::ab_ab::a0b0_a2b2},
 		this->Sigc_tau);
+}
+
+template <typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void G0W0<TA, Tcell, Ndim, Tdata>::free_Wc()
+{
+	const std::vector<Label::ab> label_list = {Label::ab::a0b0,};
+	const std::string save_name = Label_Tools::get_name(label_list);
+	for(const Label::ab &label : label_list)
+		this->lri.data_ab_name.erase(label);
+	this->lri.data_pool.erase(save_name);
+	this->flag_finish.W = false;
+}
+
+template <typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void G0W0<TA, Tcell, Ndim, Tdata>::free_G()
+{
+	const std::vector<Label::ab> label_list = {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2};
+	const std::string save_name = Label_Tools::get_name(label_list);
+	for(const Label::ab &label : label_list)
+		this->lri.data_ab_name.erase(label);
+	this->lri.data_pool.erase(save_name);
 }
 
 } // namespace RI

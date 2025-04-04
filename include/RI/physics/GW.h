@@ -43,11 +43,19 @@ public:
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
 		const Tdata_real &threshold_C);
 
+	// Set screened Coulomb for a particular imaginary time point (both positive and negative)
+	void set_Wc(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> Wc_tau,
+		const Tdata_real &threshold_Wc);
+
 	void cal_Sigc(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> gf_tau,
-		const Tdata_real &threshold_G,
-		const std::map<TA, std::map<TAC, Tensor<Tdata>>> Wc_tau,
-		const Tdata_real &threshold_W);
+		const Tdata_real &threshold_G);
+
+	void free_G();
+
+	// Clean up screened Coulomb for next calculation
+	void free_Wc();
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Sigc_tau;
 
@@ -58,6 +66,7 @@ public:
 	{
 		bool stru=false;
 		bool C=false;
+		bool W=false;
 	};
 	Flag_Finish flag_finish;
 
