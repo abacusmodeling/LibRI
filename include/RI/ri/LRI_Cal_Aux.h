@@ -9,6 +9,7 @@
 #include "Label.h"
 #include "../global/Map_Operator.h"
 #include "../global/Array_Operator.h"
+#include "../parallel/Parallel_LRI.h"
 
 #include <map>
 #include <memory.h>
@@ -56,17 +57,6 @@ namespace LRI_Cal_Aux
 			D_result = D_result + D_add;
 	}
 
-	/*
-	template<typename T>
-	inline void add_Ds(const std::vector<T> &Ds_add, std::vector<T> &Ds_result)
-	{
-		assert(Ds_add.size()==Ds_result.size());
-		using namespace Map_Operator;						// tmp
-		for(std::size_t i=0; i<Ds_result.size(); ++i)
-			Ds_result[i] = Ds_result[i] + Ds_add[i];		// tmp
-	}
-	*/
-
 	template<typename Tdata>
 	inline void add_Ds(
 		Tensor<Tdata> &&D_add,
@@ -99,6 +89,8 @@ namespace LRI_Cal_Aux
 		std::map<Tkey, Tvalue> &Ds_result,
 		const double fac = 1.0)
 	{
+		if(Ds_add.empty())
+			return;
 		if(Ds_result.empty() && 1.0==fac)
 			Ds_result = std::move(Ds_add);
 		else
@@ -116,6 +108,8 @@ namespace LRI_Cal_Aux
 		std::vector<Tvalue> &Ds_result,
 		const double fac = 1.0)
 	{
+		if(Ds_add.empty())
+			return;
 		if(Ds_result.empty() && 1.0==fac)
 		{
 			Ds_result = std::move(Ds_add);
@@ -134,6 +128,79 @@ namespace LRI_Cal_Aux
 		}
 	}
 	*/
+
+	template<typename TA, typename TAC, typename Tdata>
+	void add_Ds_omp_try(
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result_thread,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
+		omp_lock_t &lock_Ds_result_add,
+		const double &fac)
+	{
+		if( !Ds_result_thread.empty() && omp_test_lock(&lock_Ds_result_add) )
+		{
+			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result, fac);
+			omp_unset_lock(&lock_Ds_result_add);
+			Ds_result_thread.clear();
+		}
+	}
+
+	template<typename TA, typename TAC, typename Tdata>
+	void add_Ds_omp_wait(
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &&Ds_result_thread,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
+		omp_lock_t &lock_Ds_result_add,
+		const double &fac)
+	{
+		if(!Ds_result_thread.empty())
+		{
+			omp_set_lock(&lock_Ds_result_add);
+			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result, fac);
+			omp_unset_lock(&lock_Ds_result_add);
+			Ds_result_thread.clear();
+		}
+	}
+
+	template<typename TA, typename TAC, typename Tdata>
+	void add_Ds_omp_try_map(
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result_thread,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
+		std::map<TA, omp_lock_t> &lock_Ds_result_add_map,
+		const double &fac)
+	{
+		for(auto ptr=Ds_result_thread.begin(); ptr!=Ds_result_thread.end(); )
+		{
+			const TA key = ptr->first;
+			if(omp_test_lock(&lock_Ds_result_add_map.at(key)))
+			{
+				LRI_Cal_Aux::add_Ds(std::move(ptr->second), Ds_result.at(key), fac);
+				omp_unset_lock(&lock_Ds_result_add_map.at(key));
+				ptr = Ds_result_thread.erase(ptr);
+			}
+			else
+			{
+				++ptr;
+			}
+		}
+	}
+
+	template<typename TA, typename TAC, typename Tdata>
+	void add_Ds_omp_wait_map(
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result_thread,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
+		std::map<TA, omp_lock_t> &lock_Ds_result_add_map,
+		const double &fac)
+	{
+		if(Ds_result_thread.empty())
+			return;
+		while(true)
+		{
+			add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac);
+			if(Ds_result_thread.empty())
+				return;
+			#pragma omp taskyield
+		}
+	}
+
 	/*
 	template<typename T>
 	inline bool judge_Ds_empty(const std::vector<T> &Ds)
@@ -223,37 +290,6 @@ namespace LRI_Cal_Aux
 		return Ds_out;
 	}
 
-	template<typename TA, typename TAC, typename Tdata>
-	void add_Ds_omp_try(
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &&Ds_result_thread,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-		omp_lock_t &lock_Ds_result_add,
-		const double &fac)
-	{
-		if( !Ds_result_thread.empty() && omp_test_lock(&lock_Ds_result_add) )
-		{
-			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result, fac);
-			omp_unset_lock(&lock_Ds_result_add);
-			Ds_result_thread.clear();
-		}
-	}
-
-	template<typename TA, typename TAC, typename Tdata>
-	void add_Ds_omp_wait(
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &&Ds_result_thread,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-		omp_lock_t &lock_Ds_result_add,
-		const double &fac)
-	{
-		if(!Ds_result_thread.empty())
-		{
-			omp_set_lock(&lock_Ds_result_add);
-			LRI_Cal_Aux::add_Ds(std::move(Ds_result_thread), Ds_result, fac);
-			omp_unset_lock(&lock_Ds_result_add);
-			Ds_result_thread.clear();
-		}
-	}
-
 	template<typename TA, typename Tvalue>
 	std::vector<TA> filter_list_map(
 		const std::vector<TA> &list_in,
@@ -300,6 +336,59 @@ namespace LRI_Cal_Aux
 			if(index.find(item.first) != index.end())
 				list_filter.push_back(item);
 		return list_filter;
+	}
+
+	template<typename TA, typename TAC, typename Tdata>
+	std::map<TA, omp_lock_t> init_lock_result(
+		const std::vector<Label::ab_ab> &labels,
+		const std::unordered_map<Label::Aab_Aab, List_A<TA,TAC>> &list_A,
+		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result)
+	{
+		std::map<TA, omp_lock_t> lock_Ds_result_add_map;
+		for(const Label::ab_ab &label : labels)
+		{
+			switch(Label_Tools::to_Aab_Aab(label))
+			{
+				case Label::Aab_Aab::a01b01_a2b01:
+				case Label::Aab_Aab::a01b01_a2b2:
+				case Label::Aab_Aab::a01b2_a2b01:
+					for(const TA &Aa01 : list_A.at(Label_Tools::to_Aab_Aab(label)).a01)
+					{
+						Ds_result[Aa01];
+						lock_Ds_result_add_map[Aa01];
+					}
+					break;
+				case Label::Aab_Aab::a01b01_a01b01:
+				case Label::Aab_Aab::a01b01_a01b2:
+					for(const TAC &Aa2 : list_A.at(Label_Tools::to_Aab_Aab(label)).a2)
+					{
+						Ds_result[Aa2.first];
+						lock_Ds_result_add_map[Aa2.first];
+					}
+					break;
+				default:
+					throw std::invalid_argument(std::string(__FILE__)+" line "+std::to_string(__LINE__));
+			}
+		}
+		for(auto &lock : lock_Ds_result_add_map)
+			omp_init_lock(&lock.second);
+		return lock_Ds_result_add_map;
+	}
+
+	template<typename TA, typename Tvalue>
+	void destroy_lock_result(
+		std::map<TA, omp_lock_t> &locks,
+		std::map<TA, Tvalue> &Ds_result)
+	{
+		for(auto &lock : locks)
+			omp_destroy_lock(&lock.second);
+		for(auto ptr=Ds_result.begin(); ptr!=Ds_result.end(); )
+		{
+			if(ptr->second.empty())
+				ptr = Ds_result.erase(ptr);
+			else
+				++ptr;
+		}
 	}
 }
 

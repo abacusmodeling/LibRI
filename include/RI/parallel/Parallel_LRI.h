@@ -18,6 +18,15 @@
 namespace RI
 {
 
+template<typename TA, typename TAC>	
+struct List_A
+{
+	std::vector<TA > a01;
+	std::vector<TAC> a2;
+	std::vector<TAC> b01;
+	std::vector<TAC> b2;
+};
+
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 //template<typename TA, typename Tcell, std::size_t Ndim>
 class Parallel_LRI
@@ -51,14 +60,7 @@ class Parallel_LRI
 
 	virtual ~Parallel_LRI()=default;
 
-	struct List_A
-	{
-		std::vector<TA > a01;
-		std::vector<TAC> a2;
-		std::vector<TAC> b01;
-		std::vector<TAC> b2;
-	};
-	std::unordered_map<Label::Aab_Aab, List_A> list_A;
+	std::unordered_map<Label::Aab_Aab, List_A<TA,TAC>> list_A;
 };
 
 }

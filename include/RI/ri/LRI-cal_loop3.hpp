@@ -32,13 +32,12 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_a_transpose, Ds_b_transpose;
 	std::tie(Ds_a_transpose, Ds_b_transpose) = tools.cal_Ds_transpose(labels);
 
-	omp_lock_t lock_Ds_result_add;
-	omp_init_lock(&lock_Ds_result_add);
-
   #ifdef __MKL_RI
 	const std::size_t mkl_threads = mkl_get_max_threads();
 	mkl_set_num_threads(1);
   #endif
+
+	std::map<TA, omp_lock_t> lock_Ds_result_add_map = LRI_Cal_Aux::init_lock_result(labels, this->parallel->list_A, Ds_result);
 
 	#pragma omp parallel
 	{
@@ -115,7 +114,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(LRI_Cal_Aux::Ds_translate(std::move(Ds_result_fixed), Aa2.second, this->period),
 												Ds_result_thread[Aa2.first]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab2
 				} break; // end case a0b0_a1b1
 
@@ -179,7 +178,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(LRI_Cal_Aux::Ds_translate(std::move(Ds_result_fixed), Aa2.second, this->period),
 												Ds_result_thread[Aa2.first]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab2
 				} break; // end case a0b1_a1b0
 
@@ -245,7 +244,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(LRI_Cal_Aux::Ds_exchange(std::move(Ds_result_fixed), Ab01, this->period),
 												Ds_result_thread);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b0_a1b2
 
@@ -309,7 +308,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(LRI_Cal_Aux::Ds_exchange(std::move(Ds_result_fixed), Ab01, this->period),
 												Ds_result_thread);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b1_a1b2
 
@@ -373,7 +372,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(LRI_Cal_Aux::Ds_exchange(std::move(Ds_result_fixed), Ab01, this->period),
 												Ds_result_thread);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b2_a1b0
 
@@ -437,7 +436,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(LRI_Cal_Aux::Ds_exchange(std::move(Ds_result_fixed), Ab01, this->period),
 												Ds_result_thread);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b2_a1b1
 
@@ -504,7 +503,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(std::move(Ds_result_fixed),
 												Ds_result_thread[Aa01]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a0b0_a2b1
 
@@ -569,7 +568,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(std::move(Ds_result_fixed),
 												Ds_result_thread[Aa01]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a0b1_a2b0
 
@@ -634,7 +633,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(std::move(Ds_result_fixed),
 												Ds_result_thread[Aa01]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a1b0_a2b1
 
@@ -699,7 +698,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(std::move(Ds_result_fixed),
 												Ds_result_thread[Aa01]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a1b1_a2b0
 
@@ -766,7 +765,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(std::move(Ds_result_fixed),
 												Ds_result_thread[Aa01]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a0b0_a2b2
 
@@ -831,7 +830,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(std::move(Ds_result_fixed),
 												Ds_result_thread[Aa01]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a0b1_a2b2
 
@@ -896,7 +895,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(std::move(Ds_result_fixed),
 												Ds_result_thread[Aa01]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a1b0_a2b2
 
@@ -961,7 +960,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 						if(!Ds_result_fixed.empty())
 							LRI_Cal_Aux::add_Ds(std::move(Ds_result_fixed),
 												Ds_result_thread[Aa01]);
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Aa01
 				} break; // end case a1b1_a2b2
 
@@ -1028,7 +1027,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 												Ds_result_thread[Aa01][Ab01]);
 						} // end for Aa01
 
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a1b2_a2b1
 
@@ -1093,7 +1092,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 												Ds_result_thread[Aa01][Ab01]);
 						} // end for Aa01
 
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b2_a2b0
 
@@ -1158,7 +1157,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 												Ds_result_thread[Aa01][Ab01]);
 						} // end for Aa01
 
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a0b2_a2b1
 
@@ -1223,7 +1222,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 												Ds_result_thread[Aa01][Ab01]);
 						} // end for Aa01
 
-						LRI_Cal_Aux::add_Ds_omp_try(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+						LRI_Cal_Aux::add_Ds_omp_try_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 					} // end for Ab01
 				} break; // end case a1b2_a2b0
 
@@ -1232,10 +1231,11 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 			} // end switch(label)
 		} // end for label
 
-		LRI_Cal_Aux::add_Ds_omp_wait(std::move(Ds_result_thread), Ds_result, lock_Ds_result_add, fac_add_Ds);
+		LRI_Cal_Aux::add_Ds_omp_wait_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 	} // end #pragma omp parallel
 
-	omp_destroy_lock(&lock_Ds_result_add);
+	LRI_Cal_Aux::destroy_lock_result(lock_Ds_result_add_map, Ds_result);
+
   #ifdef __MKL_RI
 	mkl_set_num_threads(mkl_threads);
   #endif

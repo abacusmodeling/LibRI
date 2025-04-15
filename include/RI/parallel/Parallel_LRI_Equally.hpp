@@ -61,7 +61,7 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel_loop3(
 			this->mpi_comm, atoms_vec, this->period, num_index, false);
 	for(const Label::Aab_Aab &label : labels)
 	{
-		typename Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::List_A &atoms = this->list_A[label];
+		List_A<TA,TAC> &atoms = this->list_A[label];
 		atoms.a01 = atoms_vec;
 		atoms.a2 = atoms_period_vec;
 		atoms.b01 = atoms_period_vec;
