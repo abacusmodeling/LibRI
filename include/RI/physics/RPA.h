@@ -38,12 +38,21 @@ public:
 
 	void set_Cs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
-		const Tdata_real &threshold_C);
+		const Tdata_real &threshold,
+		const std::string &save_name_suffix="");
+
+	void set_Gs_pos(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_pos,
+		const Tdata_real &threshold,
+		const std::string &save_name_suffix="");
+
+	void set_Gs_neg(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_neg,
+		const Tdata_real &threshold,
+		const std::string &save_name_suffix="");
 
 	void cal_chi0s(
-		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_tau_positive,
-		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_tau_negative,
-		const Tdata_real &threshold_G);
+		const std::array<std::string,3> &save_names_suffix={"","",""});						// "Cs","Gs_pos","Gs_neg"
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> chi0s;
 
@@ -53,7 +62,9 @@ public:
 	struct Flag_Finish
 	{
 		bool stru=false;
-		bool C=false;
+		bool Cs=false;
+		bool Gs_pos=false;
+		bool Gs_neg=false;
 	};
 	Flag_Finish flag_finish;
 };

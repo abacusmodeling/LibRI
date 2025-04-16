@@ -46,44 +46,69 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_symmetry(
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void G0W0<TA,Tcell,Ndim,Tdata>::set_Cs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
-	const Tdata_real &threshold_C)
+	const Tdata_real &threshold,
+	const std::string &save_name_suffix)
 {
 	this->lri.set_tensors_map2(
 		Cs,
 		{Label::ab::a, Label::ab::b},
-		{{"threshold_filter", threshold_C}} );
-	this->flag_finish.C = true;
+		{{"threshold_filter", threshold}},
+		"Cs_"+save_name_suffix );
+	this->flag_finish.Cs = true;
 }
 
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void G0W0<TA,Tcell,Ndim,Tdata>::set_Ws(
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ws,
+	const Tdata_real &threshold,
+	const std::string &save_name_suffix)
+{
+	this->lri.set_tensors_map2(
+		Ws,
+		{Label::ab::a0b0},
+		{{"threshold_filter", threshold}},
+		"Ws_"+save_name_suffix );
+	this->flag_finish.Ws = true;
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void G0W0<TA,Tcell,Ndim,Tdata>::set_Gs(
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs,
+	const Tdata_real &threshold,
+	const std::string &save_name_suffix)
+{
+	this->lri.set_tensors_map2(
+		Gs,
+		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
+		{{"threshold_filter", threshold}},
+		"Gs_"+save_name_suffix );
+	this->flag_finish.Gs = true;
+}
 
 template <typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA, Tcell, Ndim, Tdata>::cal_Sigc(
-	const std::map<TA, std::map<TAC, Tensor<Tdata>>> gf_tau,
-	const Tdata_real &threshold_G,
-	const std::map<TA, std::map<TAC, Tensor<Tdata>>> Wc_tau,
-	const Tdata_real &threshold_W)
+void G0W0<TA, Tcell, Ndim, Tdata>::cal_Sigmas(
+	const std::array<std::string,3> &save_names_suffix)						// "Cs","Ws","Gs"
 {
 	assert(this->flag_finish.stru);
-	assert(this->flag_finish.C);
-	// setup Green's function
-	this->lri.set_tensors_map2(
-		gf_tau,
-		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
-		{{"threshold_filter", threshold_G}} );
 
-	// setup screened Coulomb interaction
-	this->lri.set_tensors_map2(
-		Wc_tau,
-		{Label::ab::a0b0},
-		{{"threshold_filter", threshold_W}} );
+	assert(this->flag_finish.Cs);
+	for(const Label::ab label : {Label::ab::a, Label::ab::b})
+		this->lri.data_ab_name[label] = "Cs_"+save_names_suffix[0];
 
-	this->Sigc_tau.clear();
+	assert(this->flag_finish.Ws);
+	this->lri.data_ab_name[Label::ab::a0b0] = "Ws_"+save_names_suffix[1];
+
+	assert(this->flag_finish.Gs);
+	for(const Label::ab label : {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2})
+		this->lri.data_ab_name[label] = "Gs_"+save_names_suffix[2];
+
+	this->Sigmas.clear();
 	this->lri.cal_loop3(
 		{Label::ab_ab::a0b0_a1b1,
 		 Label::ab_ab::a0b0_a1b2,
 		 Label::ab_ab::a0b0_a2b1,
 		 Label::ab_ab::a0b0_a2b2},
-		this->Sigc_tau);
+		this->Sigmas);
 }
 
 } // namespace RI

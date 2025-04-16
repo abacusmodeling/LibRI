@@ -41,15 +41,25 @@ public:
 
 	void set_Cs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
-		const Tdata_real &threshold_C);
+		const Tdata_real &threshold,
+		const std::string &save_name_suffix="");
 
-	void cal_Sigc(
-		const std::map<TA, std::map<TAC, Tensor<Tdata>>> gf_tau,
-		const Tdata_real &threshold_G,
-		const std::map<TA, std::map<TAC, Tensor<Tdata>>> Wc_tau,
-		const Tdata_real &threshold_W);
+	// setup screened Coulomb interaction
+	void set_Ws(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ws,
+		const Tdata_real &threshold,
+		const std::string &save_name_suffix="");
 
-	std::map<TA, std::map<TAC, Tensor<Tdata>>> Sigc_tau;
+	// setup Green's function
+	void set_Gs(
+		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs,
+		const Tdata_real &threshold,
+		const std::string &save_name_suffix="");
+
+	void cal_Sigmas(
+		const std::array<std::string,3> &save_names_suffix={"","",""});		// "Cs","Ws","Gs"
+
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> Sigmas;
 
 public:
 	LRI<TA,Tcell,Ndim,Tdata> lri;
@@ -57,7 +67,9 @@ public:
 	struct Flag_Finish
 	{
 		bool stru=false;
-		bool C=false;
+		bool Cs=false;
+		bool Ws=false;
+		bool Gs=false;
 	};
 	Flag_Finish flag_finish;
 

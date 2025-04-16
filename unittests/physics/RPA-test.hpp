@@ -19,7 +19,9 @@ namespace RPA_Test
 		RI::RPA<int,int,1,std::complex<double>> rpa;
 		rpa.set_parallel(MPI_COMM_WORLD, {{1,{0}},{2,{4}}}, {}, {1});
 		rpa.set_Cs({}, 0);
-		rpa.cal_chi0s({}, {}, 0);
+		rpa.set_Gs_pos({}, 0);
+		rpa.set_Gs_neg({}, 0);
+		rpa.cal_chi0s();
 
 		MPI_Finalize();
 	}

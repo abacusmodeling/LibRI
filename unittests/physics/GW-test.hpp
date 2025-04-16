@@ -19,7 +19,9 @@ namespace GW_Test
 		RI::G0W0<int,int,1,Tdata> g0w0;
 		g0w0.set_parallel(MPI_COMM_WORLD, {{1,{0}},{2,{4}}}, {}, {1});
 		g0w0.set_Cs({}, 1E-4);
-		g0w0.cal_Sigc({}, 1E-4, {}, 1E-4);
+		g0w0.set_Ws({}, 1E-4);
+		g0w0.set_Gs({}, 1E-4);
+		g0w0.cal_Sigmas();
 
 		MPI_Finalize();
 	}

@@ -41,35 +41,35 @@ public:
 
 	void set_Cs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
-		const Tdata_real &threshold_C,
+		const Tdata_real &threshold,
 		const std::string &save_name_suffix="");
 	void set_Vs(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Vs,
-		const Tdata_real &threshold_V,
+		const Tdata_real &threshold,
 		const std::string &save_name_suffix="");
 	void set_Ds(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
-		const Tdata_real &threshold_D,
+		const Tdata_real &threshold,
 		const std::string &save_name_suffix="");
 	void set_Ds_delta(
 		const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
-		const Tdata_real &threshold_D,
+		const Tdata_real &threshold,
 		const std::string &save_name_suffix="");
 	void set_dCs(
 		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos> &dCs,
-		const Tdata_real &threshold_dC,
+		const Tdata_real &threshold,
 		const std::string &save_name_suffix="");
 	void set_dVs(
 		const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos> &dVs,
-		const Tdata_real &threshold_dV,
+		const Tdata_real &threshold,
 		const std::string &save_name_suffix="");
 	void set_dCRs(
 		const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dCRs,
-		const Tdata_real &threshold_dCR,
+		const Tdata_real &threshold,
 		const std::string &save_name_suffix="");
 	void set_dVRs(
 		const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dVRs,
-		const Tdata_real &threshold_dVR,
+		const Tdata_real &threshold,
 		const std::string &save_name_suffix="");
 
 	void cal_Hs(
@@ -94,14 +94,14 @@ public:
 	struct Flag_Finish
 	{
 		bool stru=false;
-		bool C=false;
-		bool V=false;
-		bool D=false;
-		bool D_delta=false;
-		bool dC=false;
-		bool dV=false;
-		bool dCR=false;
-		bool dVR=false;
+		bool Cs=false;
+		bool Vs=false;
+		bool Ds=false;
+		bool Ds_delta=false;
+		bool dCs=false;
+		bool dVs=false;
+		bool dCRs=false;
+		bool dVRs=false;
 	};
 	Flag_Finish flag_finish;
 

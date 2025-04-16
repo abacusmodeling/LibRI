@@ -51,44 +51,44 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_symmetry(
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_Cs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
-	const Tdata_real &threshold_C,
+	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
 {
 	this->lri.set_tensors_map2(
 		Cs,
 		{Label::ab::a, Label::ab::b},
-		{{"threshold_filter", threshold_C}},
+		{{"threshold_filter", threshold}},
 		"Cs_"+save_name_suffix );
-	this->flag_finish.C = true;
+	this->flag_finish.Cs = true;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_Vs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Vs,
-	const Tdata_real &threshold_V,
+	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
 {
 	this->lri.set_tensors_map2(
 		Vs,
 		{Label::ab::a0b0},
-		{{"threshold_filter", threshold_V}},
+		{{"threshold_filter", threshold}},
 		"Vs_"+save_name_suffix );
-	this->flag_finish.V = true;
+	this->flag_finish.Vs = true;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
-	const Tdata_real &threshold_D,
+	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
 {
 	this->lri.set_tensors_map2(
 		Ds,
 		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
-		{{"threshold_filter", threshold_D}},
+		{{"threshold_filter", threshold}},
 		"Ds_"+save_name_suffix );
-	this->flag_finish.D = true;
-	this->flag_finish.D_delta = false;
+	this->flag_finish.Ds = true;
+	this->flag_finish.Ds_delta = false;
 
 	//if()
 		this->post_2D.saves["Ds_"+save_name_suffix] = this->post_2D.set_tensors_map2(Ds);
@@ -97,12 +97,12 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_Ds_delta(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds,
-	const Tdata_real &threshold_D,
+	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
 {
 	using namespace Map_Operator;
 
-	assert(flag_finish.D);
+	assert(flag_finish.Ds);
 	this->lri.set_tensors_map2(
 		Ds,
 		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
@@ -111,7 +111,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds_delta(
 	this->lri.set_tensors_map2(
 		this->lri.data_pool["Ds_tmp"].Ds_ab - this->lri.data_pool["Ds_"+save_name_suffix].Ds_ab,
 		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
-		{{"flag_period", false}, {"flag_comm", false}, {"flag_filter", true}, {"threshold_filter", threshold_D}},
+		{{"flag_period", false}, {"flag_comm", false}, {"flag_filter", true}, {"threshold_filter", threshold}},
 		"Ds_delta_"+save_name_suffix);
 	this->lri.data_pool.erase("Ds_tmp");
 	this->lri.set_tensors_map2(
@@ -119,8 +119,8 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds_delta(
 		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
 		{{"flag_period", false}, {"flag_comm", false}, {"flag_filter", false}},
 		"Ds_"+save_name_suffix);
-	this->flag_finish.D_delta = true;
-	this->flag_finish.D = true;
+	this->flag_finish.Ds_delta = true;
+	this->flag_finish.Ds = true;
 
 	//if()
 		this->post_2D.saves["Ds_"+save_name_suffix] = this->post_2D.set_tensors_map2(Ds);
@@ -129,36 +129,36 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds_delta(
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_dCs(
 	const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos> &dCs,
-	const Tdata_real &threshold_dC,
+	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
 {
 	for(std::size_t ipos=0; ipos<Npos; ++ipos)
 		this->lri.set_tensors_map2(
 			dCs[ipos],
 			{Label::ab::a, Label::ab::b},
-			{{"threshold_filter", threshold_dC}},
+			{{"threshold_filter", threshold}},
 			"dCs_"+std::to_string(ipos)+"_"+save_name_suffix );
-	this->flag_finish.dC = true;
+	this->flag_finish.dCs = true;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_dVs(
 	const std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos> &dVs,
-	const Tdata_real &threshold_dV,
+	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
 {
 	for(std::size_t ipos=0; ipos<Npos; ++ipos)
 		this->lri.set_tensors_map2(
 			dVs[ipos],
 			{Label::ab::a0b0},
-			{{"threshold_filter", threshold_dV}},
+			{{"threshold_filter", threshold}},
 			"dVs_"+std::to_string(ipos)+"_"+save_name_suffix );
-	this->flag_finish.dV = true;
+	this->flag_finish.dVs = true;
 }
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_dCRs(
 	const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dCRs,
-	const Tdata_real &threshold_dCR,
+	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
 {
 	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
@@ -166,15 +166,15 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dCRs(
 			this->lri.set_tensors_map2(
 				dCRs[ipos0][ipos1],
 				{Label::ab::a, Label::ab::b},
-				{{"threshold_filter", threshold_dCR}},
+				{{"threshold_filter", threshold}},
 				"dCRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_name_suffix );
-	this->flag_finish.dCR = true;
+	this->flag_finish.dCRs = true;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_dVRs(
 	const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dVRs,
-	const Tdata_real &threshold_dVR,
+	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
 {
 	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
@@ -182,9 +182,9 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dVRs(
 			this->lri.set_tensors_map2(
 				dVRs[ipos0][ipos1],
 				{Label::ab::a0b0},
-				{{"threshold_filter", threshold_dVR}},
+				{{"threshold_filter", threshold}},
 				"dVRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_name_suffix );
-	this->flag_finish.dVR = true;
+	this->flag_finish.dVRs = true;
 }
 
 
@@ -196,15 +196,15 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 
 	assert(this->flag_finish.stru);
 
-	assert(this->flag_finish.C);
+	assert(this->flag_finish.Cs);
 	this->lri.data_ab_name[Label::ab::a] = this->lri.data_ab_name[Label::ab::b] = "Cs_"+save_names_suffix[0];
 
-	assert(this->flag_finish.V);
+	assert(this->flag_finish.Vs);
 	this->lri.data_ab_name[Label::ab::a0b0] = "Vs_"+save_names_suffix[1];
 
-	if(!this->flag_finish.D_delta)
+	if(!this->flag_finish.Ds_delta)
 	{
-		assert(this->flag_finish.D);
+		assert(this->flag_finish.Ds);
 		for(const Label::ab label : {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2})
 			this->lri.data_ab_name[label] = "Ds_"+save_names_suffix[2];
 	}
@@ -214,7 +214,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 			this->lri.data_ab_name[label] = "Ds_delta_"+save_names_suffix[2];
 	}
 
-	if(!this->flag_finish.D_delta)
+	if(!this->flag_finish.Ds_delta)
 		this->Hs.clear();
 	this->lri.cal_loop3(
 		{Label::ab_ab::a0b0_a1b1,
@@ -237,11 +237,11 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"
 {
 	assert(this->flag_finish.stru);
-	assert(this->flag_finish.C);
-	assert(this->flag_finish.V);
-	assert(this->flag_finish.D);
-	assert(this->flag_finish.dC);
-	assert(this->flag_finish.dV);
+	assert(this->flag_finish.Cs);
+	assert(this->flag_finish.Vs);
+	assert(this->flag_finish.Ds);
+	assert(this->flag_finish.dCs);
+	assert(this->flag_finish.dVs);
 
 	for(const Label::ab label : {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2})
 		this->lri.data_ab_name[label] = "Ds_"+save_names_suffix[2];
@@ -341,11 +341,11 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
 	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCRs","dVRs"
 {
 	assert(this->flag_finish.stru);
-	assert(this->flag_finish.C);
-	assert(this->flag_finish.V);
-	assert(this->flag_finish.D);
-	assert(this->flag_finish.dCR);
-	assert(this->flag_finish.dVR);
+	assert(this->flag_finish.Cs);
+	assert(this->flag_finish.Vs);
+	assert(this->flag_finish.Ds);
+	assert(this->flag_finish.dCRs);
+	assert(this->flag_finish.dVRs);
 
 	this->stress = Tensor<Tdata>({Npos, Npos});
 

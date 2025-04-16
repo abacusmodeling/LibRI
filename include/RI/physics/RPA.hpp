@@ -7,7 +7,6 @@
 
 #include "RPA.h"
 #include "../ri/Label.h"
-#include "../global/Map_Operator.h"
 #include "./symmetry/Filter_Atom_Symmetry.h"
 
 #include <cassert>
@@ -43,56 +42,76 @@ void RPA<TA,Tcell,Ndim,Tdata>::set_symmetry(
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void RPA<TA,Tcell,Ndim,Tdata>::set_Cs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
-	const Tdata_real &threshold_C)
+	const Tdata_real &threshold,
+	const std::string &save_name_suffix)
 {
 	this->lri.set_tensors_map2(
 		Cs,
 		{Label::ab::a, Label::ab::b},
-		{{"threshold_filter", threshold_C}} );
-	this->flag_finish.C = true;
+		{{"threshold_filter", threshold}},
+		"Cs_"+save_name_suffix );
+	this->flag_finish.Cs = true;
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void RPA<TA,Tcell,Ndim,Tdata>::set_Gs_pos(
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_pos,
+	const Tdata_real &threshold,
+	const std::string &save_name_suffix)
+{
+	this->lri.set_tensors_map2(
+		Gs_pos,
+		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
+		{{"threshold_filter", threshold}},
+		"Gs_pos_"+save_name_suffix );
+	this->flag_finish.Gs_pos = true;
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void RPA<TA,Tcell,Ndim,Tdata>::set_Gs_neg(
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_neg,
+	const Tdata_real &threshold,
+	const std::string &save_name_suffix)
+{
+	this->lri.set_tensors_map2(
+		Gs_neg,
+		{Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2},
+		{{"threshold_filter", threshold}},
+		"Gs_neg_"+save_name_suffix );
+	this->flag_finish.Gs_neg = true;
 }
 
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void RPA<TA,Tcell,Ndim,Tdata>::cal_chi0s(
-	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_tau_positive,
-	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs_tau_negative,
-	const Tdata_real &threshold_G)
+	const std::array<std::string,3> &save_names_suffix)						// "Cs","Gs_pos","Gs_neg"
 {
 	assert(this->flag_finish.stru);
-	assert(this->flag_finish.C);
+	assert(this->flag_finish.Cs);
+	assert(this->flag_finish.Gs_pos);
+	assert(this->flag_finish.Gs_neg);
 
-	using namespace Map_Operator;
-
-	auto set_Gs_a1 = [this, &threshold_G](const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs)
-	{
-		this->lri.set_tensors_map2(
-			Gs,
-			{Label::ab::a1b1, Label::ab::a1b2},
-			{{"threshold_filter", threshold_G}} );
-	};
-
-	auto set_Gs_a2 = [this, &threshold_G](const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs)
-	{
-		this->lri.set_tensors_map2(
-			Gs,
-			{Label::ab::a2b1, Label::ab::a2b2},
-			{{"threshold_filter", threshold_G}} );
-	};
+	for(const Label::ab label : {Label::ab::a, Label::ab::b})
+		this->lri.data_ab_name[label] = "Cs_"+save_names_suffix[0];
 
 	this->chi0s.clear();
 
-	set_Gs_a1(Gs_tau_positive);
-	set_Gs_a2(Gs_tau_negative);
+	for(const Label::ab label : {Label::ab::a1b1, Label::ab::a1b2})
+		this->lri.data_ab_name[label] = "Gs_pos_"+save_names_suffix[1];
+	for(const Label::ab label : {Label::ab::a2b1, Label::ab::a2b2})
+		this->lri.data_ab_name[label] = "Gs_neg_"+save_names_suffix[2];
+
 	this->lri.cal_loop3({
 		Label::ab_ab::a1b1_a2b2,
 		Label::ab_ab::a1b2_a2b1},
 		this->chi0s);
 
-	set_Gs_a1(Gs_tau_negative);			// tmp
-	set_Gs_a2(Gs_tau_positive);			// tmp
-	//set_Gs_a1(conj(Gs_tau_negative));
-	//set_Gs_a2(conj(Gs_tau_positive));
+	// conj?
+	for(const Label::ab label : {Label::ab::a1b1, Label::ab::a1b2})
+		this->lri.data_ab_name[label] = "Gs_neg_"+save_names_suffix[2];
+	for(const Label::ab label : {Label::ab::a2b1, Label::ab::a2b2})
+		this->lri.data_ab_name[label] = "Gs_pos_"+save_names_suffix[1];
+
 	this->lri.cal_loop3({
 		Label::ab_ab::a1b1_a2b2,
 		Label::ab_ab::a1b2_a2b1},
