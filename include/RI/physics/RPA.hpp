@@ -52,6 +52,12 @@ void RPA<TA,Tcell,Ndim,Tdata>::set_Cs(
 		"Cs_"+save_name_suffix );
 	this->flag_finish.Cs = true;
 }
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void RPA<TA,Tcell,Ndim,Tdata>::free_Cs(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Cs_"+save_name_suffix);
+	this->flag_finish.Cs = false;
+}
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void RPA<TA,Tcell,Ndim,Tdata>::set_Gs_pos(
@@ -66,6 +72,12 @@ void RPA<TA,Tcell,Ndim,Tdata>::set_Gs_pos(
 		"Gs_pos_"+save_name_suffix );
 	this->flag_finish.Gs_pos = true;
 }
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void RPA<TA,Tcell,Ndim,Tdata>::free_Gs_pos(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Gs_pos_"+save_name_suffix);
+	this->flag_finish.Gs_pos = false;
+}
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void RPA<TA,Tcell,Ndim,Tdata>::set_Gs_neg(
@@ -79,6 +91,12 @@ void RPA<TA,Tcell,Ndim,Tdata>::set_Gs_neg(
 		{{"threshold_filter", threshold}},
 		"Gs_neg_"+save_name_suffix );
 	this->flag_finish.Gs_neg = true;
+}
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void RPA<TA,Tcell,Ndim,Tdata>::free_Gs_neg(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Gs_neg_"+save_name_suffix);
+	this->flag_finish.Gs_neg = false;
 }
 
 

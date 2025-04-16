@@ -61,6 +61,10 @@ public:
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Sigmas;
 
+	void free_Cs(const std::string &save_name_suffix="");
+	void free_Ws(const std::string &save_name_suffix="");
+	void free_Gs(const std::string &save_name_suffix="");
+
 public:
 	LRI<TA,Tcell,Ndim,Tdata> lri;
 

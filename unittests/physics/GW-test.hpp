@@ -23,6 +23,10 @@ namespace GW_Test
 		g0w0.set_Gs({}, 1E-4);
 		g0w0.cal_Sigmas();
 
+		g0w0.free_Cs();
+		g0w0.free_Ws();
+		g0w0.free_Gs();
+
 		MPI_Finalize();
 	}
 }

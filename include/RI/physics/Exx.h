@@ -88,6 +88,15 @@ public:
 
 	Exx_Post_2D<TA,TC,Tdata> post_2D;
 
+	void free_Cs(const std::string &save_name_suffix="");
+	void free_Vs(const std::string &save_name_suffix="");
+	void free_Ds(const std::string &save_name_suffix="");
+	void free_Ds_delta(const std::string &save_name_suffix="");
+	void free_dCs(const std::string &save_name_suffix="");
+	void free_dVs(const std::string &save_name_suffix="");
+	void free_dCRs(const std::string &save_name_suffix="");
+	void free_dVRs(const std::string &save_name_suffix="");
+
 public:
 	LRI<TA,Tcell,Ndim,Tdata> lri;
 

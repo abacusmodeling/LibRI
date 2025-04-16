@@ -23,6 +23,10 @@ namespace RPA_Test
 		rpa.set_Gs_neg({}, 0);
 		rpa.cal_chi0s();
 
+		rpa.free_Cs();
+		rpa.free_Gs_pos();
+		rpa.free_Gs_neg();
+
 		MPI_Finalize();
 	}
 }

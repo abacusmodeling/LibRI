@@ -56,6 +56,8 @@ public:
 			//     "flag_filter",      true
 			//     "threshold_filter", 0.0
 			// save_name:              Label_Tools::get_name(label)
+	void free_tensors_map2(
+		const std::string &save_name);
 
 	void cal_loop3(
 		const std::vector<Label::ab_ab> &labels,

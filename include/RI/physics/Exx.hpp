@@ -61,6 +61,12 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Cs(
 		"Cs_"+save_name_suffix );
 	this->flag_finish.Cs = true;
 }
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::free_Cs(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Cs_"+save_name_suffix);
+	this->flag_finish.Cs = false;
+}
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_Vs(
@@ -74,6 +80,12 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Vs(
 		{{"threshold_filter", threshold}},
 		"Vs_"+save_name_suffix );
 	this->flag_finish.Vs = true;
+}
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::free_Vs(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Vs_"+save_name_suffix);
+	this->flag_finish.Vs = false;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
@@ -92,6 +104,12 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds(
 
 	//if()
 		this->post_2D.saves["Ds_"+save_name_suffix] = this->post_2D.set_tensors_map2(Ds);
+}
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::free_Ds(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Ds_"+save_name_suffix);
+	this->flag_finish.Ds = false;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
@@ -125,6 +143,12 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_Ds_delta(
 	//if()
 		this->post_2D.saves["Ds_"+save_name_suffix] = this->post_2D.set_tensors_map2(Ds);
 }
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::free_Ds_delta(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Ds_delta_"+save_name_suffix);
+	this->flag_finish.Ds_delta = false;
+}
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_dCs(
@@ -139,6 +163,13 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dCs(
 			{{"threshold_filter", threshold}},
 			"dCs_"+std::to_string(ipos)+"_"+save_name_suffix );
 	this->flag_finish.dCs = true;
+}
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::free_dCs(const std::string &save_name_suffix)
+{
+	for(std::size_t ipos=0; ipos<Npos; ++ipos)
+		this->lri.free_tensors_map2("dCs_"+std::to_string(ipos)+"_"+save_name_suffix);
+	this->flag_finish.dCs = false;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
@@ -156,6 +187,14 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dVs(
 	this->flag_finish.dVs = true;
 }
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::free_dVs(const std::string &save_name_suffix)
+{
+	for(std::size_t ipos=0; ipos<Npos; ++ipos)
+		this->lri.free_tensors_map2("dVs_"+std::to_string(ipos)+"_"+save_name_suffix);
+	this->flag_finish.dVs = false;
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_dCRs(
 	const std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>,Npos>,Npos> &dCRs,
 	const Tdata_real &threshold,
@@ -169,6 +208,14 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dCRs(
 				{{"threshold_filter", threshold}},
 				"dCRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_name_suffix );
 	this->flag_finish.dCRs = true;
+}
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::free_dCRs(const std::string &save_name_suffix)
+{
+	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
+		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
+			this->lri.free_tensors_map2("dCRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_name_suffix);
+	this->flag_finish.dCRs = false;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
@@ -185,6 +232,14 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_dVRs(
 				{{"threshold_filter", threshold}},
 				"dVRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_name_suffix );
 	this->flag_finish.dVRs = true;
+}
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA,Tcell,Ndim,Tdata>::free_dVRs(const std::string &save_name_suffix)
+{
+	for(std::size_t ipos0=0; ipos0<Npos; ++ipos0)
+		for(std::size_t ipos1=0; ipos1<Npos; ++ipos1)
+			this->lri.free_tensors_map2("dVRs_"+std::to_string(ipos0)+"_"+std::to_string(ipos1)+"_"+save_name_suffix);
+	this->flag_finish.dVRs = false;
 }
 
 

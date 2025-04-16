@@ -45,10 +45,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 
 		for(const Label::ab_ab &label : labels)
 		{
-			const std::vector<TA>  list_Aa01_Da = LRI_Cal_Aux::filter_list_map( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].a01, data_wrapper(Label::ab::a).Ds_ab );
-			const std::vector<TAC> list_Ab01_Db = LRI_Cal_Aux::filter_list_map( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].b01, data_wrapper(Label::ab::b).Ds_ab );
-			const std::vector<TAC> list_Aa2_Da  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].a2,  data_wrapper(Label::ab::a).index_Ds_ab[0] );
-			const std::vector<TAC> list_Ab2_Db  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].b2,  data_wrapper(Label::ab::b).index_Ds_ab[0] );
+			const std::vector<TA>  list_Aa01_Da = LRI_Cal_Aux::filter_list_map( this->parallel->list_A.at(Label_Tools::to_Aab_Aab(label)).a01, data_wrapper(Label::ab::a).Ds_ab );
+			const std::vector<TAC> list_Ab01_Db = LRI_Cal_Aux::filter_list_map( this->parallel->list_A.at(Label_Tools::to_Aab_Aab(label)).b01, data_wrapper(Label::ab::b).Ds_ab );
+			const std::vector<TAC> list_Aa2_Da  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A.at(Label_Tools::to_Aab_Aab(label)).a2,  data_wrapper(Label::ab::a).index_Ds_ab[0] );
+			const std::vector<TAC> list_Ab2_Db  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A.at(Label_Tools::to_Aab_Aab(label)).b2,  data_wrapper(Label::ab::b).index_Ds_ab[0] );
 			switch(label)
 			{
 

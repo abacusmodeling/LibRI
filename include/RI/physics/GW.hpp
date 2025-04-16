@@ -56,6 +56,12 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_Cs(
 		"Cs_"+save_name_suffix );
 	this->flag_finish.Cs = true;
 }
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void G0W0<TA,Tcell,Ndim,Tdata>::free_Cs(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Cs_"+save_name_suffix);
+	this->flag_finish.Cs = false;
+}
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void G0W0<TA,Tcell,Ndim,Tdata>::set_Ws(
@@ -70,6 +76,12 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_Ws(
 		"Ws_"+save_name_suffix );
 	this->flag_finish.Ws = true;
 }
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void G0W0<TA,Tcell,Ndim,Tdata>::free_Ws(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Ws_"+save_name_suffix);
+	this->flag_finish.Ws = false;
+}
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void G0W0<TA,Tcell,Ndim,Tdata>::set_Gs(
@@ -83,6 +95,12 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_Gs(
 		{{"threshold_filter", threshold}},
 		"Gs_"+save_name_suffix );
 	this->flag_finish.Gs = true;
+}
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void G0W0<TA,Tcell,Ndim,Tdata>::free_Gs(const std::string &save_name_suffix)
+{
+	this->lri.free_tensors_map2("Gs_"+save_name_suffix);
+	this->flag_finish.Gs = false;
 }
 
 template <typename TA, typename Tcell, std::size_t Ndim, typename Tdata>

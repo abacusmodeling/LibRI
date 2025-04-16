@@ -73,4 +73,11 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 	this->data_pool[save_name].index_Ds_ab = RI_Tools::get_index(this->data_pool[save_name].Ds_ab);
 }
 
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void LRI<TA,Tcell,Ndim,Tdata>::free_tensors_map2(
+	const std::string &save_name)
+{
+	this->data_pool.erase(save_name);
+}
+
 }

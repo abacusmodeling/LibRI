@@ -56,6 +56,10 @@ public:
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> chi0s;
 
+	void free_Cs(const std::string &save_name_suffix="");
+	void free_Gs_pos(const std::string &save_name_suffix="");
+	void free_Gs_neg(const std::string &save_name_suffix="");
+
 public:
 	LRI<TA,Tcell,Ndim,Tdata> lri;
 
