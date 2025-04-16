@@ -16,16 +16,16 @@ namespace GW_Test
 		int mpi_init_provide;
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 
-		RI::G0W0<int,int,1,Tdata> g0w0;
-		g0w0.set_parallel(MPI_COMM_WORLD, {{1,{0}},{2,{4}}}, {}, {1});
-		g0w0.set_Cs({}, 1E-4);
-		g0w0.set_Ws({}, 1E-4);
-		g0w0.set_Gs({}, 1E-4);
-		g0w0.cal_Sigmas();
+		RI::GW<int,int,1,Tdata> gw;
+		gw.set_parallel(MPI_COMM_WORLD, {{1,{0}},{2,{4}}}, {}, {1});
+		gw.set_Cs({}, 1E-4);
+		gw.set_Ws({}, 1E-4);
+		gw.set_Gs({}, 1E-4);
+		gw.cal_Sigmas();
 
-		g0w0.free_Cs();
-		g0w0.free_Ws();
-		g0w0.free_Gs();
+		gw.free_Cs();
+		gw.free_Ws();
+		gw.free_Gs();
 
 		MPI_Finalize();
 	}

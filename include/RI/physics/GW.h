@@ -18,9 +18,9 @@
 namespace RI
 {
 
-//! class to compute the correlation self-energy in G0W0 approximation by space-time method
+//! class to compute the correlation self-energy in GW approximation by space-time method
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-class G0W0
+class GW
 {
 public:
 	using TC = std::array<Tcell,Ndim>;

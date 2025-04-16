@@ -12,7 +12,7 @@ namespace RI
 {
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA,Tcell,Ndim,Tdata>::set_parallel(
+void GW<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const MPI_Comm &mpi_comm_in,
 	const std::map<TA,Tatom_pos> &atoms_pos_in,
 	const std::array<Tatom_pos,Ndim> &latvec_in,
@@ -32,7 +32,7 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_parallel(
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA,Tcell,Ndim,Tdata>::set_symmetry(
+void GW<TA,Tcell,Ndim,Tdata>::set_symmetry(
 	const bool flag_symmetry,
 	const std::map<std::pair<TA,TA>, std::set<TC>> &irreducible_sector)
 {
@@ -44,7 +44,7 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_symmetry(
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA,Tcell,Ndim,Tdata>::set_Cs(
+void GW<TA,Tcell,Ndim,Tdata>::set_Cs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Cs,
 	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
@@ -57,14 +57,14 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_Cs(
 	this->flag_finish.Cs = true;
 }
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA,Tcell,Ndim,Tdata>::free_Cs(const std::string &save_name_suffix)
+void GW<TA,Tcell,Ndim,Tdata>::free_Cs(const std::string &save_name_suffix)
 {
 	this->lri.free_tensors_map2("Cs_"+save_name_suffix);
 	this->flag_finish.Cs = false;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA,Tcell,Ndim,Tdata>::set_Ws(
+void GW<TA,Tcell,Ndim,Tdata>::set_Ws(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ws,
 	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
@@ -77,14 +77,14 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_Ws(
 	this->flag_finish.Ws = true;
 }
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA,Tcell,Ndim,Tdata>::free_Ws(const std::string &save_name_suffix)
+void GW<TA,Tcell,Ndim,Tdata>::free_Ws(const std::string &save_name_suffix)
 {
 	this->lri.free_tensors_map2("Ws_"+save_name_suffix);
 	this->flag_finish.Ws = false;
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA,Tcell,Ndim,Tdata>::set_Gs(
+void GW<TA,Tcell,Ndim,Tdata>::set_Gs(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>> &Gs,
 	const Tdata_real &threshold,
 	const std::string &save_name_suffix)
@@ -97,14 +97,14 @@ void G0W0<TA,Tcell,Ndim,Tdata>::set_Gs(
 	this->flag_finish.Gs = true;
 }
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA,Tcell,Ndim,Tdata>::free_Gs(const std::string &save_name_suffix)
+void GW<TA,Tcell,Ndim,Tdata>::free_Gs(const std::string &save_name_suffix)
 {
 	this->lri.free_tensors_map2("Gs_"+save_name_suffix);
 	this->flag_finish.Gs = false;
 }
 
 template <typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-void G0W0<TA, Tcell, Ndim, Tdata>::cal_Sigmas(
+void GW<TA, Tcell, Ndim, Tdata>::cal_Sigmas(
 	const std::array<std::string,3> &save_names_suffix)						// "Cs","Ws","Gs"
 {
 	assert(this->flag_finish.stru);
