@@ -26,8 +26,9 @@ namespace RI
 			NO_SEC_RETURN_TRUE;
 			using namespace Array_Operator;
 			const Tab& ap = { Aa, Ab.first };
-			if (irreducible_sector_.find(ap) != irreducible_sector_.end())
-				if (irreducible_sector_.at(ap).find(Ab.second % this->period) != irreducible_sector_.at(ap).end())
+			const auto ptr = this->irreducible_sector_.find(ap);
+			if ( ptr!= this->irreducible_sector_.end())
+				if (ptr->second.find(Ab.second % this->period) != ptr->second.end())
 					return true;
 			return false;
 		}
@@ -37,23 +38,26 @@ namespace RI
 			using namespace Array_Operator;
 			const TC dR = (Ab.second - Aa.second) % this->period;
 			const std::pair<TA, TA> ap = { Aa.first, Ab.first };
-			if (irreducible_sector_.find(ap) != irreducible_sector_.end())
-				if (irreducible_sector_.at(ap).find(dR) != irreducible_sector_.at(ap).end())
+			const auto ptr = this->irreducible_sector_.find(ap);
+			if (ptr != this->irreducible_sector_.end())
+				if (ptr->second.find(dR) != ptr->second.end())
 					return true;
 			return false;
 		}
 		bool is_Aa_in_irreducible_sector(const TA& Aa) const
 		{
 			NO_SEC_RETURN_TRUE;
-			for (const auto& apRs : irreducible_sector_)
-				if (apRs.first.first == Aa)return true;
+			for (const auto& apRs : this->irreducible_sector_)
+				if (apRs.first.first == Aa)
+					return true;
 			return false;
 		}
 		bool is_Ab_in_irreducible_sector(const TA& Ab) const
 		{
 			NO_SEC_RETURN_TRUE;
-			for (const auto& apRs : irreducible_sector_)
-				if (apRs.first.second == Ab)return true;
+			for (const auto& apRs : this->irreducible_sector_)
+				if (apRs.first.second == Ab)
+					return true;
 			return false;
 		}
 		TabR get_abR(const TA& Aa, const TAC& Ab) const
