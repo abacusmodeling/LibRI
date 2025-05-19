@@ -34,7 +34,7 @@ void RPA<TA,Tcell,Ndim,Tdata>::set_symmetry(
 {
 	if(flag_symmetry)
 		this->lri.filter_atom = std::make_shared<Filter_Atom_Symmetry<TA,TC,Tdata>>(
-			this->period, irreducible_sector);
+			this->lri.period, irreducible_sector);
 	else
 		this->lri.filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
 }

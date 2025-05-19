@@ -18,22 +18,17 @@ namespace RI
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::set_parallel(
-	const MPI_Comm &mpi_comm_in,
-	const std::map<TA,Tatom_pos> &atoms_pos_in,
-	const std::array<Tatom_pos,Ndim> &latvec_in,
-	const std::array<Tcell,Ndim> &period_in)
+	const MPI_Comm &mpi_comm,
+	const std::map<TA,Tatom_pos> &atoms_pos,
+	const std::array<Tatom_pos,Ndim> &latvec,
+	const std::array<Tcell,Ndim> &period)
 {
-	this->mpi_comm = mpi_comm_in;
-	this->atoms_pos = atoms_pos_in;
-	this->latvec = latvec_in;
-	this->period = period_in;
-
 	this->lri.set_parallel(
-		this->mpi_comm, this->atoms_pos, this->latvec, this->period,
+		mpi_comm, atoms_pos, latvec, period,
 		{Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2, Label::ab_ab::a0b0_a2b1, Label::ab_ab::a0b0_a2b2});
 	this->flag_finish.stru = true;
 	//if()
-		this->post_2D.set_parallel(this->mpi_comm, this->atoms_pos, this->period);
+		this->post_2D.set_parallel(mpi_comm, atoms_pos, period);
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
@@ -43,7 +38,7 @@ void Exx<TA,Tcell,Ndim,Tdata>::set_symmetry(
 {
 	if(flag_symmetry)
 		this->lri.filter_atom = std::make_shared<Filter_Atom_Symmetry<TA,TC,Tdata>>(
-			this->period, irreducible_sector);
+			this->lri.period, irreducible_sector);
 	else
 		this->lri.filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
 }

@@ -122,10 +122,6 @@ public:
 	};
 	Flag_Save_Result flag_save_result;
 
-	MPI_Comm mpi_comm;
-	std::map<TA,Tatom_pos> atoms_pos;
-	std::array<Tatom_pos,Ndim> latvec;
-	std::array<Tcell,Ndim> period;
 };
 
 }
