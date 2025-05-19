@@ -76,11 +76,6 @@ public:
 		bool Gs=false;
 	};
 	Flag_Finish flag_finish;
-
-	MPI_Comm mpi_comm;
-	std::map<TA,Tatom_pos> atoms_pos;
-	std::array<Tatom_pos,Ndim> latvec;
-	std::array<Tcell,Ndim> period;
 };
 
 }
