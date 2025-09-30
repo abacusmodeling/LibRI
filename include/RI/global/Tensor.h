@@ -47,6 +47,11 @@ public:
 	Tensor transpose() const;
 	Tensor dagger() const;
 
+	/// permute from the input index order to {0, 1, 2, ..., N}
+	Tensor permute_from(const std::vector<std::size_t>& order) const;
+	/// permute from {0, 1, 2, ..., N } to the input new index order 
+	// Tensor permute_to(const std::vector<std::size_t>) const;
+
 	// ||d||_p = (|d_1|^p+|d_2|^p+...)^{1/p}
 	// if(p==std::numeric_limits<double>::max())    ||d||_max = max_i |d_i|
 	Global_Func::To_Real_t<T> norm(const double p) const;

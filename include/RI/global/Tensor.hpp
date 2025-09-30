@@ -324,4 +324,74 @@ std::array<std::array<std::array<std::array<T,N3>,N2>,N1>,N0> to_array(const Ten
 	return a;
 }
 
+// check whether an array is a permutation of {from, from+1, ..., to}
+inline bool is_permutation(const std::vector<size_t>& arr, const std::size_t from, const std::size_t to)
+{
+	std::vector<bool> seen(arr.size(), false);
+	if (arr.size() != to - from + 1) return false;
+	for (std::size_t i = 0; i < arr.size(); ++i) {
+		if (arr[i] < from || arr[i] > to) return false;
+		const std::size_t idx = arr[i] - from;
+		if (seen[idx]) return false;
+		seen[idx] = true;
+	}
+	return true;
+}
+
+template<typename T>
+Tensor<T> Tensor<T>::permute_from(const std::vector<std::size_t>& order) const
+{
+	const std::size_t N = order.size();
+	assert(this->shape.size() == N);
+	assert(is_permutation(order, 0, N-1));
+	Shape_Vector new_shape(this->shape);
+	for (std::size_t d = 0; d < N; ++d)
+		new_shape[d] = this->shape[order[d]];
+
+	Tensor<T> t(new_shape);
+
+	/*	N-permutation
+	for (std::size_t i0 = 0; i0 < new_shape[0], ++i0)
+		for (std::size_t i1 = 0, i1 < new_shape[1], ++i1)
+			...
+				for (std::size_t iN = 0, iN < new_shape[N], ++iN)
+					t(i0, i1, ..., iN) = this->operator()(order(i0), order(i1), ..., order(N))
+	*/
+	std::vector<std::size_t> strides(N);
+	strides[N - 1] = 1;
+	for (int d = N - 2; d >= 0; --d)
+		strides[d] = strides[d + 1] * this->shape[d + 1];
+
+	std::vector<std::size_t> new_strides(N);
+	new_strides[N - 1] = 1;
+	for (int d = N - 2; d >= 0; --d)
+		new_strides[d] = new_strides[d + 1] * new_shape[d + 1];
+
+
+	std::vector<std::size_t> new_idx(N, 0);
+	std::vector<std::size_t> idx(N, 0);
+	for (std::size_t i = 0; i < t.get_shape_all(); ++i)	// new 1D-index
+	{
+		// new ND-index
+		std::size_t tmp = i;
+		for (std::size_t d = 0; d < N; ++d)
+		{
+			new_idx[d] = tmp / new_strides[d];
+			tmp %= new_strides[d];
+		}
+		// old ND-index
+		for (std::size_t d = 0; d < N; ++d)
+			idx[order[d]] = new_idx[d];
+
+		// old 1D-index
+		std::size_t i0 = 0;
+		for (std::size_t d = 0; d < N; ++d)
+			i0 += idx[d] * strides[d];
+
+		(*t.data)[i] = (*this->data)[i0];
+	}
+
+	return t;
+}
+
 }

@@ -64,6 +64,10 @@ public:
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 		const double fac_add_Ds = 1.0);
 
+	std::map<TA, std::map<TAC, std::map<TA, std::map<TAC, Tensor<Tdata>>>>> cal_cvc();
+	std::map<TA, std::map<TAC, Tensor<Tdata>>> constract_cvc_ds(
+		const std::map<TA, std::map<TAC, std::map<TA, std::map<TAC, Tensor<Tdata>>>>>& cvc);
+
 public:
 	std::shared_ptr<Parallel_LRI<TA,Tcell,Ndim,Tdata>>
 		parallel = std::make_shared<Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>>();
@@ -94,3 +98,4 @@ public:		// private:
 #include "LRI.hpp"
 #include "LRI-set.hpp"
 #include "LRI-cal_loop3.hpp"
+#include "LRI-cal_cvc.hpp"
