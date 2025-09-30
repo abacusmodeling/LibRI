@@ -126,6 +126,9 @@ public:
 	};
 	Flag_Save_Result flag_save_result;
 
+	std::string method = "loop3";		// "loop3", "cvc"
+	std::map<TA, std::map<TAC, std::map<TA, std::map<TAC, Tensor<Tdata>>>>> cvc_;
+	std::map<TA, std::map<TAC, std::map<TA, std::map<TAC, Tensor<Tdata>>>>>& get_cvc() const { return this->cvc_; }
 };
 
 }
