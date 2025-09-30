@@ -29,6 +29,10 @@ public:
 	constexpr static std::size_t Npos = Ndim;		// tmp
 	using Tatom_pos = std::array<Tpos,Npos>;		// tmp
 
+	Exx() = default;
+	Exx(Exx&&) noexcept = default;
+	Exx& operator=(Exx&&) noexcept = default;
+
 	void set_parallel(
 		const MPI_Comm &mpi_comm,
 		const std::map<TA,Tatom_pos> &atoms_pos,
