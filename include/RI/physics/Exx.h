@@ -29,7 +29,7 @@ public:
 	constexpr static std::size_t Npos = Ndim;		// tmp
 	using Tatom_pos = std::array<Tpos,Npos>;		// tmp
 
-	Exx() = default;
+	Exx(const std::string method = "loop3") { this->method = method; }
 	Exx(Exx&&) noexcept = default;
 	Exx& operator=(Exx&&) noexcept = default;
 

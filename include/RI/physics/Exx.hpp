@@ -295,7 +295,6 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 	const std::array<std::string,5> &save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"
 {
-	std::cout << "post_2D adress: " << &(this->post_2D) << std::endl;
 	assert(this->flag_finish.stru);
 	assert(this->flag_finish.Cs);
 	assert(this->flag_finish.Vs);
