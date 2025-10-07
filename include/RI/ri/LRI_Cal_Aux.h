@@ -7,6 +7,7 @@
 
 #include "../global/Tensor.h"
 #include "Label.h"
+#include "Label_Tools.h"
 #include "../global/Map_Operator.h"
 #include "../global/Array_Operator.h"
 #include "../parallel/Parallel_LRI.h"
