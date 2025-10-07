@@ -100,6 +100,7 @@ public:
 	void free_dVs(const std::string &save_name_suffix="");
 	void free_dCRs(const std::string &save_name_suffix="");
 	void free_dVRs(const std::string &save_name_suffix="");
+	void free_cvc() { this->cvc_.clear(); }
 
 public:
 	LRI<TA,Tcell,Ndim,Tdata> lri;
