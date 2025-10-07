@@ -58,7 +58,15 @@ public:
 			*this->Ds_ab_ptr.at(label),
 			Aa.first, TAC{Ab.first, (Ab.second-Aa.second)%this->period});
 	}
-
+	inline const Tensor<Tdata>& get_Ds_ab(
+		const Label::ab& label,
+		const TAC& Aa, const TA& Ab) const
+	{
+		using namespace Array_Operator;
+		return Global_Func::find(
+			*this->Ds_ab_ptr.at(label),
+			Aa.first, TAC{ Ab, (-Aa.second) % this->period });
+	}
 	inline std::vector<Label::ab> split_b01(const Label::ab_ab &label) const
 	{
 		switch(label)

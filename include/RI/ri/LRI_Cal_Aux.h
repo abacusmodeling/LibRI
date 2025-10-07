@@ -160,10 +160,10 @@ namespace LRI_Cal_Aux
 		}
 	}
 
-	template<typename TA, typename TAC, typename Tdata>
+	template<typename TA, typename TAC, typename Tvalue>
 	void add_Ds_omp_try_map(
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result_thread,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
+		std::map<TA, std::map<TAC, Tvalue>>& Ds_result_thread,
+		std::map<TA, std::map<TAC, Tvalue>>& Ds_result,
 		std::map<TA, omp_lock_t> &lock_Ds_result_add_map,
 		const double &fac)
 	{
@@ -183,10 +183,10 @@ namespace LRI_Cal_Aux
 		}
 	}
 
-	template<typename TA, typename TAC, typename Tdata>
+	template<typename TA, typename TAC, typename Tvalue>
 	void add_Ds_omp_wait_map(
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result_thread,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
+		std::map<TA, std::map<TAC, Tvalue>>& Ds_result_thread,
+		std::map<TA, std::map<TAC, Tvalue>>& Ds_result,
 		std::map<TA, omp_lock_t> &lock_Ds_result_add_map,
 		const double &fac)
 	{
@@ -338,11 +338,11 @@ namespace LRI_Cal_Aux
 		return list_filter;
 	}
 
-	template<typename TA, typename TAC, typename Tdata>
+	template<typename TA, typename TAC, typename Tvalue>
 	std::map<TA, omp_lock_t> init_lock_result(
 		const std::vector<Label::ab_ab> &labels,
 		const std::unordered_map<Label::Aab_Aab, List_A<TA,TAC>> &list_A,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result)
+		std::map<TA, std::map<TAC, Tvalue>>& Ds_result)
 	{
 		std::map<TA, omp_lock_t> lock_Ds_result_add_map;
 		for(const Label::ab_ab &label : labels)

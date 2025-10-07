@@ -29,6 +29,10 @@ public:
 	constexpr static std::size_t Npos = Ndim;		// tmp
 	using Tatom_pos = std::array<Tpos,Npos>;		// tmp
 
+	Exx(const std::string method = "loop3") { this->method = method; }
+	Exx(Exx&&) noexcept = default;
+	Exx& operator=(Exx&&) noexcept = default;
+
 	void set_parallel(
 		const MPI_Comm &mpi_comm,
 		const std::map<TA,Tatom_pos> &atoms_pos,
@@ -96,6 +100,7 @@ public:
 	void free_dVs(const std::string &save_name_suffix="");
 	void free_dCRs(const std::string &save_name_suffix="");
 	void free_dVRs(const std::string &save_name_suffix="");
+	void free_cvc() { this->cvc_.clear(); }
 
 public:
 	LRI<TA,Tcell,Ndim,Tdata> lri;
@@ -122,6 +127,9 @@ public:
 	};
 	Flag_Save_Result flag_save_result;
 
+	std::string method = "loop3";		// "loop3", "cvc"
+	std::map<TA, std::map<TAC, std::map<TA, std::map<TAC, Tensor<Tdata>>>>> cvc_;
+	std::map<TA, std::map<TAC, std::map<TA, std::map<TAC, Tensor<Tdata>>>>>& get_cvc() const { return this->cvc_; }
 };
 
 }
