@@ -83,6 +83,34 @@ namespace Global_Func
 			return find( ptr->second, keys... );
 	}
 
+	// These helper functions are used to replace Global_Func::find,
+	// since the target is not Tensor<Tdata>, but another map.
+	template<class Map, class Key>
+	static inline const typename Map::mapped_type find_map(const Map& map, const Key& key)
+	{
+		const auto& it = map.find(key);
+		if (it != map.end()) return it->second;
+		return typename Map::mapped_type();
+	}
+
+	template<class Map, class Key1, class Key2>
+	static inline const typename Map::mapped_type::mapped_type find_map(
+		const Map& map, const Key1& key1, const Key2& key2)
+	{
+		using InnerMap = typename Map::mapped_type;
+		using Target   = typename InnerMap::mapped_type;
+
+		const auto it1 = map.find(key1);
+		if (it1 != map.end())
+		{
+			const auto& inner = it1->second;
+			const auto it2 = inner.find(key2);
+			if (it2 != inner.end())
+				return it2->second;
+		}
+		return Target();
+	}
+
 	// in_set(3, {2,3,5,7})
 	// Peize Lin add 2022.05.26
 	template<typename T>

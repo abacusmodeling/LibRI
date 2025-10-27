@@ -56,6 +56,17 @@ namespace Distribute_Equally
 		const std::array<Tcell,Ndim> &period,
 		const std::size_t num_index,
 		const bool flag_task_repeatable);
+
+	template<typename Tindex>
+	extern void distribute_atom_and_k_pair(
+		const MPI_Comm &mpi_comm,
+		const std::size_t nat,
+		const std::size_t nk,
+		std::vector<Tindex> &list_I,
+		std::vector<Tindex> &list_J,
+		std::vector<Tindex> &list_k1_index,
+		std::vector<Tindex> &list_k2_index,
+		const bool flag_task_repeatable);
 }
 
 }

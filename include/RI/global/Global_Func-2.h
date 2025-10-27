@@ -49,6 +49,21 @@ namespace Global_Func
 		typename std::enable_if<!Global_Func::is_complex<Tout>::value,int>::type =0>
 	Tout convert(const Tin &t)
 	{ return t.real(); }
+
+	template<
+		typename T,
+		typename std::enable_if<!Global_Func::is_complex<T>::value,int>::type =0>
+	inline T get_conj(const T& x)
+	{
+		return x;
+	}
+	template<
+		typename T,
+		typename std::enable_if< Global_Func::is_complex<T>::value,int>::type =0>
+	inline T get_conj(const T& x)
+	{
+		return std::conj(x);
+	}
 }
 
 }
