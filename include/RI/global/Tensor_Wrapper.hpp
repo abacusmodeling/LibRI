@@ -10,16 +10,10 @@
 namespace RI
 {
 	template<typename T>
-	std::size_t Tensor_Wrapper<T>::get_shape_all() const
-	{
-		return std::accumulate(this->shape.begin(), this->shape.end(), static_cast<std::size_t>(1), std::multiplies<std::size_t>() );
-	}
-
-	template<typename T>
 	Global_Func::To_Real_t<T> Tensor_Wrapper<T>::norm(const double p) const
 	{
 		using T_res = Global_Func::To_Real_t<T>;
-		const std::size_t shape_all = get_shape_all();
+		const std::size_t shape_all = this->shape.get_shape_all();
 		if(p==2)
 			return Blas_Interface::nrm2(*this);
 		else if(p==1)

@@ -8,6 +8,7 @@
 #include <cereal/cereal.hpp>
 #include <initializer_list>
 #include <cassert>
+#include <numeric>
 
 namespace RI
 {
@@ -43,6 +44,11 @@ public:
 	{
 		assert(i<size_);
 		return this->v[i];
+	}
+
+	std::size_t get_shape_all() const
+	{
+		return std::accumulate(this->begin(), this->end(), static_cast<std::size_t>(1), std::multiplies<std::size_t>() );
 	}
 
 	template <class Archive> void serialize( Archive & ar ){ ar(cereal::binary_data(this->v,sizeof(v)), size_); }		// for cereal

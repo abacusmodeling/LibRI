@@ -11,7 +11,6 @@
 #include <complex>
 #include <memory>
 #include <vector>
-#include <numeric>
 #include <functional>
 #include <cassert>
 #include <limits>
@@ -25,7 +24,7 @@ Tensor<T>::Tensor (const Shape_Vector &shape_in)
 	this->shape = shape_in;
 	if(!this->shape.empty())
 	{
-		const std::size_t shape_all = get_shape_all();
+		const std::size_t shape_all = this->shape.get_shape_all();
 		if(shape_all)
 			this->data = std::make_shared<std::valarray<T>>(0,shape_all);
 	}
@@ -40,17 +39,11 @@ Tensor<T>::Tensor (const Shape_Vector &shape_in, std::shared_ptr<std::valarray<T
 }
 
 template<typename T>
-std::size_t Tensor<T>::get_shape_all() const
-{
-	return std::accumulate(this->shape.begin(), this->shape.end(), static_cast<std::size_t>(1), std::multiplies<std::size_t>() );
-}
-
-template<typename T>
 Tensor<T> Tensor<T>::reshape (const Shape_Vector &shape_in) const
 {
 	assert(
 		std::accumulate(shape_in.begin(), shape_in.end(), static_cast<std::size_t>(1), std::multiplies<std::size_t>())
-		== this->get_shape_all() );
+		== this->shape.get_shape_all() );
 	return Tensor<T>(shape_in, this->data);
 }
 

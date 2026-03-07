@@ -13,7 +13,7 @@ namespace Tensor_Multiply_Test
 	RI::Tensor<Tdata> init_tensor(const RI::Shape_Vector &shape)
 	{
 		RI::Tensor<Tdata> T(shape);
-		const std::size_t size = T.get_shape_all();
+		const std::size_t size = T.shape.get_shape_all();
 		for(std::size_t i=0; i<size; ++i)
 			T.ptr()[i] = i;
 		return T;

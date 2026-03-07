@@ -19,15 +19,15 @@ namespace Blas_Interface
 	template<typename T, template<typename> class Tvec>
 	inline Global_Func::To_Real_t<T> nrm2(const Tvec<T> &X)
 	{
-		return nrm2(X.get_shape_all(), X.ptr());
+		return nrm2(X.shape.get_shape_all(), X.ptr());
 	}
 
 	// Vy = alpha * Vx + Vy
 	template<typename T>
 	inline void axpy(const T &alpha, const Tensor<T> &X, Tensor<T> &Y)
 	{
-		assert(X.get_shape_all() == Y.get_shape_all());
-		axpy(X.get_shape_all(), alpha, X.ptr(), Y.ptr());
+		assert(X.shape.get_shape_all() == Y.shape.get_shape_all());
+		axpy(X.shape.get_shape_all(), alpha, X.ptr(), Y.ptr());
 	}
 	template<typename T>
 	inline Tensor<T> axpy(const T &alpha, const Tensor<T> &X)
@@ -41,24 +41,24 @@ namespace Blas_Interface
 	template<typename T>
 	inline T dot(const Tensor<T> &X, const Tensor<T> &Y)
 	{
-		assert(X.get_shape_all() == Y.get_shape_all());
-		return dot(X.get_shape_all(), X.ptr(), Y.ptr());
+		assert(X.shape.get_shape_all() == Y.shape.get_shape_all());
+		return dot(X.shape.get_shape_all(), X.ptr(), Y.ptr());
 	}
 
 	// d = Vx * Vy
 	template<typename T>
 	inline T dotu(const Tensor<T> &X, const Tensor<T> &Y)
 	{
-		assert(X.get_shape_all() == Y.get_shape_all());
-		return dotu(X.get_shape_all(), X.ptr(), Y.ptr());
+		assert(X.shape.get_shape_all() == Y.shape.get_shape_all());
+		return dotu(X.shape.get_shape_all(), X.ptr(), Y.ptr());
 	}
 
 	// d = Vx * Vy
 	template<typename T>
 	inline T dotc(const Tensor<T> &X, const Tensor<T> &Y)
 	{
-		assert(X.get_shape_all() == Y.get_shape_all());
-		return dotc(X.get_shape_all(), X.ptr(), Y.ptr());
+		assert(X.shape.get_shape_all() == Y.shape.get_shape_all());
+		return dotc(X.shape.get_shape_all(), X.ptr(), Y.ptr());
 	}
 
 	// Vy = alpha * Ma.? * Vx + beta * Vy

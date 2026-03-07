@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Shared_Vector.h"
+#include "Shape_Vector.h"
 #include "Global_Func-2.h"
 #include <memory>
 #include <vector>
@@ -34,7 +34,6 @@ public:
 	Tensor<T> &operator=(const Tensor<T> &t_in)=default;
 	Tensor<T> &operator=(Tensor<T> &&t_in)=default;
 
-	inline std::size_t get_shape_all() const;
 	inline Tensor reshape (const Shape_Vector &shape_in) const;
 
 	Tensor copy() const;
@@ -60,6 +59,9 @@ public:
 	Tensor operator-() const;
 
 	template <class Archive> void serialize( Archive & ar ){ ar(shape, data); }		// for cereal
+
+	// Deprecated. Using shape.get_shape_all() instead
+	std::size_t get_shape_all() const { return this->shape.get_shape_all(); }
 };
 
 

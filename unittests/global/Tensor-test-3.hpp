@@ -37,7 +37,7 @@ namespace Tensor_Test
 		const RI::Tensor<Tdata> t = init_matrix<Tdata>(3,2);
 
 		std::cout<<t.shape<<std::endl;
-		std::cout<<t.get_shape_all()<<std::endl;
+		std::cout<<t.shape.get_shape_all()<<std::endl;
 
 		std::cout<<t<<std::endl;
 		std::cout<<t.reshape({2,3})<<std::endl;
