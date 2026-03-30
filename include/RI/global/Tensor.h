@@ -94,6 +94,15 @@ extern Tensor<T> to_Tensor(const std::array<std::array<std::array<T,N2>,N1>,N0> 
 template<typename T, std::size_t N0, std::size_t N1, std::size_t N2, std::size_t N3>
 extern Tensor<T> to_Tensor(const std::array<std::array<std::array<std::array<T,N3>,N2>,N1>,N0> &a);
 
+template<typename Tout, typename Tin, std::size_t N0>
+extern Tensor<Tout> to_Tensor(const std::array<Tin,N0> &a);
+template<typename Tout, typename Tin, std::size_t N0, std::size_t N1>
+extern Tensor<Tout> to_Tensor(const std::array<std::array<Tin,N1>,N0> &a);
+template<typename Tout, typename Tin, std::size_t N0, std::size_t N1, std::size_t N2>
+extern Tensor<Tout> to_Tensor(const std::array<std::array<std::array<Tin,N2>,N1>,N0> &a);
+template<typename Tout, typename Tin, std::size_t N0, std::size_t N1, std::size_t N2, std::size_t N3>
+extern Tensor<Tout> to_Tensor(const std::array<std::array<std::array<std::array<Tin,N3>,N2>,N1>,N0> &a);
+
 template<typename T, std::size_t N0>
 extern std::array<T,N0> to_array(const Tensor<T> &t);
 template<typename T, std::size_t N0, std::size_t N1>

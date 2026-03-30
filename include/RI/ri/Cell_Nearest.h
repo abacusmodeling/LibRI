@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "../global/Tensor.h"
 #include <array>
 #include <map>
 
@@ -27,6 +28,8 @@ public:
 
 public:		//private:
 	TC period;
+	std::map<TA,Tensor<Tpos>> atoms_pos;
+	Tensor<Tpos> latvec;
 	std::map<TA,std::map<TA,std::array<Tpos,Ndim>>> cells_nearest_continuous;
 };
 

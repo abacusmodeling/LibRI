@@ -31,9 +31,10 @@ namespace Cell_Nearest_Test
 			stress.init(atoms_pos, latvec, period);
 			std::cout<<stress.cells_nearest_continuous<<std::endl;
 
-			for(Tcell idim0=0; idim0<period[0]; ++idim0)
-				for(Tcell idim1=0; idim1<period[1]; ++idim1)
-					std::cout<<idim0<<"\t"<<idim1<<"\t\t"<<stress.get_cell_nearest_discrete("H", "C", {idim0,idim1})<<std::endl;
+			for(Tcell idim0=-1; idim0<period[0]+1; ++idim0)
+				for(Tcell idim1=-1; idim1<period[1]+1; ++idim1)
+					std::cout<<idim0<<"\t"<<idim1<<"\t|\t"<<stress.get_cell_nearest_discrete("H", "C", {idim0,idim1})<<std::endl;
+			std::cout<<std::endl;
 		};
 
 		{
@@ -49,8 +50,18 @@ namespace Cell_Nearest_Test
 				H	C	0.8		-0.2
 					H	0		0
 
-				0	0		0	0
-				1	0		1	0
+				-1	-1	|	1	0
+				-1	0	|	1	0
+				-1	1	|	1	0
+				0	-1	|	0	0
+				0	0	|	0	0
+				0	1	|	0	0
+				1	-1	|	1	0
+				1	0	|	1	0
+				1	1	|	1	0
+				2	-1	|	0	0
+				2	0	|	0	0
+				2	1	|	0	0
 			*/
 		}
 
@@ -67,8 +78,18 @@ namespace Cell_Nearest_Test
 				H	C	-0.8	-0.2
 					H	0		0
 
-				0	0		0	0
-				1	0		-1	0
+				-1	-1	|	-1	0
+				-1	0	|	-1	0
+				-1	1	|	-1	0
+				0	-1	|	0	0
+				0	0	|	0	0
+				0	1	|	0	0
+				1	-1	|	-1	0
+				1	0	|	-1	0
+				1	1	|	-1	0
+				2	-1	|	0	0
+				2	0	|	0	0
+				2	1	|	0	0
 			*/
 		}
 
@@ -86,9 +107,47 @@ namespace Cell_Nearest_Test
 				H	C	-1.8	-0.2
 					H	0		0
 
+				-1	-1	|	-1	0
+				-1	0	|	-1	0
+				-1	1	|	-1	0
+				0	-1	|	-2	0
+				0	0	|	-2	0
+				0	1	|	-2	0
+				1	-1	|	-1	0
+				1	0	|	-1	0
+				1	1	|	-1	0
+				2	-1	|	-2	0
+				2	0	|	-2	0
+				2	1	|	-2	0
+			*/
+		}
 
-				0	0		-2	0
-				1	0		-1	0
+		{
+			atoms_pos["H"] = {0, 0};
+			atoms_pos["C"] = {8.3, 3.4};
+			latvec[0]={10,0};
+			latvec[1]={7,7};
+			period = {2,1};
+			test();
+			/*
+				C	C	0		0
+					H	1.8		0.2
+
+				H	C	-1.8	-0.2
+					H	0		0
+
+				-1	-1	|	-1	0
+				-1	0	|	-1	0
+				-1	1	|	-1	0
+				0	-1	|	0	-1
+				0	0	|	0	-1
+				0	1	|	0	-1
+				1	-1	|	-1	0
+				1	0	|	-1	0
+				1	1	|	-1	0
+				2	-1	|	0	-1
+				2	0	|	0	-1
+				2	1	|	0	-1
 			*/
 		}
 	}
