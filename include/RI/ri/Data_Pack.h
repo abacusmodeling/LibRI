@@ -7,6 +7,7 @@
 
 #include "../global/Tensor.h"
 #include "../global/Global_Func-1.h"
+#include "Label.h"
 
 #include <vector>
 #include <map>
@@ -34,7 +35,7 @@ public:
 		std::map<std::string, Data_Pack<TA,TC,Tdata>> &data_pool_in,
 		std::unordered_map<Label::ab, std::string> &data_ab_name_in)
 			:data_pool(data_pool_in), data_ab_name(data_ab_name_in){}
-	inline Data_Pack<TA,TC,Tdata> &operator()(const Label::ab &label) const
+	Data_Pack<TA,TC,Tdata> &operator()(const Label::ab &label) const
 	{
 		return this->data_pool.at( this->data_ab_name.at(label) );
 	}

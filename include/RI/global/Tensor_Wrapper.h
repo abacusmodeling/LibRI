@@ -22,7 +22,7 @@ public:
 	T *ptr_ = nullptr;
 
 	Tensor_Wrapper()=default;
-	explicit inline Tensor_Wrapper (const std::vector<std::size_t> &shape_in, T*const ptr_in) :shape(shape_in), ptr_(ptr_in){}
+	explicit Tensor_Wrapper (const std::vector<std::size_t> &shape_in, T*const ptr_in) :shape(shape_in), ptr_(ptr_in){}
 
 	T* ptr()const{ return this->ptr_; }
 

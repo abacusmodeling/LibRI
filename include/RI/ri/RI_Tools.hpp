@@ -8,6 +8,8 @@
 #include "RI_Tools.h"
 #include "../global/Array_Operator.h"
 
+#include <set>
+
 namespace RI
 {
 

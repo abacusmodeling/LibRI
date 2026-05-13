@@ -54,8 +54,8 @@ public:
 
 	bool empty() const { return shape.empty(); }
 
-	Tensor & operator += (const Tensor &);
-	Tensor & operator -= (const Tensor &);
+	Tensor & operator += (const Tensor &t);
+	Tensor & operator -= (const Tensor &t);
 	Tensor operator-() const;
 
 	template <class Archive> void serialize( Archive & ar ){ ar(shape, data); }		// for cereal

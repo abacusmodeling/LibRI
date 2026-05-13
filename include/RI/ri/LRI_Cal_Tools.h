@@ -41,7 +41,7 @@ public:
 		}
 	}
 
-	inline const Tensor<Tdata> &get_Ds_ab(
+	const Tensor<Tdata> &get_Ds_ab(
 		const Label::ab &label,
 		const TA &Aa, const TAC &Ab) const
 	{
@@ -49,7 +49,7 @@ public:
 			*this->Ds_ab_ptr.at(label),
 			Aa, Ab);
 	}
-	inline const Tensor<Tdata> &get_Ds_ab(
+	const Tensor<Tdata> &get_Ds_ab(
 		const Label::ab &label,
 		const TAC &Aa, const TAC &Ab) const
 	{
@@ -59,7 +59,7 @@ public:
 			Aa.first, TAC{Ab.first, (Ab.second-Aa.second)%this->period});
 	}
 
-	inline std::vector<Label::ab> split_b01(const Label::ab_ab &label) const
+	std::vector<Label::ab> split_b01(const Label::ab_ab &label) const
 	{
 		switch(label)
 		{

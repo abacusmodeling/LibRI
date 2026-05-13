@@ -6,6 +6,10 @@
 #pragma once
 
 #include "Tensor_Wrapper.h"
+#include "Blas_Interface.h"
+
+#include <limits>
+#include <cmath>
 
 namespace RI
 {

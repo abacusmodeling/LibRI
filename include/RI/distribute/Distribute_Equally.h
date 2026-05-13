@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "Distribute_Equally.hpp"
-
 #include <vector>
 #include <array>
 #include <utility>
@@ -61,3 +59,5 @@ namespace Distribute_Equally
 }
 
 }
+
+#include "Distribute_Equally.hpp"

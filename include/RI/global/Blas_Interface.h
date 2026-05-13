@@ -60,19 +60,19 @@ namespace Blas_Interface
 	// Vy = alpha * Vx + Vy
 	inline void axpy(const int &n, const float &alpha, const float*const X, const int &incX, float*const Y, const int &incY)
 	{
-		return saxpy_(&n, &alpha, X, &incX, Y, &incY);
+		saxpy_(&n, &alpha, X, &incX, Y, &incY);
 	}
 	inline void axpy(const int &n, const double &alpha, const double*const X, const int &incX, double*const Y, const int &incY)
 	{
-		return daxpy_(&n, &alpha, X, &incX, Y, &incY);
+		daxpy_(&n, &alpha, X, &incX, Y, &incY);
 	}
 	inline void axpy(const int &n, const std::complex<float> &alpha, const std::complex<float>*const X, const int &incX, std::complex<float>*const Y, const int &incY)
 	{
-		return caxpy_(&n, &alpha, X, &incX, Y, &incY);
+		caxpy_(&n, &alpha, X, &incX, Y, &incY);
 	}
 	inline void axpy(const int &n, const std::complex<double> &alpha, const std::complex<double>*const X, const int &incX, std::complex<double>*const Y, const int &incY)
 	{
-		return zaxpy_(&n, &alpha, X, &incX, Y, &incY);
+		zaxpy_(&n, &alpha, X, &incX, Y, &incY);
 	}
 
 	// d = Vx * Vy
