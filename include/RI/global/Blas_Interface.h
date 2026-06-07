@@ -9,6 +9,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <complex>
 
 #ifdef __MKL_RI
 #include <mkl_trans.h>
@@ -237,11 +238,13 @@ namespace Blas_Interface
 	}
 	inline void imatcopy (const char ordering, const char trans, size_t rows, size_t cols, const std::complex<float> alpha, std::complex<float> * AB, size_t lda, size_t ldb)
 	{
-		mkl_cimatcopy (ordering, trans, rows, cols, alpha, AB, lda, ldb);
+		const MKL_Complex8 alpha_mkl{alpha.real(), alpha.imag()};
+		mkl_cimatcopy (ordering, trans, rows, cols, alpha_mkl, reinterpret_cast<MKL_Complex8 *>(AB), lda, ldb);
 	}
 	inline void imatcopy (const char ordering, const char trans, size_t rows, size_t cols, const std::complex<double> alpha, std::complex<double> * AB, size_t lda, size_t ldb)
 	{
-		mkl_zimatcopy (ordering, trans, rows, cols, alpha, AB, lda, ldb);
+		const MKL_Complex16 alpha_mkl{alpha.real(), alpha.imag()};
+		mkl_zimatcopy (ordering, trans, rows, cols, alpha_mkl, reinterpret_cast<MKL_Complex16 *>(AB), lda, ldb);
 	}
 
 	inline void omatcopy (char ordering, char trans, size_t rows, size_t cols, const float alpha, const float * A, size_t lda, float * B, size_t ldb)
@@ -254,11 +257,13 @@ namespace Blas_Interface
 	}
 	inline void omatcopy (char ordering, char trans, size_t rows, size_t cols, const std::complex<float> alpha, const std::complex<float> * A, size_t lda, std::complex<float> * B, size_t ldb)
 	{
-		mkl_comatcopy (ordering, trans, rows, cols, alpha, A, lda, B, ldb);
+		const MKL_Complex8 alpha_mkl{alpha.real(), alpha.imag()};
+		mkl_comatcopy (ordering, trans, rows, cols, alpha_mkl, reinterpret_cast<const MKL_Complex8 *>(A), lda, reinterpret_cast<MKL_Complex8 *>(B), ldb);
 	}
 	inline void omatcopy (char ordering, char trans, size_t rows, size_t cols, const std::complex<double> alpha, const std::complex<double> * A, size_t lda, std::complex<double> * B, size_t ldb)
 	{
-		mkl_zomatcopy (ordering, trans, rows, cols, alpha, A, lda, B, ldb);
+		const MKL_Complex16 alpha_mkl{alpha.real(), alpha.imag()};
+		mkl_zomatcopy (ordering, trans, rows, cols, alpha_mkl, reinterpret_cast<const MKL_Complex16 *>(A), lda, reinterpret_cast<MKL_Complex16 *>(B), ldb);
 	}
 }
 
