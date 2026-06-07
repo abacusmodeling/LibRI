@@ -385,6 +385,77 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 }
 
 
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
+	const std::array<std::string, 5>& save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"
+{
+	assert(this->flag_finish.stru);
+	assert(this->flag_finish.Cs);
+	assert(this->flag_finish.Vs);
+	assert(this->flag_finish.Ds);
+	assert(this->flag_finish.dCs);
+	assert(this->flag_finish.dVs);
+
+	for (const Label::ab label : {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2})
+		this->lri.data_ab_name[label] = "Ds_" + save_names_suffix[2];
+	for (std::size_t ipos = 0; ipos < Npos; ++ipos)
+	{
+		{
+			this->dHs[ipos][0].clear();
+
+			this->lri.data_ab_name[Label::ab::a] = "dCs_" + std::to_string(ipos) + "_" + save_names_suffix[3];
+			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + save_names_suffix[1];
+			this->lri.data_ab_name[Label::ab::b] = "Cs_" + save_names_suffix[0];
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a1b1,
+				 Label::ab_ab::a0b0_a1b2, },
+				this->dHs[ipos][0],
+				-1.0);
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a2b1,
+				 Label::ab_ab::a0b0_a2b2 },
+				this->dHs[ipos][0],
+				1.0);
+
+			this->lri.data_ab_name[Label::ab::a] = "Cs_" + save_names_suffix[0];
+			this->lri.data_ab_name[Label::ab::a0b0] = "dVs_" + std::to_string(ipos) + "_" + save_names_suffix[4];
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a2b2,
+				 Label::ab_ab::a0b0_a2b1 },
+				this->dHs[ipos][0],
+				1.0);
+		}
+		{
+			this->dHs[ipos][1].clear();
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a2b2,
+				 Label::ab_ab::a0b0_a1b2 },
+				this->dHs[ipos][1],
+				-1.0);
+
+			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + save_names_suffix[1];
+			this->lri.data_ab_name[Label::ab::b] = "dCs_" + std::to_string(ipos) + "_" + save_names_suffix[3];
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a1b1,
+				 Label::ab_ab::a0b0_a2b1 },
+				this->dHs[ipos][1],
+				-1.0);
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a1b2,
+				 Label::ab_ab::a0b0_a2b2 },
+				this->dHs[ipos][1],
+				1.0);
+		}
+	} // end for(ipos)
+}
+
+
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(

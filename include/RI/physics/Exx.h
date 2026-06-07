@@ -72,10 +72,15 @@ public:
 		const Tdata_real &threshold,
 		const std::string &save_name_suffix="");
 
+	void set_flag_save_dHs(const bool flag) { this->flag_save_result.dHs = flag; }
+	void set_flag_save_dHRs(const bool flag) { this->flag_save_result.dHRs = flag; }
+
 	void cal_Hs(
 		const std::array<std::string,3> &save_names_suffix={"","",""});		// "Cs","Vs","Ds"
 	void cal_force(
 		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCs","dVs"
+	void cal_dHs(
+		const std::array<std::string, 5>& save_names_suffix = { "","","","","" });	// "Cs","Vs","Ds","dCs","dVs"
 	void cal_stress(
 		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCRs","dVRs"
 
