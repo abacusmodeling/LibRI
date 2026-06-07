@@ -452,6 +452,98 @@ void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
 				this->dHs[ipos][1],
 				1.0);
 		}
+
+		// ---- Hellmann-Feynman term: dHs_HF[ipos][Apin(I0)][I][{J,R}] ----
+		// Derivative w.r.t. the CONTRACTED (density-matrix) atoms K (a-side) and L (b-side),
+		// grouped by that atom and accumulated into dHs_HF[ipos][Apin(I0)].
+		//
+		// Physics (each stored 2-center C and V obeys d/dtau_K = -d/dtau_I):
+		//   a-side (K): the dC part for ALL 4 labels equals MINUS the Pulay dC part (so the signs
+		//               are flipped vs cal_dHs block 0), plus the dV part on the a1 labels only
+		//               (V's a-abf center is the contracted K only there).
+		//   b-side (L): symmetric -- dC in the b-slot (signs flipped vs Pulay block 1), dV on b1.
+		//
+		// Pinning: the density matrix's OUTER key is the a-side contracted atom K in every label
+		// (a1->Aa01, a2->Aa2); its INNER key is the b-side contracted atom L. So we restrict K
+		// (resp. L) by slicing the shared Ds to a single outer (resp. inner) atom and pointing all
+		// four D-slots at the slice. We must NOT pin the C slot: its outer key is the EXTERNAL atom
+		// I/J for the a2/b2 labels, which would mis-attribute those terms to I/J instead of K/L.
+		// NOTE: like dHs, dHs_HF is left rank-PARTIAL; the consumer must sum-reduce it on (Apin(I0),I,{J,R}).
+		{
+			this->dHs_HF[ipos].clear();
+			const std::string &sfx0 = save_names_suffix[0];		// Cs
+			const std::string &sfx1 = save_names_suffix[1];		// Vs
+			const std::string dC = "dCs_" + std::to_string(ipos) + "_" + save_names_suffix[3];
+			const std::string dV = "dVs_" + std::to_string(ipos) + "_" + save_names_suffix[4];
+			const std::string Ds_full = "Ds_" + save_names_suffix[2];
+			const std::string tmp = "__Exx_HF_Ds_tmp";
+
+			const std::map<TA, std::map<TAC, Tensor<Tdata>>>& Ds = this->lri.data_pool.at(Ds_full).Ds_ab;
+			std::vector<TA> pin_atoms;
+			pin_atoms.reserve(Ds.size());
+			for (const auto& kv : Ds)
+				pin_atoms.push_back(kv.first);
+
+			auto set_D_slots = [&](const std::string& name) {
+				for (const Label::ab lab : { Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2 })
+					this->lri.data_ab_name[lab] = name;
+				};
+			auto install_slice = [&](std::map<TA, std::map<TAC, Tensor<Tdata>>> slice) {
+				Data_Pack<TA, TC, Tdata> pack;
+				pack.Ds_ab = std::move(slice);
+				pack.index_Ds_ab = RI_Tools::get_index(pack.Ds_ab);
+				this->lri.data_pool[tmp] = std::move(pack);
+				set_D_slots(tmp);
+			};
+
+			for (const TA& Apin : pin_atoms)
+			{
+				// ===== a-side (K = Apin): slice Ds by OUTER key (TA) =====
+				{
+					std::map<TA, std::map<TAC, Tensor<Tdata>>> slice;
+					slice[Apin] = Ds.at(Apin);				// shallow; tensors shared
+					install_slice(std::move(slice));
+				}
+				// dC part, sign-flipped vs Pulay block 0: a=dCs, a0b0=Vs, b=Cs
+				this->lri.data_ab_name[Label::ab::a] = dC;
+				this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + sfx1;
+				this->lri.data_ab_name[Label::ab::b] = "Cs_" + sfx0;
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2 }, this->dHs_HF[ipos][Apin], 1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a2b1, Label::ab_ab::a0b0_a2b2 }, this->dHs_HF[ipos][Apin], -1.0);
+				// dV part, a1 labels (V a-abf = K): a=Cs, a0b0=dVs, b=Cs
+				this->lri.data_ab_name[Label::ab::a] = "Cs_" + sfx0;
+				this->lri.data_ab_name[Label::ab::a0b0] = dV;
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2 }, this->dHs_HF[ipos][Apin], 1.0);
+
+				// ===== b-side (L = Apin): slice Ds by INNER key (TAC.first) =====
+				{
+					std::map<TA, std::map<TAC, Tensor<Tdata>>> slice;
+					for (const auto& kv : Ds)
+					{
+						std::map<TAC, Tensor<Tdata>> inner;
+						for (const auto& lc : kv.second)
+							if (lc.first.first == Apin)
+								inner.insert(lc);					// shallow
+						if (!inner.empty())
+							slice[kv.first] = std::move(inner);
+					}
+					install_slice(std::move(slice));
+				}
+				// dC part, sign-flipped vs Pulay block 1, in b-slot: a=Cs, a0b0=Vs, b=dCs
+				this->lri.data_ab_name[Label::ab::a] = "Cs_" + sfx0;
+				this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + sfx1;
+				this->lri.data_ab_name[Label::ab::b] = dC;
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a2b1 }, this->dHs_HF[ipos][Apin], 1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b2, Label::ab_ab::a0b0_a2b2 }, this->dHs_HF[ipos][Apin], -1.0);
+				// dV part, b1 labels (V b-abf = L): a=Cs, a0b0=dVs, b=Cs
+				this->lri.data_ab_name[Label::ab::a] = "Cs_" + sfx0;
+				this->lri.data_ab_name[Label::ab::a0b0] = dV;
+				this->lri.data_ab_name[Label::ab::b] = "Cs_" + sfx0;
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a2b1 }, this->dHs_HF[ipos][Apin], -1.0);
+			}
+			set_D_slots(Ds_full);				// restore the four density-matrix slots
+			this->lri.data_pool.erase(tmp);
+		}
 	} // end for(ipos)
 }
 

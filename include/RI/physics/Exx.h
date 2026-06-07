@@ -85,7 +85,9 @@ public:
 		const std::array<std::string,5> &save_names_suffix={"","","","",""});	// "Cs","Vs","Ds","dCRs","dVRs"
 
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> Hs;
-	std::array<std::array< std::map<TA, std::map<TAC, Tensor<Tdata>>> ,2>,Npos> dHs;
+	std::array<std::array<std::map<TA, std::map<TAC, Tensor<Tdata>>>, 2>, Npos> dHs;   // Pulay term only. [direction][diffed atom 0/1][I][JR]
+	std::array<std::map<TA, std::map<TA, std::map<TAC, Tensor<Tdata>>>>, Npos> dHs_HF; // Hellmann-Feynman term only. [direction][diffed atom on {K,L}, 0-Natom][I][JR]. Filled by cal_dHs; like dHs it is left rank-PARTIAL -- the consumer must sum-reduce it on (diffed atom, I, JR).
+
 	std::array<std::array< std::map<TA, std::map<TAC, Tensor<Tdata>>> ,Npos>,Npos> dHRs;
 	Tdata energy = 0;
 	std::array<std::map<TA,Tdata>,Ndim> force;
