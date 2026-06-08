@@ -411,13 +411,13 @@ void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
 				{ Label::ab_ab::a0b0_a1b1,
 				 Label::ab_ab::a0b0_a1b2, },
 				this->dHs[ipos][0],
-				-1.0);
+				1.0);
 
 			this->lri.cal_loop3(
 				{ Label::ab_ab::a0b0_a2b1,
 				 Label::ab_ab::a0b0_a2b2 },
 				this->dHs[ipos][0],
-				1.0);
+				-1.0);
 
 			this->lri.data_ab_name[Label::ab::a] = "Cs_" + save_names_suffix[0];
 			this->lri.data_ab_name[Label::ab::a0b0] = "dVs_" + std::to_string(ipos) + "_" + save_names_suffix[4];
@@ -426,7 +426,7 @@ void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
 				{ Label::ab_ab::a0b0_a2b2,
 				 Label::ab_ab::a0b0_a2b1 },
 				this->dHs[ipos][0],
-				1.0);
+				-1.0);
 		}
 		{
 			this->dHs[ipos][1].clear();
@@ -435,7 +435,7 @@ void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
 				{ Label::ab_ab::a0b0_a2b2,
 				 Label::ab_ab::a0b0_a1b2 },
 				this->dHs[ipos][1],
-				-1.0);
+				1.0);
 
 			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + save_names_suffix[1];
 			this->lri.data_ab_name[Label::ab::b] = "dCs_" + std::to_string(ipos) + "_" + save_names_suffix[3];
@@ -444,13 +444,13 @@ void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
 				{ Label::ab_ab::a0b0_a1b1,
 				 Label::ab_ab::a0b0_a2b1 },
 				this->dHs[ipos][1],
-				-1.0);
+				1.0);
 
 			this->lri.cal_loop3(
 				{ Label::ab_ab::a0b0_a1b2,
 				 Label::ab_ab::a0b0_a2b2 },
 				this->dHs[ipos][1],
-				1.0);
+				-1.0);
 		}
 
 		// ---- Hellmann-Feynman term: dHs_HF[ipos][Apin(I0)][I][{J,R}] ----
@@ -508,12 +508,12 @@ void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
 				this->lri.data_ab_name[Label::ab::a] = dC;
 				this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + sfx1;
 				this->lri.data_ab_name[Label::ab::b] = "Cs_" + sfx0;
-				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2 }, this->dHs_HF[ipos][Apin], 1.0);
-				this->lri.cal_loop3({ Label::ab_ab::a0b0_a2b1, Label::ab_ab::a0b0_a2b2 }, this->dHs_HF[ipos][Apin], -1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2 }, this->dHs_HF[ipos][Apin], -1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a2b1, Label::ab_ab::a0b0_a2b2 }, this->dHs_HF[ipos][Apin], 1.0);
 				// dV part, a1 labels (V a-abf = K): a=Cs, a0b0=dVs, b=Cs
 				this->lri.data_ab_name[Label::ab::a] = "Cs_" + sfx0;
 				this->lri.data_ab_name[Label::ab::a0b0] = dV;
-				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2 }, this->dHs_HF[ipos][Apin], 1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2 }, this->dHs_HF[ipos][Apin], -1.0);
 
 				// ===== b-side (L = Apin): slice Ds by INNER key (TAC.first) =====
 				{
@@ -533,13 +533,13 @@ void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
 				this->lri.data_ab_name[Label::ab::a] = "Cs_" + sfx0;
 				this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + sfx1;
 				this->lri.data_ab_name[Label::ab::b] = dC;
-				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a2b1 }, this->dHs_HF[ipos][Apin], 1.0);
-				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b2, Label::ab_ab::a0b0_a2b2 }, this->dHs_HF[ipos][Apin], -1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a2b1 }, this->dHs_HF[ipos][Apin], -1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b2, Label::ab_ab::a0b0_a2b2 }, this->dHs_HF[ipos][Apin], 1.0);
 				// dV part, b1 labels (V b-abf = L): a=Cs, a0b0=dVs, b=Cs
 				this->lri.data_ab_name[Label::ab::a] = "Cs_" + sfx0;
 				this->lri.data_ab_name[Label::ab::a0b0] = dV;
 				this->lri.data_ab_name[Label::ab::b] = "Cs_" + sfx0;
-				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a2b1 }, this->dHs_HF[ipos][Apin], -1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a2b1 }, this->dHs_HF[ipos][Apin], 1.0);
 			}
 			set_D_slots(Ds_full);				// restore the four density-matrix slots
 			this->lri.data_pool.erase(tmp);
