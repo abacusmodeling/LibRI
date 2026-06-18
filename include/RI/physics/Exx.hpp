@@ -496,6 +496,14 @@ void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
 				set_D_slots(tmp);
 			};
 
+			// Precompute reverse index: inner atom L -> { outer atom K -> entries }.
+			// still D[K][LR] but stored as D[L][KR] where R is always L-K
+			// Avoids an O(NK) full scan per pinned atom in the b-side slice below.
+			std::map<TA, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_by_inner;
+			for (const auto& kv : Ds)
+				for (const auto& lc : kv.second)
+					Ds_by_inner[lc.first.first][kv.first].insert(lc);	// shallow; tensors shared
+
 			for (const TA& Apin : pin_atoms)
 			{
 				// ===== a-side (K = Apin): slice Ds by OUTER key (TA) =====
@@ -515,18 +523,12 @@ void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
 				this->lri.data_ab_name[Label::ab::a0b0] = dV;
 				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2 }, this->dHs_HF[ipos][Apin], -1.0);
 
-				// ===== b-side (L = Apin): slice Ds by INNER key (TAC.first) =====
+				// ===== b-side (L = Apin): use precomputed reverse index =====
 				{
 					std::map<TA, std::map<TAC, Tensor<Tdata>>> slice;
-					for (const auto& kv : Ds)
-					{
-						std::map<TAC, Tensor<Tdata>> inner;
-						for (const auto& lc : kv.second)
-							if (lc.first.first == Apin)
-								inner.insert(lc);					// shallow
-						if (!inner.empty())
-							slice[kv.first] = std::move(inner);
-					}
+					const auto it = Ds_by_inner.find(Apin);
+					if (it != Ds_by_inner.end())
+						slice = it->second;		// shallow; tensors shared
 					install_slice(std::move(slice));
 				}
 				// dC part, sign-flipped vs Pulay block 1, in b-slot: a=Cs, a0b0=Vs, b=dCs
