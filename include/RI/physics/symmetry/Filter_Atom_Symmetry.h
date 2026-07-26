@@ -1,3 +1,8 @@
+// ===================
+//  Author: maki49
+//  date: 2024.06.30
+// ===================
+
 #pragma once
 
 #include "../../ri/Filter_Atom.h"

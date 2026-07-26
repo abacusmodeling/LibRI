@@ -34,7 +34,6 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel_loop4(
 	const std::vector<TA> &atoms_vec)
 {
 	constexpr std::size_t num_index = 4;
-
 	const std::pair<std::vector<TA>, std::vector<std::vector<std::pair<TA,TC>>>>
 		atoms_split_list = Distribute_Equally::distribute_atoms_periods(
 			this->mpi_comm, atoms_vec, this->period, num_index, false);
@@ -51,14 +50,25 @@ void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_parallel_loop3(
 	const std::set<Label::Aab_Aab> &labels)
 {
 	constexpr std::size_t num_index = 2;
-	const std::vector<TAC> atoms_period_vec = Divide_Atoms::traversal_atom_period(atoms_vec, this->period);
-
 	const std::pair<std::vector<TA>, std::vector<std::vector<std::pair<TA,TC>>>>
 		atoms_split_list1 = Distribute_Equally::distribute_atoms_periods(
 			this->mpi_comm, atoms_vec, this->period, num_index, false);
 	const std::vector<std::vector<std::pair<TA,TC>>>
 		atoms_split_list2 = Distribute_Equally::distribute_periods(
 			this->mpi_comm, atoms_vec, this->period, num_index, false);
+	
+	this->set_atoms_loop3(atoms_vec, atoms_split_list1, atoms_split_list2, labels);
+}
+
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>::set_atoms_loop3(
+	const std::vector<TA> &atoms_vec,
+	const std::pair<std::vector<TA>, std::vector<std::vector<std::pair<TA,TC>>>> &atoms_split_list1,
+	const std::vector<std::vector<std::pair<TA,TC>>> &atoms_split_list2,
+	const std::set<Label::Aab_Aab> &labels)
+{
+	const std::vector<TAC> atoms_period_vec = Divide_Atoms::traversal_atom_period(atoms_vec, this->period);
+
 	for(const Label::Aab_Aab &label : labels)
 	{
 		List_A<TA,TAC> &atoms = this->list_A[label];

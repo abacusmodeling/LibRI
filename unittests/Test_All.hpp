@@ -8,6 +8,7 @@
 #include "unittests/comm/mix/Communicate_Tensors-test.hpp"
 #include "unittests/distribute/Distribute_Equally-test.hpp"
 #include "unittests/distribute/Divide_Atoms-test.hpp"
+#include "unittests/distribute/Divide_Atoms_Weighted-test.hpp"
 #include "unittests/distribute/Split_Processes-test.hpp"
 #include "unittests/global/Blas-test.hpp"
 #include "unittests/global/Tensor-test-2.hpp"
@@ -42,6 +43,8 @@ namespace Test_All
 		Divide_Atoms_Test::test_divide_atoms();
 		Divide_Atoms_Test::test_divide_atoms_with_period();
 		Divide_Atoms_Test::test_divide_atoms_periods();
+		Divide_Atoms_Weighted_Test::test_divide_atoms_weight();
+		Divide_Atoms_Weighted_Test::test_divide_atoms_periods_weight();
 
 		Split_Processes_Test::test_split_all(argc, argv);
 

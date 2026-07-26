@@ -18,7 +18,7 @@ class Parallel_LRI_Equally: public Parallel_LRI<TA,Tcell,Ndim,Tdata>
 	using TAC = std::pair<TA,TC>;
 	using Tatom_pos = std::array<double,Ndim>;		// tmp
 
-	void set_parallel(
+	virtual void set_parallel(
 		const MPI_Comm &mpi_comm_in,
 		const std::map<TA,Tatom_pos> &atoms_pos,
 		const std::array<Tatom_pos,Ndim> &latvec,
@@ -28,7 +28,7 @@ class Parallel_LRI_Equally: public Parallel_LRI<TA,Tcell,Ndim,Tdata>
 //	std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
 //		const Label::ab &label,
 //		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const override;
-	std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
+	virtual std::map<TA,std::map<TAC,Tensor<Tdata>>> comm_tensors_map2(
 		const std::vector<Label::ab> &label,
 		const std::map<TA,std::map<TAC,Tensor<Tdata>>> &Ds) const override;
 
@@ -47,10 +47,15 @@ class Parallel_LRI_Equally: public Parallel_LRI<TA,Tcell,Ndim,Tdata>
 	std::array<Tcell,Ndim> period;
 
   public:	// private:
-	void set_parallel_loop4(
+	virtual void set_parallel_loop4(
 		const std::vector<TA> &atoms_vec);
-	void set_parallel_loop3(
+	virtual void set_parallel_loop3(
 		const std::vector<TA> &atoms_vec,
+		const std::set<Label::Aab_Aab> &labels);
+	virtual void set_atoms_loop3(
+		const std::vector<TA> &atoms_vec,
+		const std::pair<std::vector<TA>, std::vector<std::vector<std::pair<TA,TC>>>> &atoms_split_list1,
+		const std::vector<std::vector<std::pair<TA,TC>>> &atoms_split_list2,
 		const std::set<Label::Aab_Aab> &labels);
 };
 

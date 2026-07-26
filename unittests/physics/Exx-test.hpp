@@ -6,6 +6,13 @@
 #pragma once
 
 #include "RI/physics/Exx.h"
+
+#include "RI/parallel/Parallel_LRI_Equally.h"
+#include "RI/parallel/Parallel_LRI_Equally_Filter.h"
+#include "RI/parallel/Parallel_LRI_Equally_Weighted.h"
+
+#include <map>
+#include <memory>
 #include <complex>
 
 namespace Exx_Test
@@ -17,6 +24,9 @@ namespace Exx_Test
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 
 		RI::Exx<int,int,1,Tdata> exx;
+		exx.lri.parallel = std::make_shared<RI::Parallel_LRI_Equally<int,int,1,Tdata>>();
+		exx.lri.parallel = std::make_shared<RI::Parallel_LRI_Equally_Filter<int,int,1,Tdata>>();
+		exx.lri.parallel = std::make_shared<RI::Parallel_LRI_Equally_Weighted<int,int,1,Tdata>>(std::map<int,std::size_t>{});
 		exx.set_parallel(MPI_COMM_WORLD, {{1,{0}},{2,{4}}}, {}, {1});
 		exx.set_symmetry(false, {});
 	
