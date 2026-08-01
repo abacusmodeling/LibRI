@@ -385,6 +385,171 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_force(
 }
 
 
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void Exx<TA, Tcell, Ndim, Tdata>::cal_dHs(
+	const std::array<std::string, 5>& save_names_suffix)						// "Cs","Vs","Ds","dCs","dVs"
+{
+	assert(this->flag_finish.stru);
+	assert(this->flag_finish.Cs);
+	assert(this->flag_finish.Vs);
+	assert(this->flag_finish.Ds);
+	assert(this->flag_finish.dCs);
+	assert(this->flag_finish.dVs);
+
+	for (const Label::ab label : {Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2})
+		this->lri.data_ab_name[label] = "Ds_" + save_names_suffix[2];
+	for (std::size_t ipos = 0; ipos < Npos; ++ipos)
+	{
+		{
+			this->dHs[ipos][0].clear();
+
+			this->lri.data_ab_name[Label::ab::a] = "dCs_" + std::to_string(ipos) + "_" + save_names_suffix[3];
+			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + save_names_suffix[1];
+			this->lri.data_ab_name[Label::ab::b] = "Cs_" + save_names_suffix[0];
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a1b1,
+				 Label::ab_ab::a0b0_a1b2, },
+				this->dHs[ipos][0],
+				1.0);
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a2b1,
+				 Label::ab_ab::a0b0_a2b2 },
+				this->dHs[ipos][0],
+				-1.0);
+
+			this->lri.data_ab_name[Label::ab::a] = "Cs_" + save_names_suffix[0];
+			this->lri.data_ab_name[Label::ab::a0b0] = "dVs_" + std::to_string(ipos) + "_" + save_names_suffix[4];
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a2b2,
+				 Label::ab_ab::a0b0_a2b1 },
+				this->dHs[ipos][0],
+				-1.0);
+		}
+		{
+			this->dHs[ipos][1].clear();
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a2b2,
+				 Label::ab_ab::a0b0_a1b2 },
+				this->dHs[ipos][1],
+				1.0);
+
+			this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + save_names_suffix[1];
+			this->lri.data_ab_name[Label::ab::b] = "dCs_" + std::to_string(ipos) + "_" + save_names_suffix[3];
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a1b1,
+				 Label::ab_ab::a0b0_a2b1 },
+				this->dHs[ipos][1],
+				1.0);
+
+			this->lri.cal_loop3(
+				{ Label::ab_ab::a0b0_a1b2,
+				 Label::ab_ab::a0b0_a2b2 },
+				this->dHs[ipos][1],
+				-1.0);
+		}
+
+		// ---- Hellmann-Feynman term: dHs_HF[ipos][Apin(I0)][I][{J,R}] ----
+		// Derivative w.r.t. the CONTRACTED (density-matrix) atoms K (a-side) and L (b-side),
+		// grouped by that atom and accumulated into dHs_HF[ipos][Apin(I0)].
+		//
+		// Physics (each stored 2-center C and V obeys d/dtau_K = -d/dtau_I):
+		//   a-side (K): the dC part for ALL 4 labels equals MINUS the Pulay dC part (so the signs
+		//               are flipped vs cal_dHs block 0), plus the dV part on the a1 labels only
+		//               (V's a-abf center is the contracted K only there).
+		//   b-side (L): symmetric -- dC in the b-slot (signs flipped vs Pulay block 1), dV on b1.
+		//
+		// Pinning: the density matrix's OUTER key is the a-side contracted atom K in every label
+		// (a1->Aa01, a2->Aa2); its INNER key is the b-side contracted atom L. So we restrict K
+		// (resp. L) by slicing the shared Ds to a single outer (resp. inner) atom and pointing all
+		// four D-slots at the slice. We must NOT pin the C slot: its outer key is the EXTERNAL atom
+		// I/J for the a2/b2 labels, which would mis-attribute those terms to I/J instead of K/L.
+		// NOTE: like dHs, dHs_HF is left rank-PARTIAL; the consumer must sum-reduce it on (Apin(I0),I,{J,R}).
+		{
+			this->dHs_HF[ipos].clear();
+			const std::string &sfx0 = save_names_suffix[0];		// Cs
+			const std::string &sfx1 = save_names_suffix[1];		// Vs
+			const std::string dC = "dCs_" + std::to_string(ipos) + "_" + save_names_suffix[3];
+			const std::string dV = "dVs_" + std::to_string(ipos) + "_" + save_names_suffix[4];
+			const std::string Ds_full = "Ds_" + save_names_suffix[2];
+			const std::string tmp = "__Exx_HF_Ds_tmp";
+
+			const std::map<TA, std::map<TAC, Tensor<Tdata>>>& Ds = this->lri.data_pool.at(Ds_full).Ds_ab;
+			std::vector<TA> pin_atoms;
+			pin_atoms.reserve(Ds.size());
+			for (const auto& kv : Ds)
+				pin_atoms.push_back(kv.first);
+
+			auto set_D_slots = [&](const std::string& name) {
+				for (const Label::ab lab : { Label::ab::a1b1, Label::ab::a1b2, Label::ab::a2b1, Label::ab::a2b2 })
+					this->lri.data_ab_name[lab] = name;
+				};
+			auto install_slice = [&](std::map<TA, std::map<TAC, Tensor<Tdata>>> slice) {
+				Data_Pack<TA, TC, Tdata> pack;
+				pack.Ds_ab = std::move(slice);
+				pack.index_Ds_ab = RI_Tools::get_index(pack.Ds_ab);
+				this->lri.data_pool[tmp] = std::move(pack);
+				set_D_slots(tmp);
+			};
+
+			// Precompute reverse index: inner atom L -> { outer atom K -> entries }.
+			// still D[K][LR] but stored as D[L][KR] where R is always L-K
+			// Avoids an O(NK) full scan per pinned atom in the b-side slice below.
+			std::map<TA, std::map<TA, std::map<TAC, Tensor<Tdata>>>> Ds_by_inner;
+			for (const auto& kv : Ds)
+				for (const auto& lc : kv.second)
+					Ds_by_inner[lc.first.first][kv.first].insert(lc);	// shallow; tensors shared
+
+			for (const TA& Apin : pin_atoms)
+			{
+				// ===== a-side (K = Apin): slice Ds by OUTER key (TA) =====
+				{
+					std::map<TA, std::map<TAC, Tensor<Tdata>>> slice;
+					slice[Apin] = Ds.at(Apin);				// shallow; tensors shared
+					install_slice(std::move(slice));
+				}
+				// dC part, sign-flipped vs Pulay block 0: a=dCs, a0b0=Vs, b=Cs
+				this->lri.data_ab_name[Label::ab::a] = dC;
+				this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + sfx1;
+				this->lri.data_ab_name[Label::ab::b] = "Cs_" + sfx0;
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2 }, this->dHs_HF[ipos][Apin], -1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a2b1, Label::ab_ab::a0b0_a2b2 }, this->dHs_HF[ipos][Apin], 1.0);
+				// dV part, a1 labels (V a-abf = K): a=Cs, a0b0=dVs, b=Cs
+				this->lri.data_ab_name[Label::ab::a] = "Cs_" + sfx0;
+				this->lri.data_ab_name[Label::ab::a0b0] = dV;
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a1b2 }, this->dHs_HF[ipos][Apin], -1.0);
+
+				// ===== b-side (L = Apin): use precomputed reverse index =====
+				{
+					std::map<TA, std::map<TAC, Tensor<Tdata>>> slice;
+					const auto it = Ds_by_inner.find(Apin);
+					if (it != Ds_by_inner.end())
+						slice = it->second;		// shallow; tensors shared
+					install_slice(std::move(slice));
+				}
+				// dC part, sign-flipped vs Pulay block 1, in b-slot: a=Cs, a0b0=Vs, b=dCs
+				this->lri.data_ab_name[Label::ab::a] = "Cs_" + sfx0;
+				this->lri.data_ab_name[Label::ab::a0b0] = "Vs_" + sfx1;
+				this->lri.data_ab_name[Label::ab::b] = dC;
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a2b1 }, this->dHs_HF[ipos][Apin], -1.0);
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b2, Label::ab_ab::a0b0_a2b2 }, this->dHs_HF[ipos][Apin], 1.0);
+				// dV part, b1 labels (V b-abf = L): a=Cs, a0b0=dVs, b=Cs
+				this->lri.data_ab_name[Label::ab::a] = "Cs_" + sfx0;
+				this->lri.data_ab_name[Label::ab::a0b0] = dV;
+				this->lri.data_ab_name[Label::ab::b] = "Cs_" + sfx0;
+				this->lri.cal_loop3({ Label::ab_ab::a0b0_a1b1, Label::ab_ab::a0b0_a2b1 }, this->dHs_HF[ipos][Apin], 1.0);
+			}
+			set_D_slots(Ds_full);				// restore the four density-matrix slots
+			this->lri.data_pool.erase(tmp);
+		}
+	} // end for(ipos)
+}
+
+
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void Exx<TA,Tcell,Ndim,Tdata>::cal_stress(
