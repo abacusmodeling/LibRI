@@ -1,10 +1,15 @@
+// ===================
+//  Author: Ziqing Guan
+//  date: 2026.08.02
+// ===================
+
 #pragma once
 
-#include <cmath>
-#include "LRI.h"
+#include "LRI_k.h"
 #include "LRI_Cal_Aux.h"
 #include "../global/Array_Operator.h"
 #include "../global/Tensor_Multiply.h"
+#include <cmath>
 #include <omp.h>
 #include <malloc.h>
 #ifdef __MKL_RI
@@ -37,7 +42,7 @@ inline void switch_mo_type(const std::string &type,
 /// s,t: atom orbital index; m: band index
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 std::map<int, std::map<TA, Tensor<Tdata>>>
-LRI<TA, Tcell, Ndim, Tdata>::cal_Csk_ao_mo(
+LRI_k<TA, Tcell, Ndim, Tdata>::cal_Csk_ao_mo(
 	const std::map<TA, std::map<TAC, Tensor<Tdata>>>& CsR_ao,  // C^mu (s,t)[R]
 	const std::map<int, std::map<TA, Tensor<Tdata>>>& map_psi, // c(m,s)[k]
 	const std::vector<Tk>& kindex_map,
@@ -71,9 +76,10 @@ LRI<TA, Tcell, Ndim, Tdata>::cal_Csk_ao_mo(
     U64 prealloc_count = 0;
     U64 prealloc_est_bytes = 0;
     U64 prealloc_max_bytes = 0;
-
+	int rank;
+	MPI_Comm_rank(this->mpi_comm, &rank);
 	// 1. allocate C^mu (s,m)[k] <k, <I, tensor{nabf, nw1, nmo}>>>
-    std::map<int, std::map<TA, RI::Tensor<Tdata>>> Csk_ao_mo;
+    std::map<int, std::map<TA, Tensor<Tdata>>> Csk_ao_mo;
     for (const int ik : k_indices)
     {
         for (const auto& iat1 : list_IJ)
@@ -93,7 +99,7 @@ LRI<TA, Tcell, Ndim, Tdata>::cal_Csk_ao_mo(
             {
                 const U64 vmrss_kb = read_proc_status_kb("VmRSS");
                 const U64 vmhwm_kb = read_proc_status_kb("VmHWM");
-                ofs << "[RI_MEMDBG] bad_alloc(prealloc): rank=" << GlobalV::MY_RANK
+                ofs << "[RI_MEMDBG] bad_alloc(prealloc): rank=" << rank
 					<< ", tensors=" << prealloc_count
 					<< ", ik=" << ik << ", iat1=" << iat1
 					<< ", shape={" << nabf << "," << nw1 << "," << nmo << "}"
@@ -110,7 +116,7 @@ LRI<TA, Tcell, Ndim, Tdata>::cal_Csk_ao_mo(
     ofs << "Csk_ao_mo keys has been prepared." << std::endl;
 	const U64 vmrss_kb = read_proc_status_kb("VmRSS");
 	const U64 vmhwm_kb = read_proc_status_kb("VmHWM");
-	ofs << "[RI_MEMDBG] prealloc summary: rank=" << GlobalV::MY_RANK
+	ofs << "[RI_MEMDBG] prealloc summary: rank=" << rank
 		<< ", tensors=" << prealloc_count
 		<< ", estGB=" << (prealloc_est_bytes / 1024.0 / 1024.0 / 1024.0)
 		<< ", maxTensorMB=" << (prealloc_max_bytes / 1024.0 / 1024.0)
@@ -145,9 +151,9 @@ LRI<TA, Tcell, Ndim, Tdata>::cal_Csk_ao_mo(
                 std::complex<double> phase(cos(arg), sin(arg));
                 if (!Ck_I_thread.count(iat2))
                 {
-                    Ck_I_thread[iat2] = std::move(CI_JR.second * Global_Func::convert<Tdata>(phase));
+                    Ck_I_thread[iat2] = CI_JR.second * Global_Func::convert<Tdata>(phase);
                 }
-                else { Ck_I_thread[iat2] += CI_JR.second * Global_Func::convert<Tdata>(phase); }
+                else { LRI_Cal_Aux::add_Ds(CI_JR.second, Ck_I_thread[iat2], Global_Func::convert<Tdata>(phase)); }
             }
             // C'^mu (s,m)[k] = sum_t C^mu (s,t)[k] c(m,t)[k]
             for (const auto& Ck_IJ: Ck_I_thread)
@@ -268,7 +274,7 @@ Tensor<Tdata> Cs_ao_mo_to_Cs_mo(
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 std::map<int, std::map<int, Tensor<Tdata>>>
-LRI<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_onthefly(
+LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_onthefly(
 	const std::map<int, std::map<TA, Tensor<Tdata>>>& Cs_ao_mo, // C^mu (s,m)[k]
 	const std::map<int, std::map<TA, Tensor<Tdata>>>& map_psi,  // c(m,s)[k]
 	const std::vector<int>& k1_indices,
@@ -387,7 +393,7 @@ LRI<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_onthefly(
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 std::map<int, std::map<int, Tensor<Tdata>>>
-LRI<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_hartree_onthefly(
+LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_hartree_onthefly(
 	const std::map<int, std::map<TA, Tensor<Tdata>>>& Cs_ao_mo, // C^mu (s,m)[k]
 	const std::map<int, std::map<TA, Tensor<Tdata>>>& map_psi,  // c(m,t)[k]
 	const std::vector<int>& k1_indices,

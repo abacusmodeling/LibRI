@@ -30,18 +30,11 @@ public:
 			*(ptr_this++) = *(ptr_in++);
 	}
 	Shape_Vector(const std::vector<std::size_t>& v_in)
-		:size_(v_in.size())
+	:size_(v_in.size())
 	{
 		assert(v_in.size() <= sizeof(v) / sizeof(*v));
 		for (std::size_t i = 0;i < size_;++i) this->v[i] = v_in[i];
 	}
-	Shape_Vector(std::vector<std::size_t>&& v_in)
-		:size_(v_in.size())
-	{
-		assert(v_in.size() <= sizeof(v) / sizeof(*v));
-		for (std::size_t i = 0;i < size_;++i) this->v[i] = v_in[i];
-	}
-
 	const std::size_t* begin() const noexcept { return this->v; }
 	const std::size_t* end() const noexcept { return this->v+size_; }
 	std::size_t size() const noexcept { return size_; }

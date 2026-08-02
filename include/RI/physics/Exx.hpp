@@ -266,21 +266,12 @@ void Exx<TA,Tcell,Ndim,Tdata>::cal_Hs(
 
 	if(!this->flag_finish.Ds_delta)
 		this->Hs.clear();
-	if (this->method == "loop3")
-		this->lri.cal_loop3(
-			{ Label::ab_ab::a0b0_a1b1,
-			 Label::ab_ab::a0b0_a1b2,
-			 Label::ab_ab::a0b0_a2b1,
-			 Label::ab_ab::a0b0_a2b2 },
-			this->Hs);
-	else if (this->method == "cvc")
-	{
-		if (this->cvc_.empty())
-			this->cvc_ = this->lri.cal_cvc();
-		this->Hs = this->lri.constract_cvc_ds(this->cvc_);
-	}
-	else
-		assert(false && "Unknown method in Exx::cal_Hs");
+	this->lri.cal_loop3(
+		{Label::ab_ab::a0b0_a1b1,
+		 Label::ab_ab::a0b0_a1b2,
+		 Label::ab_ab::a0b0_a2b1,
+		 Label::ab_ab::a0b0_a2b2},
+		this->Hs);
 
 	//if()
 		this->energy = this->post_2D.cal_energy(

@@ -1,10 +1,15 @@
+// ===================
+//  Author: Ziqing Guan
+//  date: 2026.08.02
+// ===================
+
 #pragma once
 
-#include <cmath>
-#include "LRI.h"
+#include "LRI_k.h"
 #include "LRI_Cal_Aux.h"
 #include "../global/Array_Operator.h"
 #include "../global/Tensor_Multiply.h"
+#include <cmath>
 #include <omp.h>
 #include <malloc.h>
 #ifdef __MKL_RI
@@ -15,13 +20,15 @@ namespace RI
 {
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 std::map<TA, std::map<TA, std::map<int, Tensor<Tdata>>>> // H(s,t)[k]
-LRI<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
+LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 	const std::map<TA, std::map<TA, std::map<int, Tensor<Tdata>>>>& Ds,  // D(s,t)[k]
 	const std::vector<Tk>& kindex_map,// k index to direct coordinate array<double, Ndim>
 	const std::vector<int>& k_indices,
 	const std::vector<TA>& list_I,
 	const std::vector<TA>& list_J,
-	const std::vector<TA>& list_IJ)
+	const std::vector<TA>& list_IJ,
+	const std::string& save_name_C,
+	const std::string& save_name_V)
 {
 #ifdef __MKL_RI
 	const std::size_t mkl_threads = mkl_get_max_threads();
@@ -34,8 +41,8 @@ LRI<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 	std::map<TA, std::map<TA, Tensor<Tdata>>> Vq; // has only one q=0
 	std::map<TA, Tensor<Tdata>> M_nu; // M_nu = \sum_{uvk} (C^nu_u_v[k] + C^nu*_v_u[k]) D_v_u[k]
 
-	const std::map<TA, std::map<TAC, Tensor<Tdata>>>& Vs = this->data_pool.at("Vs_").Ds_ab;
-    const std::map<TA, std::map<TAC, Tensor<Tdata>>>& Cs = this->data_pool.at("Cs_").Ds_ab;
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>>& Vs = this->data_pool.at(save_name_V).Ds_ab;
+	const std::map<TA, std::map<TAC, Tensor<Tdata>>>& Cs = this->data_pool.at(save_name_C).Ds_ab;
 
 	// add thread lock for the TA key of Vq
 	std::map<TA, omp_lock_t> lock_vq_result_add_map = LRI_Cal_Aux::init_lock_result(Vq, list_IJ);
@@ -99,10 +106,9 @@ LRI<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 		#pragma omp master
 		{
             LRI_Cal_Aux::destroy_lock_result(lock_vq_result_add_map, Vq);
-            this->free_tensors_map2("Vs_");
+            this->free_tensors_map2(save_name_V);
 			LRI_Cal_Aux::destroy_lock_result(lock_csk_result_add_map, Csk);
-            this->free_tensors_map2("Cs_");
-			std::cout << "finished FT VsR and CsR to Vq and Csk." << std::endl;
+            this->free_tensors_map2(save_name_C);
 		}
         #pragma omp barrier
 
@@ -229,4 +235,4 @@ LRI<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 	return hartree_k;
 }
 
-}	// end namespace RI
+}	// end namespace RI

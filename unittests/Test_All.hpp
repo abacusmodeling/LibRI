@@ -22,6 +22,7 @@
 #include "unittests/physics/RPA-test.hpp"
 #include "unittests/physics/GW-test.hpp"
 #include "unittests/physics/LR-test.hpp"
+#include "unittests/physics/Hartree-test.hpp"
 
 namespace Test_All
 {
@@ -95,5 +96,6 @@ namespace Test_All
 		GW_Test::main<std::complex<double>>(argc, argv);
 
 		LR_Test::main(argc, argv);
+		Hartree_Test::main(argc, argv);
 	}
 }

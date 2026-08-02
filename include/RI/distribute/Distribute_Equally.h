@@ -67,6 +67,16 @@ namespace Distribute_Equally
 		std::vector<Tindex> &list_k1_index,
 		std::vector<Tindex> &list_k2_index,
 		const bool flag_task_repeatable);
+
+	template<typename Tindex>
+	extern void distribute_atom_pair_and_k(
+		const MPI_Comm &mpi_comm,
+		const std::size_t nat,
+		const std::size_t nk,
+		std::vector<Tindex> &list_I,
+		std::vector<Tindex> &list_J,
+		std::vector<Tindex> &list_k_index,
+		const bool flag_task_repeatable);
 }
 
 }

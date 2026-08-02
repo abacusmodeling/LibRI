@@ -83,32 +83,41 @@ namespace Global_Func
 			return find( ptr->second, keys... );
 	}
 
-	// These helper functions are used to replace Global_Func::find,
-	// since the target is not Tensor<Tdata>, but another map.
+	// These functions are designed to replace Global_Func::find,
+	// the find result can be arithmetic type, Tensor, vector, array, or map.
+
+	// Helper: compute return type of find_map with N keys (Map::mapped_type applied N times)
+	template<typename Map, typename... Keys>
+	struct find_map_result;
+
+	template<typename Map, typename Key>
+	struct find_map_result<Map, Key> {
+		using type = typename Map::mapped_type;
+	};
+
+	template<typename Map, typename Key0, typename... Keys>
+	struct find_map_result<Map, Key0, Keys...> {
+		using type = typename find_map_result<typename Map::mapped_type, Keys...>::type;
+	};
+
+	// Base case: 1 key — returns const& to Map::mapped_type (ZERO sentinel if key not found)
 	template<class Map, class Key>
-	static inline const typename Map::mapped_type find_map(const Map& map, const Key& key)
+	static inline const typename Map::mapped_type& find_map(const Map& map, const Key& key)
 	{
 		const auto& it = map.find(key);
 		if (it != map.end()) return it->second;
-		return typename Map::mapped_type();
+		return ZERO<typename Map::mapped_type>;
 	}
 
-	template<class Map, class Key1, class Key2>
-	static inline const typename Map::mapped_type::mapped_type find_map(
-		const Map& map, const Key1& key1, const Key2& key2)
+	// Recursive case: 2+ keys — peels off key0, recurses on remaining keys
+	template<class Map, class Key0, class... Keys>
+	static inline const typename find_map_result<Map, Key0, Keys...>::type&
+	find_map(const Map& map, const Key0& key0, const Keys&... keys)
 	{
-		using InnerMap = typename Map::mapped_type;
-		using Target   = typename InnerMap::mapped_type;
-
-		const auto it1 = map.find(key1);
-		if (it1 != map.end())
-		{
-			const auto& inner = it1->second;
-			const auto it2 = inner.find(key2);
-			if (it2 != inner.end())
-				return it2->second;
-		}
-		return Target();
+		const auto it = map.find(key0);
+		if (it != map.end())
+			return find_map(it->second, keys...);
+		return ZERO<typename find_map_result<Map, Key0, Keys...>::type>;
 	}
 
 	// in_set(3, {2,3,5,7})
@@ -148,6 +157,21 @@ namespace Global_Func
 	inline std::vector<T> to_vector(const std::array<T,N> &v)
 	{
 		return std::vector<T>(v.begin(), v.end());
+	}
+
+	/// @brief sorted unique union of two containers
+	/// @tparam C1,C2  containers supporting .begin()/.end() and iterator-pair construction
+	///               (e.g., std::vector, std::deque, std::list)
+	template<typename C1, typename C2>
+	static auto set_union(const C1& c1, const C2& c2)
+		-> C1
+	{
+		static_assert(
+			std::is_same<typename C1::value_type, typename C2::value_type>::value,
+			"set_union: both containers must have the same value_type");
+		std::set<typename C1::value_type> s(c1.begin(), c1.end());
+		s.insert(c2.begin(), c2.end());
+		return C1(s.begin(), s.end());
 	}
 }
 
