@@ -69,6 +69,13 @@ namespace Global_Func
 		else
 			return ptr->second;
 	}
+
+	template<typename T>
+	const T &find(const T &data)
+	{
+		return data;
+	}
+
 	template<typename Tkey0, typename Tkey1, typename Tvalue, typename... Tkeys>
 	inline const auto &find(
 		const std::map<Tkey0, std::map<Tkey1,Tvalue>> &m,
@@ -81,43 +88,6 @@ namespace Global_Func
 			return ZERO<typename std::remove_reference<decltype(find( ptr->second, keys... ))>::type>;
 		else
 			return find( ptr->second, keys... );
-	}
-
-	// These functions are designed to replace Global_Func::find,
-	// the find result can be arithmetic type, Tensor, vector, array, or map.
-
-	// Helper: compute return type of find_map with N keys (Map::mapped_type applied N times)
-	template<typename Map, typename... Keys>
-	struct find_map_result;
-
-	template<typename Map, typename Key>
-	struct find_map_result<Map, Key> {
-		using type = typename Map::mapped_type;
-	};
-
-	template<typename Map, typename Key0, typename... Keys>
-	struct find_map_result<Map, Key0, Keys...> {
-		using type = typename find_map_result<typename Map::mapped_type, Keys...>::type;
-	};
-
-	// Base case: 1 key — returns const& to Map::mapped_type (ZERO sentinel if key not found)
-	template<class Map, class Key>
-	static inline const typename Map::mapped_type& find_map(const Map& map, const Key& key)
-	{
-		const auto& it = map.find(key);
-		if (it != map.end()) return it->second;
-		return ZERO<typename Map::mapped_type>;
-	}
-
-	// Recursive case: 2+ keys — peels off key0, recurses on remaining keys
-	template<class Map, class Key0, class... Keys>
-	static inline const typename find_map_result<Map, Key0, Keys...>::type&
-	find_map(const Map& map, const Key0& key0, const Keys&... keys)
-	{
-		const auto it = map.find(key0);
-		if (it != map.end())
-			return find_map(it->second, keys...);
-		return ZERO<typename find_map_result<Map, Key0, Keys...>::type>;
 	}
 
 	// in_set(3, {2,3,5,7})

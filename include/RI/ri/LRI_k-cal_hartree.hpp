@@ -119,12 +119,12 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 		{
 			for (const TA u : list_J)
 			{
-				const std::map<int, Tensor<Tdata>>& D_v_u = Global_Func::find_map(Ds, v, u);
+				const std::map<int, Tensor<Tdata>>& D_v_u = Global_Func::find(Ds, v, u);
 				if (D_v_u.empty()) continue;
 				const std::size_t nwt1 = D_v_u.begin()->second.shape[0];
 				const std::size_t nwt2 = D_v_u.begin()->second.shape[1];
-				const std::map<int, Tensor<Tdata>>& Csk_u_v = Global_Func::find_map(Csk, u, v);
-				const std::map<int, Tensor<Tdata>>& Csk_v_u = Global_Func::find_map(Csk, v, u);
+				const std::map<int, Tensor<Tdata>>& Csk_u_v = Global_Func::find(Csk, u, v);
+				const std::map<int, Tensor<Tdata>>& Csk_v_u = Global_Func::find(Csk, v, u);
 				for (const int ik: k_indices)
 				{
 					if (!Csk_u_v.empty())
@@ -201,8 +201,8 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 		for (const TA t : list_J)
 		{
 			auto& hartree_st = hartree_k.at(s).at(t);
-			const std::map<int, Tensor<Tdata>>& Csk_s_t = Global_Func::find_map(Csk, s, t);
-			const std::map<int, Tensor<Tdata>>& Csk_t_s = Global_Func::find_map(Csk, t, s);
+			const std::map<int, Tensor<Tdata>>& Csk_s_t = Global_Func::find(Csk, s, t);
+			const std::map<int, Tensor<Tdata>>& Csk_t_s = Global_Func::find(Csk, t, s);
 			const Tensor<Tdata>& N_Mu_at_s = N_mu.at(s);
 			const Tensor<Tdata>& N_Mu_at_t = N_mu.at(t);
 
