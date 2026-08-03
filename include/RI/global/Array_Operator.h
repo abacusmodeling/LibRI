@@ -13,7 +13,12 @@ namespace RI
 namespace Array_Operator
 {
 	template<typename T, std::size_t N>
-	extern std::array<T,N> operator%(const std::array<T,N> &v1, const std::array<T,N> &v2);
+	typename std::enable_if<std::is_integral<T>::value, std::array<T,N>>::type
+	operator%(const std::array<T,N> &v1, const std::array<T,N> &v2);
+
+    template<typename T, std::size_t N>
+    typename std::enable_if<std::is_floating_point<T>::value, std::array<T,N>>::type
+    operator%(const std::array<T,N> &v1, const std::array<T,N> &v2);
 
 	template<typename T, std::size_t N>
 	extern std::array<T,N> operator+(const std::array<T,N> &v1, const std::array<T,N> &v2);

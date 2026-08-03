@@ -69,6 +69,13 @@ namespace Global_Func
 		else
 			return ptr->second;
 	}
+
+	template<typename T>
+	const T &find(const T &data)
+	{
+		return data;
+	}
+
 	template<typename Tkey0, typename Tkey1, typename Tvalue, typename... Tkeys>
 	inline const auto &find(
 		const std::map<Tkey0, std::map<Tkey1,Tvalue>> &m,
@@ -120,6 +127,21 @@ namespace Global_Func
 	inline std::vector<T> to_vector(const std::array<T,N> &v)
 	{
 		return std::vector<T>(v.begin(), v.end());
+	}
+
+	/// @brief sorted unique union of two containers
+	/// @tparam C1,C2  containers supporting .begin()/.end() and iterator-pair construction
+	///               (e.g., std::vector, std::deque, std::list)
+	template<typename C1, typename C2>
+	static auto set_union(const C1& c1, const C2& c2)
+		-> C1
+	{
+		static_assert(
+			std::is_same<typename C1::value_type, typename C2::value_type>::value,
+			"set_union: both containers must have the same value_type");
+		std::set<typename C1::value_type> s(c1.begin(), c1.end());
+		s.insert(c2.begin(), c2.end());
+		return C1(s.begin(), s.end());
 	}
 }
 

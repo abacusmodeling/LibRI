@@ -45,6 +45,7 @@ public:
 
 	Tensor transpose() const;
 	Tensor dagger() const;
+	Tensor conjugate() const;
 
 	// ||d||_p = (|d_1|^p+|d_2|^p+...)^{1/p}
 	// if(p==std::numeric_limits<double>::max())    ||d||_max = max_i |d_i|

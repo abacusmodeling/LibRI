@@ -58,8 +58,7 @@ public:
 			*this->Ds_ab_ptr.at(label),
 			Aa.first, TAC{Ab.first, (Ab.second-Aa.second)%this->period});
 	}
-
-	std::vector<Label::ab> split_b01(const Label::ab_ab &label) const
+	inline std::vector<Label::ab> split_b01(const Label::ab_ab &label) const
 	{
 		switch(label)
 		{

@@ -83,6 +83,24 @@ namespace LRI_Cal_Aux
 		}
 	}
 
+	// D_result = D_add * scale  (init)
+	// or D_result += D_add * scale (accumulate via BLAS axpy)
+	template<typename Tdata>
+	inline void add_Ds(
+		const Tensor<Tdata> &D_add,
+		Tensor<Tdata> &D_result,
+		const Tdata scale)
+	{
+		if (D_result.empty())
+		{
+			D_result = D_add * scale;
+		}
+		else
+		{
+			Blas_Interface::axpy(scale, D_add, D_result);
+		}
+	}
+
 	template<typename Tkey, typename Tvalue>
 	void add_Ds(
 		std::map<Tkey, Tvalue> &&Ds_add,
@@ -160,16 +178,18 @@ namespace LRI_Cal_Aux
 		}
 	}
 
-	template<typename TA, typename TAC, typename Tdata>
+	// Tkey labels thread lock, in actual use, Tkey can be TA, TC, Tk, etc.
+	// Tvalue can be Tensor or another map<key..., Tensor>, both of them can be input of add_Ds
+	template<typename Tkey, typename Tvalue, typename TComparator>
 	void add_Ds_omp_try_map(
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result_thread,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-		std::map<TA, omp_lock_t> &lock_Ds_result_add_map,
+		std::map<Tkey, Tvalue, TComparator>& Ds_result_thread,
+		std::map<Tkey, Tvalue, TComparator>& Ds_result,
+		std::map<Tkey, omp_lock_t> &lock_Ds_result_add_map,
 		const double &fac)
 	{
 		for(auto ptr=Ds_result_thread.begin(); ptr!=Ds_result_thread.end(); )
 		{
-			const TA key = ptr->first;
+			const Tkey key = ptr->first;
 			if(omp_test_lock(&lock_Ds_result_add_map.at(key)))
 			{
 				LRI_Cal_Aux::add_Ds(std::move(ptr->second), Ds_result.at(key), fac);
@@ -183,11 +203,13 @@ namespace LRI_Cal_Aux
 		}
 	}
 
-	template<typename TA, typename TAC, typename Tdata>
+	// Tkey labels thread lock, in actual use, Tkey can be TA, TC, Tk, etc.
+	// Tvalue can be Tensor or another map<key..., Tensor>, both of them can be input of add_Ds
+	template<typename Tkey, typename Tvalue, typename TComparator>
 	void add_Ds_omp_wait_map(
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result_thread,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-		std::map<TA, omp_lock_t> &lock_Ds_result_add_map,
+		std::map<Tkey, Tvalue, TComparator>& Ds_result_thread,
+		std::map<Tkey, Tvalue, TComparator>& Ds_result,
+		std::map<Tkey, omp_lock_t> &lock_Ds_result_add_map,
 		const double &fac)
 	{
 		if(Ds_result_thread.empty())
@@ -338,11 +360,11 @@ namespace LRI_Cal_Aux
 		return list_filter;
 	}
 
-	template<typename TA, typename TAC, typename Tdata>
+	template<typename TA, typename TAC, typename Tvalue>
 	std::map<TA, omp_lock_t> init_lock_result(
 		const std::vector<Label::ab_ab> &labels,
 		const std::unordered_map<Label::Aab_Aab, List_A<TA,TAC>> &list_A,
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result)
+		std::map<TA, std::map<TAC, Tvalue>>& Ds_result)
 	{
 		std::map<TA, omp_lock_t> lock_Ds_result_add_map;
 		for(const Label::ab_ab &label : labels)
@@ -375,10 +397,28 @@ namespace LRI_Cal_Aux
 		return lock_Ds_result_add_map;
 	}
 
-	template<typename TA, typename Tvalue>
+	template<typename Tkey, typename Tvalue, typename TComparator>
+	std::map<Tkey, omp_lock_t> init_lock_result(
+		std::map<Tkey, Tvalue, TComparator>& Ds_result,
+		std::vector<Tkey> key_list)
+	{
+		std::map<Tkey, omp_lock_t> lock_Ds_result_add_map;
+
+		for(const Tkey &ikey : key_list)
+		{
+			Ds_result[ikey];
+			lock_Ds_result_add_map[ikey];
+		}
+
+		for(auto &lock : lock_Ds_result_add_map)
+			omp_init_lock(&lock.second);
+		return lock_Ds_result_add_map;
+	}
+
+	template<typename Tkey, typename Tvalue, typename TComparator>
 	void destroy_lock_result(
-		std::map<TA, omp_lock_t> &locks,
-		std::map<TA, Tvalue> &Ds_result)
+		std::map<Tkey, omp_lock_t> &locks,
+		std::map<Tkey, Tvalue, TComparator> &Ds_result)
 	{
 		for(auto &lock : locks)
 			omp_destroy_lock(&lock.second);
