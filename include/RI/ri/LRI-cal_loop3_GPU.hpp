@@ -15,6 +15,7 @@
 
 #include "../global/gpu/GPU_Backend.h"
 #include "gpu/GPU_LR_Batch_Plan.h"
+#include "gpu/GPU_Resident_Blocks.h"
 #include "gpu/GPU_Data_Input.h"
 #include "gpu/GPU_Data_Mul.h"
 #include "gpu/GPU_Data_Tmp.h"
@@ -80,8 +81,38 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 	mkl_set_num_threads(1);
 	#endif
 
-	GPU_Backend::Context gpu_context(this->mpi_comm);
-	GPU_Backend::Queue &queue = gpu_context.queue();
+	using Resident = GPU_Data::Resident_Blocks<TA, TAC, Tdata>;
+	using Resident_Map = typename Resident::Block_Map;
+	std::unique_ptr<GPU_Backend::Context> call_context;
+	Resident *resident = nullptr;
+	if(this->gpu_resident_names.empty())
+		call_context.reset(new GPU_Backend::Context(this->mpi_comm));
+	else
+	{
+		if(!this->gpu_resident_blocks)
+			this->gpu_resident_blocks.reset(new Resident(this->mpi_comm));
+		resident = this->gpu_resident_blocks.get();
+	}
+	GPU_Backend::Queue &queue = resident ? resident->queue() : call_context->queue();
+	const auto resident_for = [&](Label::ab input_label, int variant, const Matrix_Map &source) -> const Resident_Map*
+	{
+		if(!resident) return nullptr;
+		const auto name = this->data_ab_name.find(input_label);
+		if(name == this->data_ab_name.end() || !this->gpu_resident_names.count(name->second)) return nullptr;
+		return resident->ensure(name->second, variant, source);
+	};
+	// The transposed C maps have a different element layout from the source C blocks.
+	// In practice, data_wrapper(Label::ab::a) and data_wrapper(Label::ab::b) are both Cs_+suffix,
+	// so the second call hits catche and return the address map built at the first call, no repeated upload.
+	const Resident_Map *resident_a = resident_for(Label::ab::a, 0, data_wrapper(Label::ab::a).Ds_ab);
+	const Resident_Map *resident_b = resident_for(Label::ab::b, 0, data_wrapper(Label::ab::b).Ds_ab);
+	const Resident_Map *resident_v = resident_for(Label::ab::a0b0, 0, data_wrapper(Label::ab::a0b0).Ds_ab);
+	const Resident_Map *resident_a_transpose = Ds_a_transpose.empty()
+		? nullptr : resident_for(Label::ab::a, 1, Ds_a_transpose);
+	const bool same_c_name = this->data_ab_name.at(Label::ab::a) == this->data_ab_name.at(Label::ab::b);
+	const int b_transpose_variant = same_c_name ? 1 : 2;
+	const Resident_Map *resident_b_transpose = Ds_b_transpose.empty()
+		? nullptr : resident_for(Label::ab::b, b_transpose_variant, Ds_b_transpose);
 
 	for(const Label::ab_ab &label : labels)
 	{
@@ -114,6 +145,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.defer_input_copies();
 					rDs_a0b0.defer_input_copies();
 					rDs_a1b1.defer_input_copies();
+					rDs_b.bind_resident_blocks(resident_b);
+					rDs_a0b0.bind_resident_blocks(resident_v);
 					GPU_Data::Tmp<TA, TAC, Tdata> rDs_tmp;
 					GPU_Data::Mul<TA, TAC, Tdata> rDs_mul;
 					GPU_Data::Output<TA, TAC, Tdata> rDs_output;
@@ -216,6 +249,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					// D_result = D_mul * D_a
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a;
 					rDs_a.defer_input_copies();
+					rDs_a.bind_resident_blocks(resident_a);
 					if(!case_plan || !case_plan->second.ready)
 					{
 					std::vector<std::vector<Gpu_LR_Batch>> lri_batches_2(omp_get_max_threads());
@@ -448,6 +482,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a1b2;
 					rDs_b.defer_input_copies();
 					rDs_a1b2.defer_input_copies();
+					rDs_b.bind_resident_blocks(resident_b);
 					GPU_Data::Mul<TA, TAC, Tdata> rDs_mul;
 					GPU_Data::Tmp<TA, TAC, Tdata> rDs_tmp;
 					GPU_Data::Output<TA, TAC, Tdata> rDs_output;
@@ -535,6 +570,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a, rDs_a0b0;
 					rDs_a.defer_input_copies();
 					rDs_a0b0.defer_input_copies();
+					rDs_a.bind_resident_blocks(resident_a_transpose);
+					rDs_a0b0.bind_resident_blocks(resident_v);
 
 					if(!case_plan || !case_plan->second.ready)
 					{
@@ -1071,6 +1108,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a, rDs_a2b1;
 					rDs_a.defer_input_copies();
 					rDs_a2b1.defer_input_copies();
+					rDs_a.bind_resident_blocks(resident_a_transpose);
 					GPU_Data::Mul<TA, TAC, Tdata> rDs_mul;
 					GPU_Data::Tmp<TA, TAC, Tdata> rDs_tmp;
 					GPU_Data::Output<TA, TAC, Tdata> rDs_output;
@@ -1158,6 +1196,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a0b0;
 					rDs_b.defer_input_copies();
 					rDs_a0b0.defer_input_copies();
+					rDs_b.bind_resident_blocks(resident_b);
+					rDs_a0b0.bind_resident_blocks(resident_v);
 
 					if(!case_plan || !case_plan->second.ready)
 					{
@@ -1694,6 +1734,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a, rDs_a2b2;
 					rDs_a.defer_input_copies();
 					rDs_a2b2.defer_input_copies();
+					rDs_a.bind_resident_blocks(resident_a_transpose);
 					GPU_Data::Mul<TA, TAC, Tdata> rDs_mul;
 					GPU_Data::Tmp<TA, TAC, Tdata> rDs_tmp;
 					GPU_Data::Output<TA, TAC, Tdata> rDs_output;
@@ -1780,6 +1821,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a0b0;
 					rDs_b.defer_input_copies();
 					rDs_a0b0.defer_input_copies();
+					rDs_b.bind_resident_blocks(resident_b_transpose);
+					rDs_a0b0.bind_resident_blocks(resident_v);
 
 					if(!case_plan || !case_plan->second.ready)
 					{

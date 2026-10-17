@@ -37,6 +37,7 @@ enum class LRI_Cal_Mode {
 #ifdef __GPU_RI
 template<typename TA, typename TC, typename Tdata>
 struct Gpu_LR_Plan_Cache;
+namespace GPU_Data { template<typename TA, typename TAC, typename Tdata> class Resident_Blocks; }
 #endif
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
@@ -93,7 +94,11 @@ public:
   private:
 	// Caches symbolic GEMM batch layouts; tensor values are recopied every call.
 	std::shared_ptr<Gpu_LR_Plan_Cache<TA, TC, Tdata>> gpu_lr_plan_cache;
+	// Owns device copies only for explicitly named geometry-fixed input packs.
+	std::shared_ptr<GPU_Data::Resident_Blocks<TA, TAC, Tdata>> gpu_resident_blocks;
+	std::set<std::string> gpu_resident_names;
   public:
+	void set_gpu_resident_data_names(const std::set<std::string> &names);
 	void cal_loop3_GPU(
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,

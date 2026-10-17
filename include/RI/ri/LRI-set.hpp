@@ -11,6 +11,9 @@
 #include "../global/Map_Operator.h"
 #include "../global/MPI_Wrapper-func.h"
 #include <algorithm>
+#ifdef __GPU_RI
+#include "gpu/GPU_Resident_Blocks.h"
+#endif
 
 namespace RI
 {
@@ -25,6 +28,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_parallel(
 {
 	#ifdef __GPU_RI
 	this->gpu_lr_plan_cache.reset();
+	this->gpu_resident_blocks.reset();
 	#endif
 	this->mpi_comm = mpi_comm_in;
 	this->period = period_in;
@@ -68,6 +72,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_tensors_map2(
 		save_name_in!="default"
 		? save_name_in
 		: Label_Tools::get_name(label_list);
+	#ifdef __GPU_RI
+	if(this->gpu_resident_blocks) this->gpu_resident_blocks->invalidate(save_name);
+	#endif
 	for(const Label::ab &label : label_list)
 		this->data_ab_name[label] = save_name;
 
@@ -80,7 +87,22 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::free_tensors_map2(
 	const std::string &save_name)
 {
+	#ifdef __GPU_RI
+	if(this->gpu_resident_blocks) this->gpu_resident_blocks->invalidate(save_name);
+	#endif
 	this->data_pool.erase(save_name);
 }
+
+#ifdef __GPU_RI
+template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
+void LRI<TA,Tcell,Ndim,Tdata>::set_gpu_resident_data_names(
+	const std::set<std::string> &names)
+{
+	if(this->gpu_resident_names == names) return;
+	this->gpu_resident_names = names;
+	this->gpu_resident_blocks.reset();
+	this->gpu_lr_plan_cache.reset();
+}
+#endif
 
 }
