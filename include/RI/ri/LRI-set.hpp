@@ -23,6 +23,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::set_parallel(
 	const std::array<Tcell,Ndim> &period_in,
 	const std::vector<Label::ab_ab> &labels_all)
 {
+	#ifdef __GPU_RI
+	this->gpu_lr_plan_cache.reset();
+	#endif
 	this->mpi_comm = mpi_comm_in;
 	this->period = period_in;
 	this->parallel->set_parallel(

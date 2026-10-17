@@ -34,6 +34,11 @@ enum class LRI_Cal_Mode {
 	#endif
 };
 
+#ifdef __GPU_RI
+template<typename TA, typename TC, typename Tdata>
+struct Gpu_LR_Plan_Cache;
+#endif
+
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 class LRI
 {
@@ -83,8 +88,12 @@ public:
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 		const Tdata fac_add_Ds = Tdata(1.0));
-	
+
 	#ifdef __GPU_RI
+  private:
+	// Caches symbolic GEMM batch layouts; tensor values are recopied every call.
+	std::shared_ptr<Gpu_LR_Plan_Cache<TA, TC, Tdata>> gpu_lr_plan_cache;
+  public:
 	void cal_loop3_GPU(
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,

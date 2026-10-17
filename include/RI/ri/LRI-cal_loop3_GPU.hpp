@@ -14,6 +14,7 @@
 #include "../global/Tensor_Multiply.h"
 
 #include "../global/gpu/GPU_Backend.h"
+#include "gpu/GPU_LR_Batch_Plan.h"
 #include "gpu/GPU_Data_Input.h"
 #include "gpu/GPU_Data_Mul.h"
 #include "gpu/GPU_Data_Tmp.h"
@@ -21,6 +22,7 @@
 #include "gpu/Dim.h"
 
 #include <omp.h>
+#include <typeinfo>
 
 #ifdef __MKL_RI
 #include <mkl_service.h>
@@ -36,6 +38,22 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 	const Tdata fac_add_Ds)
 {
 	using namespace Array_Operator;
+	using Case_Plan = Gpu_LR_Case_Plan<TA, TAC, Tdata>;
+	using Matrix_Map = typename Case_Plan::Matrix_Map;
+	// Mutable atom filters can change the batch graph without changing tensors.
+	// Keep the cache for the base, no-op filter only.
+	const bool cacheable = typeid(*this->filter_atom) == typeid(Filter_Atom<TA, TAC>);
+	if(cacheable)
+	{
+		if(!this->gpu_lr_plan_cache)
+			this->gpu_lr_plan_cache.reset(new Gpu_LR_Plan_Cache<TA, TC, Tdata>());
+		Gpu_LR_Plan_Cache<TA, TC, Tdata> &cache = *this->gpu_lr_plan_cache;
+		const int thread_count = omp_get_max_threads();
+		if(!cache.matches(this->period, thread_count, this->data_ab_name,
+		                  this->parallel->list_A, this->data_pool))
+			cache.capture(this->period, thread_count, this->data_ab_name,
+			              this->parallel->list_A, this->data_pool);
+	}
 
 	struct Gpu_LR_Batch
 	{
@@ -78,6 +96,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 				case Label::ab_ab::a0b0_a1b1:
 				{
+					Case_Plan *case_plan = cacheable ? &this->gpu_lr_plan_cache->cases[label] : nullptr;
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map( LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
 						data_wrapper(Label::ab::a0b0).Ds_ab ),
@@ -102,6 +121,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					Dim_mnk dim_0, dim_1, dim_2;
 
 					// D_mul = D_b * D_a0b0 * D_a1b1
+					if(!case_plan || !case_plan->first.ready)
+					{
 					std::vector<std::vector<Gpu_LR_Batch>> lri_batches_1(omp_get_max_threads());
 					#pragma omp parallel
 					{
@@ -155,6 +176,17 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 							dim_0.input({D_b.shape[1], D_b.shape[2]}, D_a0b0.shape[0], D_b.shape[0]);
 							dim_1.input({D_tmp.shape[1], D_tmp.shape[2]}, D_a1b1.shape[0], D_a1b1.shape[1]);
 						}
+						if(case_plan) case_plan->save_first({&rDs_b,&rDs_a0b0,&rDs_a1b1}, rDs_mul, &rDs_tmp, dim_0, &dim_1);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = data_wrapper(Label::ab::b).Ds_ab;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a0b0).Ds_ab;
+						const Matrix_Map &source_2 = data_wrapper(Label::ab::a1b1).Ds_ab;
+						case_plan->load_first({&rDs_b,&rDs_a0b0,&rDs_a1b1},
+						    {&source_0,&source_1,&source_2},
+						    rDs_mul, &rDs_tmp, dim_0, &dim_1);
+					}
 					rDs_b.finish_deferred_copies();
 					rDs_a0b0.finish_deferred_copies();
 					rDs_a1b1.finish_deferred_copies();
@@ -184,6 +216,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					// D_result = D_mul * D_a
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a;
 					rDs_a.defer_input_copies();
+					if(!case_plan || !case_plan->second.ready)
+					{
 					std::vector<std::vector<Gpu_LR_Batch>> lri_batches_2(omp_get_max_threads());
 					#pragma omp parallel
 					{
@@ -230,6 +264,15 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 							rDs_output.insert( Aa2.first, {Ab2.first, (Ab2.second - Aa2.second) % period}, {D_a.shape[2], D_mul.shape[0]});
 							dim_2.input(D_a.shape[2], D_mul.shape[0], {D_a.shape[0], D_a.shape[1]});
 						}
+						if(case_plan) case_plan->save_second({&rDs_a}, rDs_mul, nullptr, rDs_output, dim_2, nullptr);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = data_wrapper(Label::ab::a).Ds_ab;
+						case_plan->load_second({&rDs_a},
+						    {&source_0},
+						    rDs_mul, nullptr, rDs_output, dim_2, nullptr);
+					}
 					rDs_a.finish_deferred_copies();
 
 					rDs_output.upload(queue);
@@ -388,6 +431,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 				case Label::ab_ab::a0b0_a1b2:
 				{
+					Case_Plan *case_plan = cacheable ? &this->gpu_lr_plan_cache->cases[label] : nullptr;
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map( LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
 						data_wrapper(Label::ab::a0b0).Ds_ab ),
@@ -412,6 +456,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 					// b0b1a1 = b0b1b2 * a1b2
 					// D_mul = D_b * D_a1b2
+					if(!case_plan || !case_plan->first.ready)
+					{
 					std::vector<std::vector<Gpu_LR_Batch>> lri_batches_3(omp_get_max_threads());
 					#pragma omp parallel
 					{
@@ -458,6 +504,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 							const GPU_Data::Pack &D_mul = rDs_mul.insert_1st(Aa01, Ab01, {D_b.shape[0], D_b.shape[1], D_a1b2.shape[0]});
 							dim_0.input({D_b.shape[0], D_b.shape[1]}, D_a1b2.shape[0], D_b.shape[2]);
 						}
+						if(case_plan) case_plan->save_first({&rDs_b,&rDs_a1b2}, rDs_mul, nullptr, dim_0, nullptr);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = data_wrapper(Label::ab::b).Ds_ab;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a1b2).Ds_ab;
+						case_plan->load_first({&rDs_b,&rDs_a1b2},
+						    {&source_0,&source_1},
+						    rDs_mul, nullptr, dim_0, nullptr);
+					}
 					rDs_b.finish_deferred_copies();
 					rDs_a1b2.finish_deferred_copies();
 
@@ -480,6 +536,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.defer_input_copies();
 					rDs_a0b0.defer_input_copies();
 
+					if(!case_plan || !case_plan->second.ready)
+					{
 					std::vector<std::vector<Gpu_LR_Batch>> lri_batches_4(omp_get_max_threads());
 					#pragma omp parallel
 					{
@@ -533,6 +591,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 							dim_1.input({D_mul.shape[1], D_mul.shape[2]}, D_a0b0.shape[0], D_a0b0.shape[1]);
 							dim_2.input(D_a.shape[2], D_tmp.shape[0], {D_a.shape[0], D_a.shape[1]});
 						}
+						if(case_plan) case_plan->save_second({&rDs_a,&rDs_a0b0}, rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = Ds_a_transpose;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a0b0).Ds_ab;
+						case_plan->load_second({&rDs_a,&rDs_a0b0},
+						    {&source_0,&source_1},
+						    rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
 					rDs_a.finish_deferred_copies();
 					rDs_a0b0.finish_deferred_copies();
 
@@ -986,6 +1054,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 				case Label::ab_ab::a0b0_a2b1:
 				{
+					Case_Plan *case_plan = cacheable ? &this->gpu_lr_plan_cache->cases[label] : nullptr;
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
 						data_wrapper(Label::ab::a0b0).Ds_ab );
@@ -1010,6 +1079,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 					// b1a1a0 = a2b1 * a1a0a2
 					// D_mul = D_a * D_a2b1
+					if(!case_plan || !case_plan->first.ready)
+					{
 					std::vector<std::vector<Gpu_LR_Batch>> lri_batches_5(omp_get_max_threads());
 					#pragma omp parallel
 					{
@@ -1057,6 +1128,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 							const GPU_Data::Pack &D_mul = rDs_mul.insert_1st(Aa01, Ab01, {D_a2b1.shape[1], D_a.shape[0], D_a.shape[1]});
 							dim_0.input(D_a2b1.shape[1], {D_a.shape[0], D_a.shape[1]}, D_a2b1.shape[0]);
 						}
+						if(case_plan) case_plan->save_first({&rDs_a,&rDs_a2b1}, rDs_mul, nullptr, dim_0, nullptr);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = Ds_a_transpose;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a2b1).Ds_ab;
+						case_plan->load_first({&rDs_a,&rDs_a2b1},
+						    {&source_0,&source_1},
+						    rDs_mul, nullptr, dim_0, nullptr);
+					}
 					rDs_a.finish_deferred_copies();
 					rDs_a2b1.finish_deferred_copies();
 
@@ -1078,6 +1159,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.defer_input_copies();
 					rDs_a0b0.defer_input_copies();
 
+					if(!case_plan || !case_plan->second.ready)
+					{
 					std::vector<std::vector<Gpu_LR_Batch>> lri_batches_6(omp_get_max_threads());
 					#pragma omp parallel
 					{
@@ -1131,6 +1214,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 							dim_1.input(D_a0b0.shape[1], {D_mul.shape[0], D_mul.shape[1]}, D_a0b0.shape[0]);
 							dim_2.input(D_tmp.shape[2], D_b.shape[2], {D_b.shape[0], D_b.shape[1]});
 						}
+						if(case_plan) case_plan->save_second({&rDs_b,&rDs_a0b0}, rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = data_wrapper(Label::ab::b).Ds_ab;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a0b0).Ds_ab;
+						case_plan->load_second({&rDs_b,&rDs_a0b0},
+						    {&source_0,&source_1},
+						    rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
 					rDs_b.finish_deferred_copies();
 					rDs_a0b0.finish_deferred_copies();
 
@@ -1584,6 +1677,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 				case Label::ab_ab::a0b0_a2b2:
 				{
+					Case_Plan *case_plan = cacheable ? &this->gpu_lr_plan_cache->cases[label] : nullptr;
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
 						data_wrapper(Label::ab::a0b0).Ds_ab );
@@ -1608,6 +1702,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 					// b2a1a0 = a2b2 * a1a0a2
 					// D_mul = D_a * D_a2b2
+					if(!case_plan || !case_plan->first.ready)
+					{
 					std::vector<std::vector<Gpu_LR_Batch>> lri_batches_7(omp_get_max_threads());
 					#pragma omp parallel
 					{
@@ -1654,6 +1750,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 							rDs_mul.insert_1st(Aa01, Ab2, {D_a2b2.shape[1], D_a.shape[0], D_a.shape[1]});
 							dim_0.input(D_a2b2.shape[1], {D_a.shape[0], D_a.shape[1]}, D_a2b2.shape[0]);
 						}
+						if(case_plan) case_plan->save_first({&rDs_a,&rDs_a2b2}, rDs_mul, nullptr, dim_0, nullptr);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = Ds_a_transpose;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a2b2).Ds_ab;
+						case_plan->load_first({&rDs_a,&rDs_a2b2},
+						    {&source_0,&source_1},
+						    rDs_mul, nullptr, dim_0, nullptr);
+					}
 					rDs_a.finish_deferred_copies();
 					rDs_a2b2.finish_deferred_copies();
 
@@ -1675,6 +1781,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.defer_input_copies();
 					rDs_a0b0.defer_input_copies();
 
+					if(!case_plan || !case_plan->second.ready)
+					{
 					std::vector<std::vector<Gpu_LR_Batch>> lri_batches_8(omp_get_max_threads());
 					#pragma omp parallel
 					{
@@ -1729,6 +1837,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 							dim_1.input(D_a0b0.shape[1], {D_mul.shape[0], D_mul.shape[1]}, D_a0b0.shape[0]);
 							dim_2.input(D_tmp.shape[2], D_b.shape[0], {D_b.shape[1], D_b.shape[2]});
 						}
+						if(case_plan) case_plan->save_second({&rDs_b,&rDs_a0b0}, rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = Ds_b_transpose;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a0b0).Ds_ab;
+						case_plan->load_second({&rDs_b,&rDs_a0b0},
+						    {&source_0,&source_1},
+						    rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
 					rDs_b.finish_deferred_copies();
 					rDs_a0b0.finish_deferred_copies();
 

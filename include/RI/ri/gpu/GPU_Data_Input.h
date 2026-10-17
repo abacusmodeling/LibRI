@@ -30,6 +30,46 @@ class Input
 		bool,
 		sizeof(Tdata_CPU)==sizeof(Tdata_GPU) && alignof(Tdata_CPU)==alignof(Tdata_GPU)>;
 
+	using Matrix_Map = std::map<TA, std::map<TAC, Tensor<Tdata_CPU>>>;
+
+	// Numerical values are deliberately absent: a cached layout is valid only
+	// while the caller's block-key and shape signature is unchanged.
+	struct Layout
+	{
+		std::map<TA, std::map<TAC, Pack>> ptr_list;
+		std::vector<Pack> array;
+		std::vector<std::size_t> sizes;
+	};
+
+	Layout save_layout() const
+	{
+		Layout layout;
+		layout.ptr_list = this->ptrList;
+		layout.array = this->h_array;
+		layout.sizes = this->planned_sizes;
+		return layout;
+	}
+
+	void load_layout(const Layout &layout, const Matrix_Map &source)
+	{
+		this->ptrList = layout.ptr_list;
+		this->h_array = layout.array;
+		this->planned_sizes = layout.sizes;
+		this->h_data.resize(layout.sizes.size());
+		this->copy_tasks.clear();
+		this->copy_tasks.resize(layout.sizes.size());
+		this->defer_copies = true;
+		for(const auto &row : layout.ptr_list)
+		{
+			for(const auto &block : row.second)
+			{
+				const Pack &pack = block.second;
+				const Tensor<Tdata_CPU> &tensor = source.at(row.first).at(block.first);
+				this->copy_tasks.at(pack.thread_num).push_back({&tensor, pack.pos});
+			}
+		}
+	}
+
 	Input()
 	{
 		this->h_data.resize(omp_get_max_threads());
