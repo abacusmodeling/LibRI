@@ -1553,7 +1553,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 								for (std::size_t ib2 = 0; ib2 < list_Ab2.size(); ++ib2)
 								{
 									const TAC &Ab2 = list_Ab2[ib2];
-									if (this->filter_atom->filter_for32(label, Aa01, Ab01, Ab2))	continue;
+									// The output block is (Aa01, Ab01); Ab2 is only an intermediate atom.
+									if (this->filter_atom->filter_for32(label, Aa01, Ab2, Ab01))	continue;
 									const Tensor<Tdata> &D_b = Global_Func::find(Ds_b_transpose, Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%this->period});
 									if(D_b.empty())	continue;
 									const GPU_Data::Pack &D_mul = rDs_mul.find_2nd(Aa01, Ab2);

@@ -45,6 +45,10 @@ class Filter_Atom_Symmetry: public Filter_Atom<TA, std::pair<TA, TC>>
 				case Label::ab_ab::a1b2_a2b0:
 				case Label::ab_ab::a1b2_a2b1:
 					return !this->symmetry.is_Aa_in_irreducible_sector(A1);
+			// GPU computes these contractions before their output atoms are known.
+				case Label::ab_ab::a0b0_a1b1:
+				case Label::ab_ab::a0b0_a1b2:
+					return false;
 			default:
 				throw std::invalid_argument("label "+Label_Tools::get_name(label)+" error in "+std::string(__FILE__)+" line "+std::to_string(__LINE__));
 		}
@@ -100,6 +104,10 @@ class Filter_Atom_Symmetry: public Filter_Atom<TA, std::pair<TA, TC>>
 				case Label::ab_ab::a1b0_a2b2:
 				case Label::ab_ab::a1b1_a2b2:
 					return !this->symmetry.in_irreducible_sector(A1, A3);
+			// GPU output is (Aa2, Ab2) or (Aa2, Ab01), respectively.
+				case Label::ab_ab::a0b0_a1b1:
+				case Label::ab_ab::a0b0_a1b2:
+					return !this->symmetry.in_irreducible_sector(A2, A3);
 			// a01b2_a2b01:                                        Aa01,          Ab01,          Aa2
 			default:
 					return false;
