@@ -107,7 +107,7 @@ inline void validate_local_gpu_count(const MPI_Comm& communicator)
 
     int device_count = 0;
 #ifdef __DDLA_RI
-    ddla::DEVICE_CHECK_RI(ddla::deviceGetDeviceCount(&device_count));
+    ddla::DEVICE_CHECK(ddla::deviceGetDeviceCount(&device_count));
 #elif defined(__MAGMA_RI)
     device_count = Magma_Wrapper::magma_get_size();
 #endif
@@ -174,7 +174,7 @@ inline void allocate(T** pointer, std::size_t count)
         return;
     }
 #ifdef __DDLA_RI
-    ddla::DEVICE_CHECK_RI(ddla::deviceMalloc(pointer, count * sizeof(T)));
+    ddla::DEVICE_CHECK(ddla::deviceMalloc(pointer, count * sizeof(T)));
 #elif defined(__MAGMA_RI)
     MAGMA_CHECK_RI(magma_malloc(reinterpret_cast<void**>(pointer), count * sizeof(T)));
 #endif
@@ -186,7 +186,7 @@ inline void free(T* pointer)
     if (pointer == nullptr)
         return;
 #ifdef __DDLA_RI
-    ddla::DEVICE_CHECK_RI(ddla::deviceFree(pointer));
+    ddla::DEVICE_CHECK(ddla::deviceFree(pointer));
 #elif defined(__MAGMA_RI)
     MAGMA_CHECK_RI(magma_free(pointer));
 #endif
@@ -199,7 +199,7 @@ inline void upload(
     if (count == 0)
         return;
 #ifdef __DDLA_RI
-    ddla::DEVICE_CHECK_RI(deviceMemcpyAsync(
+    ddla::DEVICE_CHECK(deviceMemcpyAsync(
         device_data, host_data, count * sizeof(T),
         ddla::deviceMemcpyHostToDevice, stream(queue)));
 #elif defined(__MAGMA_RI)
@@ -215,7 +215,7 @@ inline void download(
     if (count == 0)
         return;
 #ifdef __DDLA_RI
-    ddla::DEVICE_CHECK_RI(deviceMemcpyAsync(
+    ddla::DEVICE_CHECK(deviceMemcpyAsync(
         host_data, device_data, count * sizeof(T),
         ddla::deviceMemcpyDeviceToHost, stream(queue)));
 #elif defined(__MAGMA_RI)
@@ -229,7 +229,7 @@ inline void memset(void* pointer, int value, std::size_t bytes, Queue queue)
     if (bytes == 0)
         return;
 #ifdef __DDLA_RI
-    ddla::DEVICE_CHECK_RI(deviceMemsetAsync(
+    ddla::DEVICE_CHECK(deviceMemsetAsync(
         pointer, value, bytes, stream(queue)));
 #elif defined(__MAGMA_RI)
     MAGMA_CHECK_RI(magma_memset(pointer, value, bytes));
@@ -239,7 +239,7 @@ inline void memset(void* pointer, int value, std::size_t bytes, Queue queue)
 inline void sync(Queue queue)
 {
 #ifdef __DDLA_RI
-    ddla::DEVICE_CHECK_RI(
+    ddla::DEVICE_CHECK(
         ddla::deviceStreamSynchronize(stream(queue)));
 #elif defined(__MAGMA_RI)
     magma_queue_sync(queue);
