@@ -2690,7 +2690,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 		LRI_Cal_Aux::add_Ds_omp_wait_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
 	} // end #pragma omp parallel
 
-	LRI_Cal_Aux::destroy_lock_result(lock_Ds_result_add_map, Ds_result);
+	LRI_Cal_Aux::destroy_lock(lock_Ds_result_add_map);
+	LRI_Cal_Aux::destroy_Ds_result(Ds_result);
 	#ifdef __MKL_RI
 	mkl_set_num_threads(mkl_threads);
 	#endif
