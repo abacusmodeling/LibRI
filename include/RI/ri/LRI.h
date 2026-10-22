@@ -88,7 +88,7 @@ public:
 	void cal_loop3_GPU(
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-		const double fac_add_Ds = 1.0);
+		const Tdata fac_add_Ds = 1.0);
 	#endif
 
 public:
