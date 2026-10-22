@@ -131,10 +131,12 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_Csk_ao_mo(
 #endif
 
 #pragma omp parallel for schedule(static) collapse(2)
-    for (const int ik : k_indices)
+    for (int ik_index=0; ik_index<k_indices.size(); ++ik_index)
     {
-        for (const int iat1 : list_IJ)
+		const int ik = k_indices[ik_index];
+        for (int iat1_index=0; iat1_index<list_IJ.size(); ++iat1_index)
         {
+			const int iat1 = list_IJ[iat1_index];
             Tk k = kindex_map.at(ik);
             auto& tensor_ao_mo = Csk_ao_mo.at(ik).at(iat1); // C'^\mu (s,m)[k]
             auto& psi_k = map_psi.at(ik);
@@ -303,12 +305,15 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_onthefly(
 		// 2. calculate CVC_mo_k
 		std::map<int, std::map<int, Tensor<Tdata>>> cvc_mo_k_thread;
 #pragma omp for schedule(dynamic, 64) collapse(3)
-		for (const Tk q: q_list)
+		for (int q_index=0; q_index<q_list.size(); ++q_index)
 		{
-			for (const TA mu: list_I)
+			const Tk q=q_list[q_index];
+			for (int mu_index=0; mu_index<list_I.size(); ++mu_index)
 			{
-				for (const TA nu: list_J)
+				const TA mu = list_I[mu_index];
+				for (int nu_index=0; nu_index<list_J.size(); ++nu_index)
 				{	// 2.1 calculate V(q)_{mu,nu} on-the-fly
+					const TA nu = list_J[nu_index];
 					Tensor<Tdata> Vq_mu_nu;
 					const auto& V_mu = Vs.at(mu);
 					const std::vector<TAC> list_nuR = Divide_Atoms::traversal_atom_period(std::vector<TA>{nu}, this->period);
@@ -432,8 +437,9 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_hartree_onthefly(
 			const auto& V_mu = Vs.at(mu);
 			auto& Vq_mu_thread = Vq_thread[mu];
 	#pragma omp for schedule(dynamic)
-			for (const TAC& nu_R : list_JR)
+			for (int nu_R_index=0; nu_R_index < list_JR.size(); ++nu_R_index)
 			{
+				const TAC& nu_R = list_JR[nu_R_index];
 				const Tensor<Tdata>& V_mu_nu_R = Global_Func::find(V_mu, nu_R);
 				if (V_mu_nu_R.empty()) continue;
 				const TA nu = nu_R.first;
@@ -457,10 +463,12 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_hartree_onthefly(
 		// 2 calculate CVC_mo_k
 		std::map<int, std::map<int, Tensor<Tdata>>> cvc_mo_k_thread;
 #pragma omp for schedule(dynamic, 64) collapse(2)
-		for (const TA mu : list_I)
+		for (int mu_index=0; mu_index < list_I.size(); ++mu_index)
 		{
-			for (const int k1: k1_indices)
+			const TA& mu = list_J[mu_index];
+			for (int k1_index=0; k1_index<k1_indices.size(); ++k1_index)
 			{
+				const int k1 = k1_indices[k1_index];
 				// 2.1 calculate C^mu (i,a^*)[k1,k1] on-the-fly
 				const Tensor<Tdata> C_mu_ia = Cs_ao_mo_to_Cs_mo(Cs_ao_mo, map_psi, k1, k1,
 												mu, psi_type[0], psi_type[1], nocc, nvirt, false);

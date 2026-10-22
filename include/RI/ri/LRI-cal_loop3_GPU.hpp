@@ -33,7 +33,7 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 	const std::vector<Label::ab_ab> &labels,
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-	const double fac_add_Ds)
+	const Tdata fac_add_Ds)
 {
 	using namespace Array_Operator;
 
@@ -55,17 +55,14 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 	std::map<TA, omp_lock_t> lock_Ds_result_add_map = LRI_Cal_Aux::init_lock_result(labels, this->parallel->list_A, Ds_result);
 
+	for(const Label::ab_ab &label : labels)
 	{
-		std::map<TA, std::map<TAC, Tensor<Tdata>>> Ds_result_thread;
-
-		for(const Label::ab_ab &label : labels)
+		const std::vector<TA>  list_Aa01_Da = LRI_Cal_Aux::filter_list_map( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].a01, data_wrapper(Label::ab::a).Ds_ab );
+		const std::vector<TAC> list_Ab01_Db = LRI_Cal_Aux::filter_list_map( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].b01, data_wrapper(Label::ab::b).Ds_ab );
+		const std::vector<TAC> list_Aa2_Da  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].a2,  data_wrapper(Label::ab::a).index_Ds_ab[0] );
+		const std::vector<TAC> list_Ab2_Db  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].b2,  data_wrapper(Label::ab::b).index_Ds_ab[0] );
+		switch(label)
 		{
-			const std::vector<TA>  list_Aa01_Da = LRI_Cal_Aux::filter_list_map( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].a01, data_wrapper(Label::ab::a).Ds_ab );
-			const std::vector<TAC> list_Ab01_Db = LRI_Cal_Aux::filter_list_map( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].b01, data_wrapper(Label::ab::b).Ds_ab );
-			const std::vector<TAC> list_Aa2_Da  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].a2,  data_wrapper(Label::ab::a).index_Ds_ab[0] );
-			const std::vector<TAC> list_Ab2_Db  = LRI_Cal_Aux::filter_list_set( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].b2,  data_wrapper(Label::ab::b).index_Ds_ab[0] );
-			switch(label)
-			{
 
 			  // Aab_Aab::a01b01_a01b01
 
@@ -202,7 +199,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b0_a1b1
 
 				case Label::ab_ab::a0b1_a1b0:
@@ -338,7 +335,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b1_a1b0
 
 			  // Aab_Aab::a01b01_a01b2
@@ -480,7 +477,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b0_a1b2
 
 				case Label::ab_ab::a0b1_a1b2:
@@ -620,7 +617,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b1_a1b2
 
 				case Label::ab_ab::a0b2_a1b0:
@@ -760,7 +757,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b2_a1b0
 
 				case Label::ab_ab::a0b2_a1b1:
@@ -900,7 +897,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b2_a1b1
 
 			  // Aab_Aab::a01b01_a2b01
@@ -1042,7 +1039,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b0_a2b1
 
 				case Label::ab_ab::a0b1_a2b0:
@@ -1182,7 +1179,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b1_a2b0
 
 				case Label::ab_ab::a1b0_a2b1:
@@ -1322,7 +1319,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b0_a2b1
 
 				case Label::ab_ab::a1b1_a2b0:
@@ -1462,7 +1459,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b1_a2b0
 
 			  // Aab_Aab::a01b01_a2b2
@@ -1603,7 +1600,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b0_a2b2
 
 				case Label::ab_ab::a0b1_a2b2:
@@ -1742,7 +1739,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b1_a2b2
 
 				case Label::ab_ab::a1b0_a2b2:
@@ -1881,7 +1878,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b0_a2b2
 
 				case Label::ab_ab::a1b1_a2b2:
@@ -2020,7 +2017,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b1_a2b2
 
 			  // Aab_Aab::a01b2_a2b01
@@ -2186,7 +2183,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b2_a2b1
 
 				case Label::ab_ab::a0b2_a2b0:
@@ -2350,7 +2347,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b2_a2b0
 
 				case Label::ab_ab::a0b2_a2b1:
@@ -2514,7 +2511,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b2_a2b1
 
 				case Label::ab_ab::a1b2_a2b0:
@@ -2678,29 +2675,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						rDs_output.h_array.size(), queue);
 					GPU_Backend::sync(queue);
 
-					rDs_output.download(Ds_result, queue);
+					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b2_a2b0
 
-				default:
-					throw std::invalid_argument(std::string(__FILE__)+std::to_string(__LINE__));
-			} // end switch(label)
-		} // end for label
-
-		// 最后结束前必须等待直至加成功
-		LRI_Cal_Aux::add_Ds_omp_wait_map(Ds_result_thread, Ds_result, lock_Ds_result_add_map, fac_add_Ds);
-	} // end #pragma omp parallel
+			default:
+				throw std::invalid_argument(std::string(__FILE__)+std::to_string(__LINE__));
+		} // end switch(label)
+	} // end for label
 
 	LRI_Cal_Aux::destroy_lock(lock_Ds_result_add_map);
 	LRI_Cal_Aux::destroy_Ds_result(Ds_result);
 	#ifdef __MKL_RI
 	mkl_set_num_threads(mkl_threads);
 	#endif
-	//for (const auto &Ds_A : Ds_result)
-	//	for (const auto &Ds_B : Ds_A.second)
-	//	{
-	//		std::ofstream ofs("H_" + std::to_string(Ds_A.first) + "_" + std::to_string(Ds_B.first.first) + ".txt");
-	//		ofs << Ds_B.second << std::endl;
-	//	}
 
 }	// end LRI::cal_loop3()
 

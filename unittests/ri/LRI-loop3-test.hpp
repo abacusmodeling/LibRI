@@ -406,7 +406,7 @@ namespace LRI_Loop3_Test
 			RI::LRI_Cal_Mode::CPU,
 			RI::LRI_Cal_Mode::CPU_fine_grained_lock,
 			#ifdef __GPU_RI
-			, RI::LRI_Cal_Mode::GPU
+			RI::LRI_Cal_Mode::GPU,
 			#endif
 		};
 		for(const RI::LRI_Cal_Mode cal_mode: cal_modes)

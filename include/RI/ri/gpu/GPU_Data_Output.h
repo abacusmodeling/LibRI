@@ -59,7 +59,8 @@ class Output
 
 	void download(
 		std::map<TA, std::map<TAC, Tensor<Tdata_CPU>>> &Ds_result,
-		GPU_Backend::Queue queue) const
+		GPU_Backend::Queue queue,
+		const Tdata_CPU fac) const
 	{
 		std::vector<Tdata_GPU> h_data(this->totalSize);
 		GPU_Backend::download(
@@ -75,9 +76,23 @@ class Output
 
 				Tensor<Tdata_CPU> &D_result = Ds_result[ptrList_A.first][ptrList_B.first];
 				if(D_result.empty())
-					D_result = std::move(D_output);
+				{
+					if(Tdata_CPU(1.0) == fac)
+						D_result = std::move(D_output);
+					else if(Tdata_CPU(-1.0)==fac)
+						D_result = -D_output;
+					else
+						D_result = fac * D_output;
+				}
 				else
-					D_result += D_output;
+				{
+					if(Tdata_CPU(1.0)==fac)
+						D_result += D_output;
+					else if(Tdata_CPU(-1.0)==fac)
+						D_result -= D_output;
+					else
+						D_result += fac * D_output;
+				}
 			}
 		}
 	}
