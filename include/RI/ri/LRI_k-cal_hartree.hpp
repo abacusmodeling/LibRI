@@ -121,9 +121,9 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 #pragma omp for schedule(dynamic) collapse(2)
 		for (int v_index=0; v_index<list_I.size(); v_index++)
 		{
-			const TA v = list_I[v_index];
 			for (int u_index=0; u_index<list_I.size(); u_index++)
 			{
+				const TA v = list_I[v_index];
 				const TA u = list_J[u_index];
 				const std::map<int, Tensor<Tdata>>& D_v_u = Global_Func::find(Ds, v, u);
 				if (D_v_u.empty()) continue;
@@ -205,9 +205,9 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 #pragma omp parallel for schedule(dynamic) collapse(2)
 	for (int s_index=0; s_index<list_I.size(); s_index++)
 	{
-		const TA s = list_I[s_index];
 		for (int t_index=0; t_index<list_J.size(); t_index++)
 		{
+			const TA s = list_I[s_index];
 			const TA t = list_J[t_index];
 			auto& hartree_st = hartree_k.at(s).at(t);
 			const std::map<int, Tensor<Tdata>>& Csk_s_t = Global_Func::find(Csk, s, t);

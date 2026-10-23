@@ -39,6 +39,23 @@ namespace Global_Func
 			ptr_out[i] = Global_Func::convert<Tout>(ptr_in[i]);
 		return t_out;
 	}
+
+	template<typename T>
+	struct Tensor_Tdata;
+
+	template<typename Tdata>
+	struct Tensor_Tdata<Tensor<Tdata>>
+	{
+		using type = Tdata;
+	};
+
+	template<typename Tkey, typename Tvalue, typename TComparator, typename TAllocator>
+	struct Tensor_Tdata<std::map<Tkey, Tvalue, TComparator, TAllocator>>
+		: Tensor_Tdata<Tvalue>
+	{};
+
+	template<typename T>
+	using Tensor_Tdata_t = typename Tensor_Tdata<T>::type;
 }
 
 }
