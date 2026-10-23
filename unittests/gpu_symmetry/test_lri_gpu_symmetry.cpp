@@ -149,7 +149,7 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
         lri.filter_atom = std::make_shared<RI::Filter_Atom<int, AtomCell>>();
         lri.cal_mode = RI::LRI_Cal_Mode::CPU;
         Tensors<T> full;
-        lri.cal_loop3(labels, full, T(1));
+        lri.cal_loop3(labels, full, 1.0);
         if (full.size() != 2)
             throw std::runtime_error("CPU reference must contain both atoms");
         for (const auto& left : full)
@@ -178,7 +178,7 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                                             + std::to_string(static_cast<int>(mode));
                 std::cout << "CHECK " << context << std::endl;
                 Tensors<T> actual;
-                lri.cal_loop3(labels, actual, T(1));
+                lri.cal_loop3(labels, actual, 1.0);
                 compare(actual, expected, context);
 
                 // Seed every block, including those outside the selected sector.
@@ -192,7 +192,7 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                 double sum = 0;
                 for (const double factor : {-0.5, 0.0, 1.25})
                 {
-                    lri.cal_loop3(labels, actual, T(factor));
+                    lri.cal_loop3(labels, actual, factor);
                     sum += factor;
                     Tensors<T> accumulated = copy_tensors(seed);
                     for (const auto& left : expected)
