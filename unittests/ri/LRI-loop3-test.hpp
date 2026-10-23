@@ -13,6 +13,11 @@
 #include"unittests/print_stl.h"
 #include"unittests/global/Tensor-test.h"
 
+#include<cmath>
+#include<complex>
+#include<limits>
+#include<stdexcept>
+#include<vector>
 #include<map>
 #include<unordered_map>
 #include<iostream>
@@ -397,6 +402,89 @@ namespace LRI_Loop3_Test
 	
 
 	template<typename Tdata>
+	void test_loop3_accumulation(const RI::LRI_Cal_Mode cal_mode)
+	{
+		using LRI = RI::LRI<int,int,1,Tdata>;
+		using Treal = typename LRI::Tdata_real;
+		using T_Ds = std::map<int, std::map<typename LRI::TAC, RI::Tensor<Tdata>>>;
+		const typename LRI::TAC key = {0,{0}};
+		const auto labels = RI::Global_Func::to_vector(RI::Label::array_ab_ab);
+		const auto make_tensor = [](const RI::Shape_Vector &shape)
+		{
+			RI::Tensor<Tdata> D(shape);
+			for(std::size_t i=0; i<D.data->size(); ++i)
+				(*D.data)[i] = RI::Global_Func::convert<Tdata>(
+					std::complex<Treal>(0.5+0.07*i, 0.1+0.03*i));
+			return D;
+		};
+
+		LRI lri;
+		lri.set_parallel(MPI_COMM_SELF, {{0,{0.0}}}, {{{1.0}}}, {1}, labels);
+		for(const RI::Label::ab label : RI::Label::array_ab)
+		{
+			const bool coefficient = label==RI::Label::ab::a || label==RI::Label::ab::b;
+			T_Ds Ds;
+			Ds[0][key] = make_tensor(coefficient ? RI::Shape_Vector{2,2,2} : RI::Shape_Vector{2,2});
+			lri.set_tensors_map2(Ds, {label});
+		}
+
+		const RI::Tensor<Tdata> seed = make_tensor({2,2});
+		const Treal tolerance = 128*std::numeric_limits<Treal>::epsilon();
+		std::vector<std::vector<RI::Label::ab_ab>> label_groups;
+		for(const RI::Label::ab_ab label : labels)
+			label_groups.push_back({label});
+		label_groups.push_back(labels);
+
+		for(const auto &cal_labels : label_groups)
+		{
+			T_Ds reference;
+			lri.cal_mode = RI::LRI_Cal_Mode::CPU;
+			lri.cal_loop3(cal_labels, reference);
+			const RI::Tensor<Tdata> contribution = reference.at(0).at(key).copy();
+			const Treal norm = contribution.norm(2);
+			if(!std::isfinite(norm) || norm==0)
+				throw std::runtime_error("Invalid CPU reference contraction");
+
+			lri.cal_mode = cal_mode;
+			for(const bool seeded : {false, true})
+			{
+				T_Ds result;
+				// Tensor copies share storage unless copy() is used explicitly.
+				if(seeded)
+					result[0][key] = seed.copy();
+				Treal accumulated_factor = 0, accumulated_magnitude = 0;
+				for(const double factor : {0.0, -1.0, 1.0, 1.0, -1.0, 0.5, 0.0, -0.5, 0.3})
+				{
+					lri.cal_loop3(cal_labels, result, factor);
+					accumulated_factor += Treal(factor);
+					accumulated_magnitude += std::abs(Treal(factor));
+					const RI::Tensor<Tdata> &actual = result.at(0).at(key);
+					if(result.size()!=1 || result.at(0).size()!=1 || actual.shape.size()!=2
+						|| actual.shape[0]!=2 || actual.shape[1]!=2)
+						throw std::runtime_error("Unexpected contraction output shape");
+					for(std::size_t i=0; i<seed.data->size(); ++i)
+					{
+						const Tdata initial = seeded ? (*seed.data)[i] : Tdata(0);
+						const Tdata expected = initial + accumulated_factor*(*contribution.data)[i];
+						const Treal error = std::abs((*actual.data)[i] - expected);
+						const Treal scale = 1 + std::abs(initial)
+							+ accumulated_magnitude*std::abs((*contribution.data)[i]);
+						if(!std::isfinite(error) || error>tolerance*scale)
+						{
+							std::cerr<<RI::Label_Tools::get_name(cal_labels)
+								<<" mode="<<static_cast<int>(cal_mode)<<" seeded="<<seeded
+								<<" factor="<<factor<<" element="<<i<<" error="<<error<<std::endl;
+							throw std::runtime_error("Accumulation differs from the CPU reference");
+						}
+					}
+				}
+			}
+		}
+		std::cout<<"Accumulation: all 18 contractions and their sum passed, mode="<<static_cast<int>(cal_mode)<<std::endl;
+	}
+
+
+	template<typename Tdata>
 	void main(int argc, char *argv[])
 	{
 		int mpi_init_provide;
@@ -406,11 +494,14 @@ namespace LRI_Loop3_Test
 			RI::LRI_Cal_Mode::CPU,
 			RI::LRI_Cal_Mode::CPU_fine_grained_lock,
 			#ifdef __GPU_RI
-			, RI::LRI_Cal_Mode::GPU
+			RI::LRI_Cal_Mode::GPU,
 			#endif
 		};
 		for(const RI::LRI_Cal_Mode cal_mode: cal_modes)
+		{
 			test_loop3<Tdata>(cal_mode);
+			test_loop3_accumulation<Tdata>(cal_mode);
+		}
 
 		MPI_Finalize();
 	}
