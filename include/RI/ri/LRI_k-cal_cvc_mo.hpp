@@ -133,9 +133,9 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_Csk_ao_mo(
 #pragma omp parallel for schedule(static) collapse(2)
     for (int ik_index=0; ik_index<k_indices.size(); ++ik_index)
     {
-		const int ik = k_indices[ik_index];
         for (int iat1_index=0; iat1_index<list_IJ.size(); ++iat1_index)
         {
+			const int ik = k_indices[ik_index];
 			const int iat1 = list_IJ[iat1_index];
             Tk k = kindex_map.at(ik);
             auto& tensor_ao_mo = Csk_ao_mo.at(ik).at(iat1); // C'^\mu (s,m)[k]
@@ -307,12 +307,12 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_onthefly(
 #pragma omp for schedule(dynamic, 64) collapse(3)
 		for (int q_index=0; q_index<q_list.size(); ++q_index)
 		{
-			const Tk q=q_list[q_index];
 			for (int mu_index=0; mu_index<list_I.size(); ++mu_index)
 			{
-				const TA mu = list_I[mu_index];
 				for (int nu_index=0; nu_index<list_J.size(); ++nu_index)
 				{	// 2.1 calculate V(q)_{mu,nu} on-the-fly
+					const Tk q=q_list[q_index];
+					const TA mu = list_I[mu_index];
 					const TA nu = list_J[nu_index];
 					Tensor<Tdata> Vq_mu_nu;
 					const auto& V_mu = Vs.at(mu);
@@ -465,9 +465,9 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_hartree_onthefly(
 #pragma omp for schedule(dynamic, 64) collapse(2)
 		for (int mu_index=0; mu_index < list_I.size(); ++mu_index)
 		{
-			const TA& mu = list_J[mu_index];
 			for (int k1_index=0; k1_index<k1_indices.size(); ++k1_index)
 			{
+				const TA& mu = list_J[mu_index];
 				const int k1 = k1_indices[k1_index];
 				// 2.1 calculate C^mu (i,a^*)[k1,k1] on-the-fly
 				const Tensor<Tdata> C_mu_ia = Cs_ao_mo_to_Cs_mo(Cs_ao_mo, map_psi, k1, k1,
