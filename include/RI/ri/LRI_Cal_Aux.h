@@ -95,7 +95,7 @@ namespace LRI_Cal_Aux
 		if (D_result.empty())
 		{
 			if(Tdata(1.0)==fac)
-				D_result = D_add;
+				D_result = D_add.copy();
 			else if(Tdata(-1.0)==fac)
 				D_result = -D_add;
 			else
