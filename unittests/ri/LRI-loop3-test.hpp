@@ -402,7 +402,33 @@ namespace LRI_Loop3_Test
 	
 
 	template<typename Tdata>
-	void test_loop3_accumulation(const RI::LRI_Cal_Mode cal_mode)
+	void test_const_tensor_accumulation()
+	{
+		using Treal = RI::Global_Func::To_Real_t<Tdata>;
+		RI::Tensor<Tdata> input({2});
+		for(std::size_t i=0; i<2; ++i)
+			(*input.data)[i] = RI::Global_Func::convert<Tdata>(std::complex<Treal>(i+1, 0.5));
+		const RI::Tensor<Tdata> &source = input;
+		RI::Tensor<Tdata> first, second;
+		RI::LRI_Cal_Aux::add_Ds(source, first, Tdata(1));
+		RI::LRI_Cal_Aux::add_Ds(source, second, Tdata(1));
+		RI::LRI_Cal_Aux::add_Ds(source, first, Tdata(2));
+		for(std::size_t i=0; i<2; ++i)
+		{
+			const Tdata expected = RI::Global_Func::convert<Tdata>(std::complex<Treal>(i+1, 0.5));
+			if((*source.data)[i]!=expected || (*second.data)[i]!=expected
+				|| (*first.data)[i]!=Tdata(3)*expected)
+				throw std::runtime_error("Accumulating a const tensor changed its input or another result");
+		}
+		std::cout<<"PASS const tensor accumulation preserves input and independent results"<<std::endl;
+	}
+
+
+	template<typename Tdata>
+	void test_loop3_accumulation(
+		const RI::LRI_Cal_Mode cal_mode,
+		const std::vector<Tdata> &factors = {Tdata(0), Tdata(-1), Tdata(1), Tdata(1),
+			Tdata(-1), Tdata(0.5), Tdata(0), Tdata(-0.5), Tdata(0.3)})
 	{
 		using LRI = RI::LRI<int,int,1,Tdata>;
 		using Treal = typename LRI::Tdata_real;
@@ -452,12 +478,13 @@ namespace LRI_Loop3_Test
 				// Tensor copies share storage unless copy() is used explicitly.
 				if(seeded)
 					result[0][key] = seed.copy();
-				Treal accumulated_factor = 0, accumulated_magnitude = 0;
-				for(const double factor : {0.0, -1.0, 1.0, 1.0, -1.0, 0.5, 0.0, -0.5, 0.3})
+				Tdata accumulated_factor = 0;
+				Treal accumulated_magnitude = 0;
+				for(const Tdata factor : factors)
 				{
 					lri.cal_loop3(cal_labels, result, factor);
-					accumulated_factor += Treal(factor);
-					accumulated_magnitude += std::abs(Treal(factor));
+					accumulated_factor += factor;
+					accumulated_magnitude += std::abs(factor);
 					const RI::Tensor<Tdata> &actual = result.at(0).at(key);
 					if(result.size()!=1 || result.at(0).size()!=1 || actual.shape.size()!=2
 						|| actual.shape[0]!=2 || actual.shape[1]!=2)
@@ -490,6 +517,8 @@ namespace LRI_Loop3_Test
 		int mpi_init_provide;
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 
+		test_const_tensor_accumulation<Tdata>();
+
 		const std::vector<RI::LRI_Cal_Mode> cal_modes = {
 			RI::LRI_Cal_Mode::CPU,
 			RI::LRI_Cal_Mode::CPU_fine_grained_lock,
@@ -501,6 +530,12 @@ namespace LRI_Loop3_Test
 		{
 			test_loop3<Tdata>(cal_mode);
 			test_loop3_accumulation<Tdata>(cal_mode);
+			// Exercise imaginary coefficients, including the first write to an empty result.
+			using Treal = RI::Global_Func::To_Real_t<Tdata>;
+			test_loop3_accumulation<Tdata>(cal_mode, {
+				RI::Global_Func::convert<Tdata>(std::complex<Treal>(0.25, 0.5)),
+				RI::Global_Func::convert<Tdata>(std::complex<Treal>(0, -1)),
+				RI::Global_Func::convert<Tdata>(std::complex<Treal>(-0.25, 0.5))});
 		}
 
 		MPI_Finalize();

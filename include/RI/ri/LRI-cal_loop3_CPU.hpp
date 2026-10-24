@@ -22,7 +22,7 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 	const std::vector<Label::ab_ab> &labels,
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-	const double fac_add_Ds)
+	const Tdata fac_add_Ds)
 {
 	using namespace Array_Operator;
 

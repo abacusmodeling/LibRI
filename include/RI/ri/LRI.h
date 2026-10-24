@@ -72,23 +72,23 @@ public:
 	void cal_loop3(
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-		const double fac_add_Ds = 1.0);
+		const Tdata fac_add_Ds = Tdata(1.0));
 
 	void cal_loop3_CPU(
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-		const double fac_add_Ds = 1.0);
+		const Tdata fac_add_Ds = Tdata(1.0));
 
 	void cal_loop3_CPU_fine_grained_lock(
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-		const double fac_add_Ds = 1.0);
+		const Tdata fac_add_Ds = Tdata(1.0));
 	
 	#ifdef __GPU_RI
 	void cal_loop3_GPU(
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-		const double fac_add_Ds = 1.0);
+		const Tdata fac_add_Ds = Tdata(1.0));
 	#endif
 
 public:

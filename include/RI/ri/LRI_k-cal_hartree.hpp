@@ -63,8 +63,9 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 			const auto& V_mu = Vs.at(mu);
 			auto& Mu_Vq_nu_thread = Vq_thread[mu];
 	#pragma omp for schedule(dynamic) nowait
-			for (const TAC& nu_R : list_IJR)
+			for (int nu_R_index=0; nu_R_index<list_IJR.size(); nu_R_index++)
 			{
+				const TAC& nu_R = list_IJR[nu_R_index];
 				const Tensor<Tdata>& V_mu_nu_R = Global_Func::find(V_mu, nu_R);
 				if (V_mu_nu_R.empty()) continue;
 				const TA nu = nu_R.first;
@@ -83,8 +84,9 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 			const auto& Cs_mu = Cs.at(mu);
 			auto& Mu_C_nu_k_thread = Csk_thread[mu];
 	#pragma omp for schedule(dynamic) nowait
-			for (const TAC& nu_R : list_IJR)
+			for (int nu_R_index=0; nu_R_index<list_IJR.size(); nu_R_index++)
 			{
+				const TAC& nu_R = list_IJR[nu_R_index];
 				const Tensor<Tdata>& Cs_mu_nu_R = Global_Func::find(Cs_mu, nu_R);
 				if (Cs_mu_nu_R.empty()) continue;
 				const TA nu = nu_R.first;
@@ -117,10 +119,12 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 		// 3. calculate M_nu =\sum_{uvk} (C^nu_u_v[k] + C^nu*_v_u[k]) D_v_u[k]		
         std::map<TA, Tensor<Tdata>> M_nu_thread;
 #pragma omp for schedule(dynamic) collapse(2)
-		for (const TA v : list_I)
+		for (int v_index=0; v_index<list_I.size(); v_index++)
 		{
-			for (const TA u : list_J)
+			for (int u_index=0; u_index<list_J.size(); u_index++)
 			{
+				const TA v = list_I[v_index];
+				const TA u = list_J[u_index];
 				const std::map<int, Tensor<Tdata>>& D_v_u = Global_Func::find(Ds, v, u);
 				if (D_v_u.empty()) continue;
 				const std::size_t nwt1 = D_v_u.begin()->second.shape[0];
@@ -199,10 +203,12 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 #endif
 
 #pragma omp parallel for schedule(dynamic) collapse(2)
-	for (const TA s : list_I)
+	for (int s_index=0; s_index<list_I.size(); s_index++)
 	{
-		for (const TA t : list_J)
+		for (int t_index=0; t_index<list_J.size(); t_index++)
 		{
+			const TA s = list_I[s_index];
+			const TA t = list_J[t_index];
 			auto& hartree_st = hartree_k.at(s).at(t);
 			const std::map<int, Tensor<Tdata>>& Csk_s_t = Global_Func::find(Csk, s, t);
 			const std::map<int, Tensor<Tdata>>& Csk_t_s = Global_Func::find(Csk, t, s);

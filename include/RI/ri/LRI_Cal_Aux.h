@@ -9,6 +9,7 @@
 #include "Label.h"
 #include "../global/Map_Operator.h"
 #include "../global/Array_Operator.h"
+#include "../global/Global_Func-2-Tensor.h"
 #include "../parallel/Parallel_LRI.h"
 
 #include <map>
@@ -61,43 +62,53 @@ namespace LRI_Cal_Aux
 	inline void add_Ds(
 		Tensor<Tdata> &&D_add,
 		Tensor<Tdata> &D_result,
-		const double fac = 1.0)
+		const Tdata fac = Tdata(1.0))
 	{
 		if(D_result.empty())
 		{
-			if(1.0==fac)
+			if(Tdata(1.0)==fac)
 				D_result = std::move(D_add);
-			else if(-1.0==fac)
+			else if(Tdata(-1.0)==fac)
 				D_result = -D_add;
 			else
-				D_result = Tdata(fac) * D_add;
+				D_result = fac * D_add;
 		}
 		else
 		{
-			if(1.0==fac)
+			if(Tdata(1.0)==fac)
 				D_result += D_add;
-			else if(-1.0==fac)
+			else if(Tdata(-1.0)==fac)
 				D_result -= D_add;
 			else
-				D_result += Tdata(fac) * D_add;
+				Blas_Interface::axpy(fac, D_add, D_result);
 		}
 	}
 
-	// D_result = D_add * scale  (init)
-	// or D_result += D_add * scale (accumulate via BLAS axpy)
+	// D_result = D_add * fac  (init)
+	// or D_result += D_add * fac (accumulate via BLAS axpy)
 	template<typename Tdata>
 	inline void add_Ds(
 		const Tensor<Tdata> &D_add,
 		Tensor<Tdata> &D_result,
-		const Tdata scale)
+		const Tdata fac = Tdata(1.0))
 	{
 		if (D_result.empty())
 		{
-			D_result = D_add * scale;
+			if(Tdata(1.0)==fac)
+				D_result = D_add.copy();
+			else if(Tdata(-1.0)==fac)
+				D_result = -D_add;
+			else
+				D_result = fac * D_add;
 		}
 		else
 		{
-			Blas_Interface::axpy(scale, D_add, D_result);
+			if(Tdata(1.0)==fac)
+				D_result += D_add;
+			else if(Tdata(-1.0)==fac)
+				D_result -= D_add;
+			else
+				Blas_Interface::axpy(fac, D_add, D_result);
 		}
 	}
 
@@ -105,11 +116,11 @@ namespace LRI_Cal_Aux
 	void add_Ds(
 		std::map<Tkey, Tvalue> &&Ds_add,
 		std::map<Tkey, Tvalue> &Ds_result,
-		const double fac = 1.0)
+		const Global_Func::Tensor_Tdata_t<Tvalue> fac = Global_Func::Tensor_Tdata_t<Tvalue>(1.0))
 	{
 		if(Ds_add.empty())
 			return;
-		if(Ds_result.empty() && 1.0==fac)
+		if(Ds_result.empty() && Global_Func::Tensor_Tdata_t<Tvalue>(1.0)==fac)
 			Ds_result = std::move(Ds_add);
 		else
 		{
@@ -152,7 +163,7 @@ namespace LRI_Cal_Aux
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result_thread,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 		omp_lock_t &lock_Ds_result_add,
-		const double &fac)
+		const Tdata fac = Tdata(1.0))
 	{
 		if( !Ds_result_thread.empty() && omp_test_lock(&lock_Ds_result_add) )
 		{
@@ -167,7 +178,7 @@ namespace LRI_Cal_Aux
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &&Ds_result_thread,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 		omp_lock_t &lock_Ds_result_add,
-		const double &fac)
+		const Tdata fac = Tdata(1.0))
 	{
 		if(!Ds_result_thread.empty())
 		{
@@ -185,7 +196,7 @@ namespace LRI_Cal_Aux
 		std::map<Tkey, Tvalue, TComparator>& Ds_result_thread,
 		std::map<Tkey, Tvalue, TComparator>& Ds_result,
 		std::map<Tkey, omp_lock_t> &lock_Ds_result_add_map,
-		const double &fac)
+		const Global_Func::Tensor_Tdata_t<Tvalue> fac = Global_Func::Tensor_Tdata_t<Tvalue>(1.0))
 	{
 		for(auto ptr=Ds_result_thread.begin(); ptr!=Ds_result_thread.end(); )
 		{
@@ -208,7 +219,7 @@ namespace LRI_Cal_Aux
 		std::map<Tkey0, std::map<Tkey1, Tvalue, TComparator1>, TComparator0> &Ds_result_thread,
 		std::map<Tkey0, std::map<Tkey1, Tvalue, TComparator1>, TComparator0> &Ds_result,
 		std::map<Tkey0, std::map<Tkey1, omp_lock_t>> &lock_Ds_result_add_map,
-		const double &fac)
+		const Global_Func::Tensor_Tdata_t<Tvalue> fac = Global_Func::Tensor_Tdata_t<Tvalue>(1.0))
 	{
 		for(auto ptr=Ds_result_thread.begin(); ptr!=Ds_result_thread.end(); )
 		{
@@ -228,7 +239,7 @@ namespace LRI_Cal_Aux
 		std::map<Tkey, Tvalue, TComparator>& Ds_result_thread,
 		std::map<Tkey, Tvalue, TComparator>& Ds_result,
 		std::map<Tkey, Tlock> &lock_Ds_result_add_map,
-		const double &fac)
+		const Global_Func::Tensor_Tdata_t<Tvalue> fac = Global_Func::Tensor_Tdata_t<Tvalue>(1.0))
 	{
 		if(Ds_result_thread.empty())
 			return;

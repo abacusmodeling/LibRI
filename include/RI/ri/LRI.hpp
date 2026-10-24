@@ -32,7 +32,7 @@ template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3(
 	const std::vector<Label::ab_ab> &labels,
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
-	const double fac_add_Ds)
+	const Tdata fac_add_Ds)
 {
 	if(this->cal_mode == LRI_Cal_Mode::CPU)
 		this->cal_loop3_CPU(labels, Ds_result, fac_add_Ds);

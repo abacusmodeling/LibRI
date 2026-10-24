@@ -61,7 +61,7 @@ class Output
 	void download(
 		std::map<TA, std::map<TAC, Tensor<Tdata_CPU>>> &Ds_result,
 		GPU_Backend::Queue queue,
-		const double fac_add_Ds = 1.0) const
+		const Tdata_CPU fac) const
 	{
 		std::vector<Tdata_GPU> h_data(this->totalSize);
 		GPU_Backend::download(
@@ -76,7 +76,7 @@ class Output
 				download_data_impl(D_output, h_data, pack, Same_data_layout());
 
 				Tensor<Tdata_CPU> &D_result = Ds_result[ptrList_A.first][ptrList_B.first];
-				LRI_Cal_Aux::add_Ds(std::move(D_output), D_result, fac_add_Ds);
+				LRI_Cal_Aux::add_Ds(std::move(D_output), D_result, fac);
 			}
 		}
 	}
