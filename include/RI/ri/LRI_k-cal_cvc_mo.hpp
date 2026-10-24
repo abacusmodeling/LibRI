@@ -467,7 +467,7 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvc_mo_k_hartree_onthefly(
 		{
 			for (int k1_index=0; k1_index<k1_indices.size(); ++k1_index)
 			{
-				const TA& mu = list_J[mu_index];
+				const TA& mu = list_I[mu_index];
 				const int k1 = k1_indices[k1_index];
 				// 2.1 calculate C^mu (i,a^*)[k1,k1] on-the-fly
 				const Tensor<Tdata> C_mu_ia = Cs_ao_mo_to_Cs_mo(Cs_ao_mo, map_psi, k1, k1,

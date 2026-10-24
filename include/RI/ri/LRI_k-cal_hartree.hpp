@@ -121,7 +121,7 @@ LRI_k<TA, Tcell, Ndim, Tdata>::cal_cvcd_k_hartree(
 #pragma omp for schedule(dynamic) collapse(2)
 		for (int v_index=0; v_index<list_I.size(); v_index++)
 		{
-			for (int u_index=0; u_index<list_I.size(); u_index++)
+			for (int u_index=0; u_index<list_J.size(); u_index++)
 			{
 				const TA v = list_I[v_index];
 				const TA u = list_J[u_index];

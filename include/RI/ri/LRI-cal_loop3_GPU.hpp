@@ -53,8 +53,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 	GPU_Backend::Context gpu_context(this->mpi_comm);
 	GPU_Backend::Queue &queue = gpu_context.queue();
 
-	std::map<TA, omp_lock_t> lock_Ds_result_add_map = LRI_Cal_Aux::init_lock_result(labels, this->parallel->list_A, Ds_result);
-
 	for(const Label::ab_ab &label : labels)
 	{
 		const std::vector<TA>  list_Aa01_Da = LRI_Cal_Aux::filter_list_map( this->parallel->list_A[Label_Tools::to_Aab_Aab(label)].a01, data_wrapper(Label::ab::a).Ds_ab );
