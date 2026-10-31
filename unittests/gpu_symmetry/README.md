@@ -14,7 +14,9 @@ cmake --build build-symmetry --parallel 2
 ctest --test-dir build-symmetry --output-on-failure
 ```
 
-The GPU test requires one GPU, one MPI rank, and DDLA built for CUDA. Omit
+The GPU test requires one GPU, one MPI rank, and LibDDLA 0.0.6 or newer built for CUDA. The DDLA package is discovered in
+either `lib/cmake/LibDDLA` or `lib64/cmake/LibDDLA`; only its public headers
+and imported CMake target are used. Omit
 `ENABLE_GPU` and `DDLA_ROOT` to check a CPU-only build. The library headers can
 be selected independently with `LIBRI_ROOT`, allowing the same test to reproduce
 failures in an earlier revision.
