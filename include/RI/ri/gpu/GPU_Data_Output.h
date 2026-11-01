@@ -46,7 +46,8 @@ class Output
 
 	void upload(GPU_Backend::Queue queue)
 	{
-		GPU_Backend::allocate(&this->d_data, this->totalSize);
+		this->queue_ = queue;
+		GPU_Backend::allocate(&this->d_data, this->totalSize, queue);
 		GPU_Backend::memset(
 			this->d_data, 0, totalSize * sizeof(Tdata_GPU), queue);
 
@@ -54,7 +55,7 @@ class Output
 		std::vector<Tdata_GPU*> d_array_(batchCount);							// 记录每个batch的 d_data 指针（CPU）
 		for (std::size_t i = 0; i < batchCount; i++)
 			d_array_[i] = this->d_data + this->h_array[i].pos;
-		GPU_Backend::allocate(&this->d_array, batchCount);
+		GPU_Backend::allocate(&this->d_array, batchCount, queue);
 		GPU_Backend::upload(batchCount, d_array_.data(), this->d_array, queue);
 	}
 
@@ -83,8 +84,8 @@ class Output
 
 	~Output()
 	{
-		GPU_Backend::free(this->d_data);
-		GPU_Backend::free(this->d_array);
+		GPU_Backend::free(this->d_data, this->queue_);
+		GPU_Backend::free(this->d_array, this->queue_);
 	}
 
   private:
@@ -119,6 +120,10 @@ class Output
 	std::vector<Pack> h_array;					// 记录每个batch的Pack
 	Tdata_GPU **d_array = nullptr;					// 记录每个batch的 d_data 指针（GPU）
 	std::map<TA, std::map<TAC, Pack>> ptrList;	// 记录每个原子对的Pack
+
+  private:
+	// The context must outlive the buffers allocated on its queue.
+	GPU_Backend::Queue queue_ = nullptr;
 };
 
 }

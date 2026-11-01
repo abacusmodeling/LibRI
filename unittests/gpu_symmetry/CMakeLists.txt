@@ -20,13 +20,10 @@ target_link_libraries(test_lri_gpu_symmetry PRIVATE
   MPI::MPI_CXX OpenMP::OpenMP_CXX ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
 
 if(ENABLE_GPU)
-  find_package(CUDAToolkit REQUIRED)
-  find_library(DDLA_LIBRARY NAMES ddla PATHS "${DDLA_ROOT}/lib" REQUIRED NO_DEFAULT_PATH)
+  find_package(LibDDLA 0.0.6 CONFIG REQUIRED HINTS "${DDLA_ROOT}")
   target_compile_features(test_lri_gpu_symmetry PRIVATE cxx_std_17)
-  target_compile_definitions(test_lri_gpu_symmetry PRIVATE __GPU_RI __DDLA_RI DDLA_USE_CUDA)
-  target_include_directories(test_lri_gpu_symmetry PRIVATE "${DDLA_ROOT}/include")
-  target_link_libraries(test_lri_gpu_symmetry PRIVATE
-    ${DDLA_LIBRARY} CUDA::cudart CUDA::cublas CUDA::curand CUDA::cusolver)
+  target_compile_definitions(test_lri_gpu_symmetry PRIVATE __GPU_RI __DDLA_RI)
+  target_link_libraries(test_lri_gpu_symmetry PRIVATE ddla::ddla)
 endif()
 
 enable_testing()

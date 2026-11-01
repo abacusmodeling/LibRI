@@ -63,11 +63,12 @@ class Input
 	// 将对应的 C, V, D 放在 d_Cs, d_Vs, d_Ds 上
 	void upload(GPU_Backend::Queue queue)
 	{
+		this->queue_ = queue;
 		std::vector<std::size_t> h_data_begin(this->h_data.size()+1, 0);
 		for(std::size_t i=1; i<h_data_begin.size(); ++i)
 			h_data_begin[i] = h_data_begin[i-1] + this->h_data[i-1].size();
 
-		GPU_Backend::allocate(&this->d_data, h_data_begin.back());
+		GPU_Backend::allocate(&this->d_data, h_data_begin.back(), queue);
 		for(std::size_t i=0; i<this->h_data.size(); ++i)
 			GPU_Backend::upload(
 				this->h_data[i].size(), this->h_data[i].data(),
@@ -77,14 +78,14 @@ class Input
 		std::vector<Tdata_GPU*> d_array_(batchCount);							// 记录每个batch的 d_data 指针（CPU）
 		for(std::size_t i=0; i<batchCount; ++i)
 			d_array_[i] = this->d_data + this->h_array[i].pos + h_data_begin[this->h_array[i].thread_num];
-		GPU_Backend::allocate(&this->d_array, batchCount);
+		GPU_Backend::allocate(&this->d_array, batchCount, queue);
 		GPU_Backend::upload(batchCount, d_array_.data(), this->d_array, queue);
 	}
 
 	~Input()
 	{
-		GPU_Backend::free(this->d_data);
-		GPU_Backend::free(this->d_array);
+		GPU_Backend::free(this->d_data, this->queue_);
+		GPU_Backend::free(this->d_array, this->queue_);
 	}
 
   private:
@@ -119,6 +120,10 @@ class Input
 	std::vector<Pack> h_array;					// 记录每个batch的Pack
 	std::map<TA, std::map<TAC, Pack>> ptrList;	// 记录每个原子对的Pack
 	std::vector<bool> tensor_insert;			// 记录是否当前张量需要insert_data
+
+  private:
+	// The context must outlive the buffers allocated on its queue.
+	GPU_Backend::Queue queue_ = nullptr;
 };
 
 }

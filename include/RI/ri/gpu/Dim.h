@@ -27,14 +27,15 @@ class Dim
 
 	void upload(GPU_Backend::Queue queue)
 	{
-		GPU_Backend::allocate(&this->d_m, this->shapes.size() + 1);
+		this->queue_ = queue;
+		GPU_Backend::allocate(&this->d_m, this->shapes.size() + 1, queue);
 		GPU_Backend::upload(
 			this->shapes.size(), this->shapes.data(), this->d_m, queue);
 	}
 
 	~Dim()
 	{
-		GPU_Backend::free(this->d_m);
+		GPU_Backend::free(this->d_m, this->queue_);
 	}
 
 	int* data() const
@@ -44,6 +45,10 @@ class Dim
 
 	std::vector<int> shapes;
 	int* d_m = nullptr;
+
+  private:
+	// The context must outlive the buffers allocated on its queue.
+	GPU_Backend::Queue queue_ = nullptr;
 };
 
 
