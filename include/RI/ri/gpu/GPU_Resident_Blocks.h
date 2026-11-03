@@ -29,8 +29,16 @@ class Resident_Blocks
     using Block_Map = std::map<TA, std::map<TAC, Tdata_GPU*>>;
 
     explicit Resident_Blocks(const MPI_Comm &communicator)
+        : Resident_Blocks(std::make_shared<GPU_Backend::Context>(communicator)) {}
+
+    // Detach tensor values into an empty cache, retaining the established MPI/GPU context.
+    Resident_Blocks(const Resident_Blocks &other)
+        : Resident_Blocks(other.context) {}
+
+  private:
+    explicit Resident_Blocks(const std::shared_ptr<GPU_Backend::Context> &context_in)
+        : context(context_in)
     {
-        this->context.reset(new GPU_Backend::Context(communicator));
 #ifdef __DDLA_RI
         std::size_t free_bytes = 0;
         std::size_t total_bytes = 0;
@@ -42,6 +50,7 @@ class Resident_Blocks
 #endif
     }
 
+  public:
     GPU_Backend::Queue& queue() { return this->context->queue(); }
 
     // If caches hits, return the key-address table;
@@ -123,7 +132,7 @@ class Resident_Blocks
             dest[i] = GPU_Backend::data_to_GPU(source[i]);
     }
 
-    std::unique_ptr<GPU_Backend::Context> context;
+    std::shared_ptr<GPU_Backend::Context> context;
     std::map<Key, std::unique_ptr<Pack>> packs;
     std::size_t budget_bytes = 0;
     std::size_t used_bytes = 0;
