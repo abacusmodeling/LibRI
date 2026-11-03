@@ -106,7 +106,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 	// so the second call hits catche and return the address map built at the first call, no repeated upload.
 	const Resident_Map *resident_a = resident_for(Label::ab::a, 0, data_wrapper(Label::ab::a).Ds_ab);
 	const Resident_Map *resident_b = resident_for(Label::ab::b, 0, data_wrapper(Label::ab::b).Ds_ab);
-	const Resident_Map *resident_v = resident_for(Label::ab::a0b0, 0, data_wrapper(Label::ab::a0b0).Ds_ab);
+	// Evaluate the source only when this call needs a0b0; other labels need not register it.
+	bool needs_v = false;
+	for(const Label::ab_ab label : labels)
+		needs_v = needs_v || label == Label::ab_ab::a0b0_a1b1
+		                  || label == Label::ab_ab::a0b0_a1b2
+		                  || label == Label::ab_ab::a0b0_a2b1
+		                  || label == Label::ab_ab::a0b0_a2b2;
+	const Resident_Map *resident_v = resident && needs_v
+		? resident_for(Label::ab::a0b0, 0, data_wrapper(Label::ab::a0b0).Ds_ab)
+		: nullptr;
 	const Resident_Map *resident_a_transpose = Ds_a_transpose.empty()
 		? nullptr : resident_for(Label::ab::a, 1, Ds_a_transpose);
 	const bool same_c_name = this->data_ab_name.at(Label::ab::a) == this->data_ab_name.at(Label::ab::b);
