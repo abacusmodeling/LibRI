@@ -96,6 +96,9 @@ public:
 		parallel = std::make_shared<Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>>();
 	std::unordered_map< Label::ab, RI_Tools::T_filter_func<Tdata> >
 		filter_funcs;
+	// Construct the symmetry filter for the selected backend at contraction time.
+	bool flag_symmetry = false;
+	std::map<std::pair<TA,TA>, std::set<TC>> irreducible_sector;
 	std::shared_ptr<Filter_Atom<TA,TAC>> filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
 
 public:		// private:
