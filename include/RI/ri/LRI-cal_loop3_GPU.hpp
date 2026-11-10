@@ -8,7 +8,6 @@
 #ifdef __GPU_RI
 
 #include "LRI.h"
-#include "../physics/symmetry/Filter_Atom_Symmetry_GPU.h"
 #include "LRI_Cal_Aux.h"
 #include "../global/Array_Operator.h"
 #include "../global/Map_Operator.h"
@@ -36,12 +35,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 	const Tdata fac_add_Ds)
 {
-	if (this->flag_symmetry)
-		this->filter_atom = std::make_shared<Filter_Atom_Symmetry_GPU<TA,TC,Tdata>>(
-			this->period, this->irreducible_sector);
-	else
-		this->filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
-
 	using namespace Array_Operator;
 
 	constexpr std::size_t memory_limit = std::size_t(5)*1024*1024*1024;

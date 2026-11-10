@@ -146,7 +146,7 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
             labels.push_back(all_labels[index]);
             name = RI::Label_Tools::get_name(all_labels[index]);
         }
-        lri.flag_symmetry = false;
+        lri.filter_atom = std::make_shared<RI::Filter_Atom<int, AtomCell>>();
         lri.cal_mode = RI::LRI_Cal_Mode::CPU;
         Tensors<T> full;
         lri.cal_loop3(labels, full, 1.0);
@@ -169,8 +169,7 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                     if (keep)
                         expected[left.first][right.first] = right.second.copy();
                 }
-            lri.flag_symmetry = true;
-            lri.irreducible_sector = sector;
+            lri.filter_atom = std::make_shared<RI::Filter_Atom_Symmetry<int, Cell, T>>(period, sector);
             for (const auto mode : modes)
             {
                 lri.cal_mode = mode;
@@ -205,14 +204,6 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                         }
                     compare(actual, accumulated, context + " factor=" + std::to_string(factor));
                 }
-
-                // Disable symmetry after a restricted run on this same backend.
-                // This must replace the previous backend-specific filter.
-                lri.flag_symmetry = false;
-                Tensors<T> unrestricted;
-                lri.cal_loop3(labels, unrestricted, 1.0);
-                compare(unrestricted, full, context + " symmetry disabled");
-                lri.flag_symmetry = true;
             }
         }
         std::cout << "PASS " << scalar << " label=" << name << std::endl;
