@@ -147,6 +147,7 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
             name = RI::Label_Tools::get_name(all_labels[index]);
         }
         lri.flag_symmetry = false;
+        lri.filter_atom.reset(); // A missing filter must be initialized lazily.
         lri.cal_mode = RI::LRI_Cal_Mode::CPU;
         Tensors<T> full;
         lri.cal_loop3(labels, full, 1.0);
@@ -181,6 +182,20 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                 Tensors<T> actual;
                 lri.cal_loop3(labels, actual, 1.0);
                 compare(actual, expected, context);
+                const auto active_filter = lri.filter_atom;
+                lri.irreducible_sector.clear();
+                Tensors<T> changed_sector;
+                lri.cal_loop3(labels, changed_sector, 1.0);
+                compare(changed_sector, full, context + " sector changed in place");
+                if (lri.filter_atom != active_filter)
+                    throw std::runtime_error(context + ": sector update rebuilt filter");
+                lri.irreducible_sector = sector;
+                auto copied = lri;
+                Tensors<T> copied_result;
+                copied.cal_loop3(labels, copied_result, 1.0);
+                compare(copied_result, expected, context + " copied LRI");
+                if (copied.filter_atom == active_filter)
+                    throw std::runtime_error(context + ": copied LRI retained source filter references");
 
                 // Seed every block, including those outside the selected sector.
                 // Filtering must preserve them while signed/zero increments work.
@@ -194,6 +209,8 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                 for (const double factor : {-0.5, 0.0, 1.25})
                 {
                     lri.cal_loop3(labels, actual, factor);
+                    if (lri.filter_atom != active_filter)
+                        throw std::runtime_error(context + ": repeated contraction rebuilt filter");
                     sum += factor;
                     Tensors<T> accumulated = copy_tensors(seed);
                     for (const auto& left : expected)
@@ -212,6 +229,12 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                 Tensors<T> unrestricted;
                 lri.cal_loop3(labels, unrestricted, 1.0);
                 compare(unrestricted, full, context + " symmetry disabled");
+                const auto disabled_filter = lri.filter_atom;
+                unrestricted.clear();
+                lri.cal_loop3(labels, unrestricted, 1.0);
+                compare(unrestricted, full, context + " symmetry disabled twice");
+                if (lri.filter_atom != disabled_filter)
+                    throw std::runtime_error(context + ": disabled filter was rebuilt");
                 lri.flag_symmetry = true;
             }
         }

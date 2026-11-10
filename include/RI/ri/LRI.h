@@ -101,6 +101,10 @@ public:
 	std::map<std::pair<TA,TA>, std::set<TC>> irreducible_sector;
 	std::shared_ptr<Filter_Atom<TA,TAC>> filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
 
+private:
+	template<typename Tfilter>
+	void prepare_filter_atom();
+
 public:		// private:
 	TC period;
 	MPI_Comm mpi_comm;

@@ -25,11 +25,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU_fine_grained_lock(
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 	const Tdata fac_add_Ds)
 {
-	if (this->flag_symmetry)
-		this->filter_atom = std::make_shared<Filter_Atom_Symmetry<TA,TC,Tdata>>(
-			this->period, this->irreducible_sector);
-	else
-		this->filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
+	this->template prepare_filter_atom<Filter_Atom_Symmetry<TA,TC,Tdata>>();
 
 	using namespace Array_Operator;
 
