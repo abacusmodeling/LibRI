@@ -24,6 +24,10 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 	const Tdata fac_add_Ds)
 {
+	const Filter_Atom<TA,TAC> unfiltered;
+	const Filter_Atom<TA,TAC> *filter_atom = this->filter_atom
+		? this->filter_atom(LRI_Cal_Mode::CPU) : &unfiltered;
+
 	using namespace Array_Operator;
 
 	const Data_Pack_Wrapper<TA,TC,Tdata> data_wrapper(this->data_pool, this->data_ab_name);
@@ -71,19 +75,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TAC &Aa2 : list_Aa2)
 					{
-						if(this->filter_atom->filter_for1(label,Aa2))	continue;
+						if(filter_atom->filter_for1(label,Aa2))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa2,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa2,Ab01))	continue;
 							// D_mul = D_a * D_a0b0 * D_a1b1
 							Tensor<Tdata> D_mul;
 							for(const TA &Aa01 : list_Aa01)
 							{
-								if(this->filter_atom->filter_for31(label,Aa2,Ab01,Aa01))	continue;
+								if(filter_atom->filter_for31(label,Aa2,Ab01,Aa01))	continue;
 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a0b0 = tools.get_Ds_ab(Label::ab::a0b0, Aa01, Ab01);
@@ -102,7 +106,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_b
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa2,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for32(label,Aa2,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								// a2b2 = a2b0b1 * b0b1b2
@@ -135,19 +139,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TAC &Aa2 : list_Aa2)
 					{
-						if(this->filter_atom->filter_for1(label,Aa2))	continue;
+						if(filter_atom->filter_for1(label,Aa2))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa2,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa2,Ab01))	continue;
 							// D_mul = D_a * D_a0b1 * D_a1b0
 							Tensor<Tdata> D_mul;
 							for(const TA &Aa01 : list_Aa01)
 							{
-								if(this->filter_atom->filter_for31(label,Aa2,Ab01,Aa01))	continue;
+								if(filter_atom->filter_for31(label,Aa2,Ab01,Aa01))	continue;
 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a0b1 = tools.get_Ds_ab(Label::ab::a0b1, Aa01, Ab01);
@@ -166,7 +170,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_b
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa2,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for32(label,Aa2,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								// a2b2 = a2b0b1 * b0b1b2
@@ -201,21 +205,21 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TAC &Ab01 : list_Ab01)
 					{
-						if(this->filter_atom->filter_for1(label,Ab01))	continue;
+						if(filter_atom->filter_for1(label,Ab01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
 						{
 							const TA &Aa01 = list_Aa01[ia01];
-							if(this->filter_atom->filter_for2(label,Ab01,Aa01))	continue;
+							if(filter_atom->filter_for2(label,Ab01,Aa01))	continue;
 							const Tensor<Tdata> &D_a0b0 = tools.get_Ds_ab(Label::ab::a0b0, Aa01, Ab01);
 							if(D_a0b0.empty())	continue;
 							// D_mul = D_b * D_a1b2
 							Tensor<Tdata> D_mul;
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for31(label,Ab01,Aa01,Ab2))	continue;
+								if(filter_atom->filter_for31(label,Ab01,Aa01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a1b2 = tools.get_Ds_ab(Label::ab::a1b2, Aa01, Ab2);
@@ -230,7 +234,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a * D_a0b0
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for32(label,Ab01,Aa01,Aa2))	continue;
+								if(filter_atom->filter_for32(label,Ab01,Aa01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								// b1a1a0 = b0b1a1 * a0b0
@@ -265,21 +269,21 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TAC &Ab01 : list_Ab01)
 					{
-						if(this->filter_atom->filter_for1(label,Ab01))	continue;
+						if(filter_atom->filter_for1(label,Ab01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
 						{
 							const TA &Aa01 = list_Aa01[ia01];
-							if(this->filter_atom->filter_for2(label,Ab01,Aa01))	continue;
+							if(filter_atom->filter_for2(label,Ab01,Aa01))	continue;
 							const Tensor<Tdata> &D_a0b1 = tools.get_Ds_ab(Label::ab::a0b1, Aa01, Ab01);
 							if(D_a0b1.empty())	continue;
 							// D_mul = D_b * D_a1b2
 							Tensor<Tdata> D_mul;
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for31(label,Ab01,Aa01,Ab2))	continue;
+								if(filter_atom->filter_for31(label,Ab01,Aa01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a1b2 = tools.get_Ds_ab(Label::ab::a1b2, Aa01, Ab2);
@@ -294,7 +298,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a * D_a0b1
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for32(label,Ab01,Aa01,Aa2))	continue;
+								if(filter_atom->filter_for32(label,Ab01,Aa01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								// a0a1b0 = a0b1 * a1b0b1
@@ -329,21 +333,21 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TAC &Ab01 : list_Ab01)
 					{
-						if(this->filter_atom->filter_for1(label,Ab01))	continue;
+						if(filter_atom->filter_for1(label,Ab01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
 						{
 							const TA &Aa01 = list_Aa01[ia01];
-							if(this->filter_atom->filter_for2(label,Ab01,Aa01))	continue;
+							if(filter_atom->filter_for2(label,Ab01,Aa01))	continue;
 							const Tensor<Tdata> &D_a1b0 = tools.get_Ds_ab(Label::ab::a1b0, Aa01, Ab01);
 							if(D_a1b0.empty())	continue;
 							// D_mul = D_b * D_a0b2
 							Tensor<Tdata> D_mul;
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for31(label,Ab01,Aa01,Ab2))	continue;
+								if(filter_atom->filter_for31(label,Ab01,Aa01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a0b2 = tools.get_Ds_ab(Label::ab::a0b2, Aa01, Ab2);
@@ -358,7 +362,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a * D_a1b0
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for32(label,Ab01,Aa01,Aa2))	continue;
+								if(filter_atom->filter_for32(label,Ab01,Aa01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								// b1a0a1 = b0b1a0 * a1b0
@@ -393,21 +397,21 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TAC &Ab01 : list_Ab01)
 					{
-						if(this->filter_atom->filter_for1(label,Ab01))	continue;
+						if(filter_atom->filter_for1(label,Ab01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
 						{
 							const TA &Aa01 = list_Aa01[ia01];
-							if(this->filter_atom->filter_for2(label,Ab01,Aa01))	continue;
+							if(filter_atom->filter_for2(label,Ab01,Aa01))	continue;
 							const Tensor<Tdata> &D_a1b1 = tools.get_Ds_ab(Label::ab::a1b1, Aa01, Ab01);
 							if(D_a1b1.empty())	continue;
 							// D_mul = D_b * D_a0b2
 							Tensor<Tdata> D_mul;
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for31(label,Ab01,Aa01,Ab2))	continue;
+								if(filter_atom->filter_for31(label,Ab01,Aa01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a0b2 = tools.get_Ds_ab(Label::ab::a0b2, Aa01, Ab2);
@@ -422,7 +426,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a * D_a1b1
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for32(label,Ab01,Aa01,Aa2))	continue;
+								if(filter_atom->filter_for32(label,Ab01,Aa01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								// a1a0b0 = a1b1 * a0b0b1
@@ -459,21 +463,21 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab01))	continue;
 							const Tensor<Tdata> &D_a0b0 = tools.get_Ds_ab(Label::ab::a0b0, Aa01, Ab01);
 							if(D_a0b0.empty())	continue;
 							// D_mul = D_a * D_a2b1
 							Tensor<Tdata> D_mul;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab01,Aa2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b1 = tools.get_Ds_ab(Label::ab::a2b1, Aa2, Ab01);
@@ -488,7 +492,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a0b0 * D_b
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 
@@ -524,21 +528,21 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab01))	continue;
 							const Tensor<Tdata> &D_a0b1 = tools.get_Ds_ab(Label::ab::a0b1, Aa01, Ab01);
 							if(D_a0b1.empty())	continue;
 							// D_mul = D_a * D_a2b0
 							Tensor<Tdata> D_mul;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab01,Aa2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b0 = tools.get_Ds_ab(Label::ab::a2b0, Aa2, Ab01);
@@ -553,7 +557,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a0b1 * D_b
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 
@@ -589,21 +593,21 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab01))	continue;
 							const Tensor<Tdata> &D_a1b0 = tools.get_Ds_ab(Label::ab::a1b0, Aa01, Ab01);
 							if(D_a1b0.empty())	continue;
 							// D_mul = D_a * D_a2b1
 							Tensor<Tdata> D_mul;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab01,Aa2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b1 = tools.get_Ds_ab(Label::ab::a2b1, Aa2, Ab01);
@@ -618,7 +622,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a1b0 * D_b
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 
@@ -654,21 +658,21 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab01))	continue;
 							const Tensor<Tdata> &D_a1b1 = tools.get_Ds_ab(Label::ab::a1b1, Aa01, Ab01);
 							if(D_a1b1.empty())	continue;
 							// D_mul = D_a * D_a2b0
 							Tensor<Tdata> D_mul;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab01,Aa2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b0 = tools.get_Ds_ab(Label::ab::a2b0, Aa2, Ab01);
@@ -683,7 +687,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a1b1 * D_b
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 
@@ -721,19 +725,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib2=0; ib2<list_Ab2.size(); ++ib2)
 						{
 							const TAC &Ab2 = list_Ab2[ib2];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab2))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab2))	continue;
 							// D_mul = D_a * D_a2b2
 							Tensor<Tdata> D_mul;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab2,Aa2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab2,Aa2))	continue;
 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b2 = tools.get_Ds_ab(Label::ab::a2b2, Aa2, Ab2);
@@ -748,7 +752,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a0b0 * D_b
 							for(const TAC &Ab01 : list_Ab01)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab2,Ab01))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab2,Ab01))	continue;
 								const Tensor<Tdata> &D_b = Global_Func::find(Ds_b_transpose, Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%this->period});
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a0b0 = tools.get_Ds_ab(Label::ab::a0b0, Aa01, Ab01);
@@ -786,19 +790,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib2=0; ib2<list_Ab2.size(); ++ib2)
 						{
 							const TAC &Ab2 = list_Ab2[ib2];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab2))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab2))	continue;
 							// D_mul = D_a * D_a2b2
 							Tensor<Tdata> D_mul;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab2,Aa2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab2,Aa2))	continue;
 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b2 = tools.get_Ds_ab(Label::ab::a2b2, Aa2, Ab2);
@@ -813,7 +817,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a0b1 * D_b
 							for(const TAC &Ab01 : list_Ab01)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab2,Ab01))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab2,Ab01))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a0b1 = tools.get_Ds_ab(Label::ab::a0b1, Aa01, Ab01);
@@ -851,19 +855,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib2=0; ib2<list_Ab2.size(); ++ib2)
 						{
 							const TAC &Ab2 = list_Ab2[ib2];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab2))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab2))	continue;
 							// D_mul = D_a * D_a2b2
 							Tensor<Tdata> D_mul;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab2,Aa2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab2,Aa2))	continue;
 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b2 = tools.get_Ds_ab(Label::ab::a2b2, Aa2, Ab2);
@@ -878,7 +882,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a1b0 * D_b
 							for(const TAC &Ab01 : list_Ab01)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab2,Ab01))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab2,Ab01))	continue;
 								const Tensor<Tdata> &D_b = Global_Func::find(Ds_b_transpose, Ab01.first, TAC{Ab2.first, (Ab2.second-Ab01.second)%this->period});
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a1b0 = tools.get_Ds_ab(Label::ab::a1b0, Aa01, Ab01);
@@ -916,19 +920,19 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						std::map<TAC,Tensor<Tdata>> Ds_result_fixed;
 
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib2=0; ib2<list_Ab2.size(); ++ib2)
 						{
 							const TAC &Ab2 = list_Ab2[ib2];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab2))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab2))	continue;
 							// D_mul = D_a * D_a2b2
 							Tensor<Tdata> D_mul;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab2,Aa2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab2,Aa2))	continue;
 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b2 = tools.get_Ds_ab(Label::ab::a2b2, Aa2, Ab2);
@@ -943,7 +947,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							// D_result = D_mul * D_a1b1 * D_b
 							for(const TAC &Ab01 : list_Ab01)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab2,Ab01))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab2,Ab01))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a1b1 = tools.get_Ds_ab(Label::ab::a1b1, Aa01, Ab01);
@@ -983,17 +987,17 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab01))	continue;
 							// D_mul1 = D_b * D_a1b2
 							Tensor<Tdata> D_mul1;
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a1b2 = tools.get_Ds_ab(Label::ab::a1b2, Aa01, Ab2);
@@ -1009,7 +1013,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							Tensor<Tdata> D_mul2;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab01,Aa2))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b1 = tools.get_Ds_ab(Label::ab::a2b1, Aa2, Ab01);
@@ -1048,17 +1052,17 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab01))	continue;
 							// D_mul1 = D_b * D_a0b2
 							Tensor<Tdata> D_mul1;
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a0b2 = tools.get_Ds_ab(Label::ab::a0b2, Aa01, Ab2);
@@ -1074,7 +1078,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							Tensor<Tdata> D_mul2;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab01,Aa2))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b0 = tools.get_Ds_ab(Label::ab::a2b0, Aa2, Ab01);
@@ -1113,17 +1117,17 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab01))	continue;
 							// D_mul1 = D_b * D_a0b2
 							Tensor<Tdata> D_mul1;
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a0b2 = tools.get_Ds_ab(Label::ab::a0b2, Aa01, Ab2);
@@ -1139,7 +1143,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							Tensor<Tdata> D_mul2;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab01,Aa2))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b1 = tools.get_Ds_ab(Label::ab::a2b1, Aa2, Ab01);
@@ -1178,17 +1182,17 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 
 					for(const TA &Aa01 : list_Aa01)
 					{
-						if(this->filter_atom->filter_for1(label,Aa01))	continue;
+						if(filter_atom->filter_for1(label,Aa01))	continue;
 						#pragma omp for schedule(dynamic) nowait
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for2(label,Aa01,Ab01))	continue;
+							if(filter_atom->filter_for2(label,Aa01,Ab01))	continue;
 							// D_mul1 = D_b * D_a1b2
 							Tensor<Tdata> D_mul1;
 							for(const TAC &Ab2 : list_Ab2)
 							{
-								if(this->filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
+								if(filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
 								const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 								if(D_b.empty())	continue;
 								const Tensor<Tdata> &D_a1b2 = tools.get_Ds_ab(Label::ab::a1b2, Aa01, Ab2);
@@ -1204,7 +1208,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 							Tensor<Tdata> D_mul2;
 							for(const TAC &Aa2 : list_Aa2)
 							{
-								if(this->filter_atom->filter_for32(label,Aa01,Ab01,Aa2))	continue;
+								if(filter_atom->filter_for32(label,Aa01,Ab01,Aa2))	continue;
 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 								if(D_a.empty())	continue;
 								const Tensor<Tdata> &D_a2b0 = tools.get_Ds_ab(Label::ab::a2b0, Aa2, Ab01);

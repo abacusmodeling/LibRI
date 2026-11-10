@@ -71,5 +71,24 @@ pair. In that family's second stage, the former inner
 
 For two cell-bearing output atoms the relative cell is `(Rb - Ra) % period`;
 with `Aa01` at the origin it is `Rb % period`. An empty sector retains the existing
-unrestricted behavior. The numerical regression also disables symmetry after each
-filtered run to verify replacement of the previous backend's filter.
+unrestricted behavior. The numerical regression also disables symmetry on a copied selector after each
+filtered run to verify independent configuration of copied LRI objects.
+
+## Select filters before contraction loops
+
+`LRI::filter_atom` is an optional callable taking `LRI_Cal_Mode` and returning
+a `const Filter_Atom*`. Each backend invokes it once before its OpenMP/atom loops;
+all inner callbacks go directly to that pointer. An empty callable disables
+filtering. The returned pointer must remain valid for the contraction. Custom
+policies can use the same interface without changes to LRI.
+
+`Filter_Atom_Symmetry_Wrapper` is a callable rather than a filter subclass. It
+constructs CPU and (in GPU builds) GPU policies together and selects the existing
+policy on each contraction. Its shared immutable configuration owns copies of
+period and sector, keeping filter references valid after copies or temporary
+caller data. Call `set_symmetry` again to change that configuration.
+
+The regression asserts one selector invocation per contraction and stable filter
+identity across repeated calls, checks backend switching, copied selectors,
+caller configuration lifetime, and disabling symmetry. All 18 label expectations
+continue to use the independent output mask described above.
