@@ -73,9 +73,3 @@ For two cell-bearing output atoms the relative cell is `(Rb - Ra) % period`;
 with `Aa01` at the origin it is `Rb % period`. An empty sector retains the existing
 unrestricted behavior. The numerical regression also disables symmetry after each
 filtered run to verify replacement of the previous backend's filter.
-
-Backend entry points reuse an existing filter when its exact type matches the
-symmetry flag/backend and its configuration references belong to the current LRI.
-Both CPU modes share the CPU filter type. Sector/period content changes are read
-through those references; a copied LRI rebinds its filter on first use. The
-regression verifies pointer reuse, in-place sector updates and copy isolation.

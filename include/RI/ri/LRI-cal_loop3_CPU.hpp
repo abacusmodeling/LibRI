@@ -25,7 +25,11 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_CPU(
 	std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 	const Tdata fac_add_Ds)
 {
-	this->template prepare_filter_atom<Filter_Atom_Symmetry<TA,TC,Tdata>>();
+	if (this->flag_symmetry)
+		this->filter_atom = std::make_shared<Filter_Atom_Symmetry<TA,TC,Tdata>>(
+			this->period, this->irreducible_sector);
+	else
+		this->filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
 
 	using namespace Array_Operator;
 

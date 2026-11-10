@@ -8,7 +8,6 @@
 #include "LRI.h"
 #include "../ri/Label.h"
 #include <limits>
-#include <typeinfo>
 
 namespace RI
 {
@@ -27,28 +26,6 @@ LRI<TA,Tcell,Ndim,Tdata>::LRI()
 
 	for(std::size_t i=0; i<Ndim; ++i)
 		this->period[i] = std::numeric_limits<Tcell>::max()/4;		// /4 for not out of range when Array_Operator::operator%
-}
-
-template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
-template<typename Tfilter>
-void LRI<TA,Tcell,Ndim,Tdata>::prepare_filter_atom()
-{
-	if (!this->flag_symmetry)
-	{
-		if (!this->filter_atom || typeid(*this->filter_atom) != typeid(Filter_Atom<TA,TAC>))
-			this->filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
-		return;
-	}
-
-	if (this->filter_atom && typeid(*this->filter_atom) == typeid(Tfilter))
-	{
-		const auto &filter = static_cast<const Tfilter &>(*this->filter_atom);
-		// A copied LRI must bind the filter to its own configuration.
-		if (&filter.symmetry.period == &this->period
-			&& &filter.symmetry.irreducible_sector_ == &this->irreducible_sector)
-			return;
-	}
-	this->filter_atom = std::make_shared<Tfilter>(this->period, this->irreducible_sector);
 }
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
