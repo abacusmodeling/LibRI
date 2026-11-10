@@ -175,7 +175,7 @@ class Input
 				const Pack &pack = this->h_array[i];
 				batch_pointers[i] = pointers.at(pack.thread_num).at(pack.pos);
 			}
-			GPU_Backend::allocate(&this->d_array, batch_pointers.size());
+			GPU_Backend::allocate(&this->d_array, batch_pointers.size(), queue);
 			GPU_Backend::upload(batch_pointers.size(), batch_pointers.data(), this->d_array, queue);
 			return;
 		}

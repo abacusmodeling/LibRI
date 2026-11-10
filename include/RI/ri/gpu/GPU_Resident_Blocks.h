@@ -42,7 +42,7 @@ class Resident_Blocks
 #ifdef __DDLA_RI
         std::size_t free_bytes = 0;
         std::size_t total_bytes = 0;
-        if(deviceMemGetInfo(&free_bytes, &total_bytes) == ddla::deviceSuccess)
+        if(ddla::ddlaMemGetInfo(this->context->queue(), &free_bytes, &total_bytes) == ddla::ddlaStatus_t::DDLA_STATUS_SUCCESS)
         {
             const std::size_t cap = std::size_t(4) * 1024 * 1024 * 1024;
             this->budget_bytes = std::min(free_bytes / 3, cap);
@@ -70,10 +70,10 @@ class Resident_Blocks
         const std::size_t bytes = count * sizeof(Tdata_GPU);
         if(bytes > this->budget_bytes - this->used_bytes) return nullptr;
 
-        std::unique_ptr<Pack> pack(new Pack);
+        std::unique_ptr<Pack> pack(new Pack(this->context->queue()));
         pack->bytes = bytes;
         std::vector<Tdata_GPU> host(count);
-        GPU_Backend::allocate(&pack->data, count);
+        GPU_Backend::allocate(&pack->data, count, this->context->queue());
         std::size_t offset = 0;
         for(const auto &row : source)
         {
@@ -114,10 +114,12 @@ class Resident_Blocks
 
     struct Pack
     {
+        explicit Pack(GPU_Backend::Queue queue_in) : queue(queue_in) {}
+        GPU_Backend::Queue queue;
         Tdata_GPU *data = nullptr;
         Block_Map blocks;
         std::size_t bytes = 0;
-        ~Pack() { GPU_Backend::free(data); }
+        ~Pack() { GPU_Backend::free(data, queue); }
     };
 
     static void copy_tensor(Tdata_GPU *dest, const Tensor<Tdata_CPU> &tensor, std::true_type)
