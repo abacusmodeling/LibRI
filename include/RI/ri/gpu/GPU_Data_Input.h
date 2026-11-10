@@ -1,8 +1,6 @@
-// =================================
-//  Author: Laiyuan Yang, Peize Lin
+// ==========================//  Author: Laiyuan Yang, Peize Lin
 //  date: 2026.01.01
-// =================================
-
+// ==========================
 #pragma once
 
 #ifdef __GPU_RI
@@ -10,8 +8,11 @@
 #include "../../global/gpu/GPU_Backend.h"
 #include "GPU_Data_Pack.h"
 
+#include <algorithm>
 #include <omp.h>
 #include <type_traits>
+#include <unordered_map>
+#include <stdexcept>
 
 namespace RI
 {
@@ -29,10 +30,87 @@ class Input
 		bool,
 		sizeof(Tdata_CPU)==sizeof(Tdata_GPU) && alignof(Tdata_CPU)==alignof(Tdata_GPU)>;
 
+	using Matrix_Map = std::map<TA, std::map<TAC, Tensor<Tdata_CPU>>>;
+	using Block_Map = std::map<TA, std::map<TAC, Tdata_GPU*>>;
+
+	// Numerical values are deliberately absent: a cached layout is valid only
+	// while the caller's block-key and shape signature is unchanged.
+	struct Layout
+	{
+		std::map<TA, std::map<TAC, Pack>> ptr_list;
+		std::vector<Pack> array;
+		std::vector<std::size_t> sizes;
+	};
+
+	Layout save_layout() const
+	{
+		Layout layout;
+		layout.ptr_list = this->ptrList;
+		layout.array = this->h_array;
+		layout.sizes = this->planned_sizes;
+		return layout;
+	}
+
+	void load_layout(const Layout &layout, const Matrix_Map &source)
+	{
+		this->ptrList = layout.ptr_list;
+		this->h_array = layout.array;
+		this->planned_sizes = layout.sizes;
+		this->h_data.resize(layout.sizes.size());
+		this->copy_tasks.clear();
+		this->copy_tasks.resize(layout.sizes.size());
+		this->defer_copies = true;
+		if(!this->resident_blocks)
+			for(const auto &row : layout.ptr_list)
+				for(const auto &block : row.second)
+				{
+					const Pack &pack = block.second;
+					const Tensor<Tdata_CPU> &tensor = source.at(row.first).at(block.first);
+					this->copy_tasks.at(pack.thread_num).push_back({&tensor, pack.pos});
+				}
+	}
+
 	Input()
 	{
 		this->h_data.resize(omp_get_max_threads());
 		this->tensor_insert.resize(omp_get_max_threads(), false);
+	}
+
+	// Assign each distinct block a stable host-buffer offset before copying data.
+	// The caller registers batches serially, then copies distinct blocks in parallel.
+	void defer_input_copies()
+	{
+		this->defer_copies = true;
+		this->planned_sizes.assign(this->h_data.size(), 0);
+		this->copy_tasks.clear();
+		this->copy_tasks.resize(this->h_data.size());
+		this->next_owner = 0;
+	}
+
+	// A borrowed resident pack replaces the host values, but not the batch pointer array.
+	void bind_resident_blocks(const Block_Map *blocks)
+	{
+		if(blocks && !this->defer_copies)
+			throw std::logic_error("resident GPU inputs require deferred batch registration");
+		this->resident_blocks = blocks;
+	}
+
+	void finish_deferred_copies()
+	{
+		if(this->resident_blocks)
+		{
+			this->copy_tasks.clear();
+			return;
+		}
+		#pragma omp parallel for schedule(static)
+		for(int tid=0; tid<static_cast<int>(this->h_data.size()); ++tid)
+		{
+			std::vector<Tdata_GPU> &buffer = this->h_data[tid];
+			buffer.resize(this->planned_sizes[tid]);
+			for(const Copy_Task &task : this->copy_tasks[tid])
+				copy_data_impl(buffer.data() + task.pos, *task.tensor, Same_data_layout());
+		}
+		this->copy_tasks.clear();
 	}
 
 	const Pack & insert(const TA &Aa, const TAC &Ab, const Tensor<Tdata_CPU> &tensor)
@@ -41,14 +119,30 @@ class Input
 		if(!pack.exist)
 		{
 			pack.exist = true;
-			pack.pos = this->h_data[omp_get_thread_num()].size();
-			this->tensor_insert[omp_get_thread_num()] = true;
+			// owner: buffer slot index
+			// if defer: serially assign data to the existing slot.
+			// else: each thread owns one slot.
+			const int owner = this->defer_copies
+				? static_cast<int>(this->next_owner++ % this->h_data.size())
+				: omp_get_thread_num();
+			pack.pos = this->defer_copies
+				? this->planned_sizes[owner]
+				: this->h_data[owner].size();
 			pack.shape = tensor.shape;
-			pack.thread_num = omp_get_thread_num();
+			pack.thread_num = owner;
+			if(this->defer_copies)
+			{
+				if(!this->resident_blocks)
+					this->copy_tasks[owner].push_back({&tensor, pack.pos});
+				this->planned_sizes[owner] += tensor.shape.get_shape_all();
+			}
+			else
+				this->tensor_insert[owner] = true;
 		}
 		else
 		{
-			this->tensor_insert[omp_get_thread_num()] = false;
+			if(!this->defer_copies)
+				this->tensor_insert[omp_get_thread_num()] = false;
 		}
 		this->h_array.push_back(pack);
 		return pack;
@@ -57,7 +151,7 @@ class Input
 	void insert_data(const Tensor<Tdata_CPU> &tensor)
 	{
 		const int thread_num = omp_get_thread_num();
-		if(this->tensor_insert[thread_num])
+		if(!this->defer_copies && this->tensor_insert[thread_num])
 			insert_data_impl(this->h_data[thread_num], tensor, Same_data_layout());
 	}
 
@@ -65,6 +159,26 @@ class Input
 	void upload(GPU_Backend::Queue queue)
 	{
 		this->queue_ = queue;
+		if(this->resident_blocks)
+		{
+			// Resolve symbolic (thread, offset) locations to geometry-fixed device blocks.
+			std::vector<std::unordered_map<std::size_t, Tdata_GPU*>> pointers(this->h_data.size());
+			for(const auto &row : this->ptrList)
+				for(const auto &block : row.second)
+				{
+					const Pack &pack = block.second;
+					pointers.at(pack.thread_num)[pack.pos] = this->resident_blocks->at(row.first).at(block.first);
+				}
+			std::vector<Tdata_GPU*> batch_pointers(this->h_array.size());
+			for(std::size_t i = 0; i < this->h_array.size(); ++i)
+			{
+				const Pack &pack = this->h_array[i];
+				batch_pointers[i] = pointers.at(pack.thread_num).at(pack.pos);
+			}
+			GPU_Backend::allocate(&this->d_array, batch_pointers.size(), queue);
+			GPU_Backend::upload(batch_pointers.size(), batch_pointers.data(), this->d_array, queue);
+			return;
+		}
 		std::vector<std::size_t> h_data_begin(this->h_data.size()+1, 0);
 		for(std::size_t i=1; i<h_data_begin.size(); ++i)
 			h_data_begin[i] = h_data_begin[i-1] + this->h_data[i-1].size();
@@ -90,6 +204,30 @@ class Input
 	}
 
   private:
+	struct Copy_Task
+	{
+		const Tensor<Tdata_CPU> *tensor;
+		std::size_t pos;
+	};
+
+	static void copy_data_impl(Tdata_GPU *dest, const Tensor<Tdata_CPU> &tensor, std::true_type)
+	{
+		std::copy(tensor.ptr(), tensor.ptr() + tensor.shape.get_shape_all(), dest);
+	}
+
+	static void copy_data_impl(Tdata_GPU *dest, const Tensor<Tdata_CPU> &tensor, std::false_type)
+	{
+		const Tdata_CPU *src = tensor.ptr();
+		for(std::size_t i=0; i<tensor.shape.get_shape_all(); ++i)
+			dest[i] = GPU_Backend::data_to_GPU(src[i]);
+	}
+
+	bool defer_copies = false;
+	std::size_t next_owner = 0;
+	std::vector<std::size_t> planned_sizes;
+	std::vector<std::vector<Copy_Task>> copy_tasks;
+	const Block_Map *resident_blocks = nullptr;
+
 	static void insert_data_impl(
 		std::vector<Tdata_GPU> &h_data,
 		const Tensor<Tdata_CPU> &tensor,
