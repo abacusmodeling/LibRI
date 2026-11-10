@@ -20,6 +20,7 @@ template<typename TA, typename TAC, typename Tdata_CPU>
 class Mul
 {
   public:
+	GPU_Backend::Queue queue_ = nullptr;
 	using Tdata_GPU = GPU_Backend::Type_to_GPU<Tdata_CPU>;
 
 	const Pack &insert_1st(const TA &Aa, const TAC &Ab, const Shape_Vector &shape)
@@ -38,7 +39,8 @@ class Mul
 
 	void upload_1st(GPU_Backend::Queue queue)
 	{
-		GPU_Backend::allocate(&this->d_data, this->totalSize);
+		this->queue_ = queue;
+		GPU_Backend::allocate(&this->d_data, this->totalSize, queue);
 		GPU_Backend::memset(
 			this->d_data, 0, totalSize * sizeof(Tdata_GPU), queue);
 
@@ -46,7 +48,7 @@ class Mul
 		std::vector<Tdata_GPU*> d_array_(batchCount);							// 记录每个batch的 d_data 指针（CPU）
 		for (std::size_t i = 0; i < batchCount; i++)
 			d_array_[i] = this->d_data + this->h_array_1[i].pos;
-		GPU_Backend::allocate(&this->d_array_1, batchCount);
+		GPU_Backend::allocate(&this->d_array_1, batchCount, queue);
 		GPU_Backend::upload(
 			batchCount, d_array_.data(), this->d_array_1, queue);
 	}
@@ -65,20 +67,21 @@ class Mul
 	// 在 GPU 上分配空间，并获取指针
 	void upload_2nd(GPU_Backend::Queue queue)
 	{
+		this->queue_ = queue;
 		const std::size_t batchCount = this->h_array_2.size();
 		std::vector<Tdata_GPU*> d_array_2_(batchCount);							// 记录每个batch的 d_data 指针（CPU）
 		for (std::size_t i = 0; i < batchCount; i++)
 			d_array_2_[i] = this->d_data + this->h_array_2[i].pos;
-		GPU_Backend::allocate(&this->d_array_2, batchCount);
+		GPU_Backend::allocate(&this->d_array_2, batchCount, queue);
 		GPU_Backend::upload(
 			batchCount, d_array_2_.data(), this->d_array_2, queue);
 	}
 
 	~Mul()
 	{
-		GPU_Backend::free(this->d_data);
-		GPU_Backend::free(this->d_array_1);
-		GPU_Backend::free(this->d_array_2);
+		GPU_Backend::free(this->d_data, this->queue_);
+		GPU_Backend::free(this->d_array_1, this->queue_);
+		GPU_Backend::free(this->d_array_2, this->queue_);
 	}
 
 	std::size_t totalSize = 0;                  // 总的数据数量
