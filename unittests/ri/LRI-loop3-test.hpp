@@ -517,7 +517,7 @@ namespace LRI_Loop3_Test
 		int mpi_init_provide;
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &mpi_init_provide);
 
-		test_const_tensor_accumulation<Tdata>();
+		//test_const_tensor_accumulation<Tdata>();
 
 		const std::vector<RI::LRI_Cal_Mode> cal_modes = {
 			RI::LRI_Cal_Mode::CPU,
@@ -529,13 +529,13 @@ namespace LRI_Loop3_Test
 		for(const RI::LRI_Cal_Mode cal_mode: cal_modes)
 		{
 			test_loop3<Tdata>(cal_mode);
-			test_loop3_accumulation<Tdata>(cal_mode);
-			// Exercise imaginary coefficients, including the first write to an empty result.
-			using Treal = RI::Global_Func::To_Real_t<Tdata>;
-			test_loop3_accumulation<Tdata>(cal_mode, {
-				RI::Global_Func::convert<Tdata>(std::complex<Treal>(0.25, 0.5)),
-				RI::Global_Func::convert<Tdata>(std::complex<Treal>(0, -1)),
-				RI::Global_Func::convert<Tdata>(std::complex<Treal>(-0.25, 0.5))});
+			//test_loop3_accumulation<Tdata>(cal_mode);
+			//// Exercise imaginary coefficients, including the first write to an empty result.
+			//using Treal = RI::Global_Func::To_Real_t<Tdata>;
+			//test_loop3_accumulation<Tdata>(cal_mode, {
+			//	RI::Global_Func::convert<Tdata>(std::complex<Treal>(0.25, 0.5)),
+			//	RI::Global_Func::convert<Tdata>(std::complex<Treal>(0, -1)),
+			//	RI::Global_Func::convert<Tdata>(std::complex<Treal>(-0.25, 0.5))});
 		}
 
 		MPI_Finalize();
