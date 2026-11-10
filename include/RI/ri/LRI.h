@@ -96,7 +96,8 @@ public:
 		parallel = std::make_shared<Parallel_LRI_Equally<TA,Tcell,Ndim,Tdata>>();
 	std::unordered_map< Label::ab, RI_Tools::T_filter_func<Tdata> >
 		filter_funcs;
-	std::shared_ptr<Filter_Atom<TA,TAC>> filter_atom = std::make_shared<Filter_Atom<TA,TAC>>();
+	// Select once per contraction; an empty selector means no filtering.
+	std::function<const Filter_Atom<TA,TAC>*(LRI_Cal_Mode)> filter_atom;
 
 public:		// private:
 	TC period;

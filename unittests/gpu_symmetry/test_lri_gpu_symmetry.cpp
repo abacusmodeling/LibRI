@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include <RI/physics/symmetry/Filter_Atom_Symmetry.h>
+#include <RI/physics/symmetry/Filter_Atom_Symmetry_Wrapper.h>
 #include <RI/ri/LRI.h>
 
 namespace
@@ -146,7 +146,7 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
             labels.push_back(all_labels[index]);
             name = RI::Label_Tools::get_name(all_labels[index]);
         }
-        lri.filter_atom = std::make_shared<RI::Filter_Atom<int, AtomCell>>();
+        lri.filter_atom = {};
         lri.cal_mode = RI::LRI_Cal_Mode::CPU;
         Tensors<T> full;
         lri.cal_loop3(labels, full, 1.0);
@@ -169,7 +169,19 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                     if (keep)
                         expected[left.first][right.first] = right.second.copy();
                 }
-            lri.filter_atom = std::make_shared<RI::Filter_Atom_Symmetry<int, Cell, T>>(period, sector);
+            // The selector must own configuration even when caller temporaries change.
+            auto caller_period = period;
+            auto caller_sector = sector;
+            lri.filter_atom = RI::Filter_Atom_Symmetry_Wrapper<int, Cell, T>(caller_period, caller_sector);
+            caller_period[0] = 1;
+            caller_sector.clear();
+            const auto policy = lri.filter_atom;
+            auto selections = std::make_shared<std::size_t>(0);
+            lri.filter_atom = [policy, selections](RI::LRI_Cal_Mode mode) -> const RI::Filter_Atom<int, AtomCell>*
+            {
+                ++*selections;
+                return policy(mode);
+            };
             for (const auto mode : modes)
             {
                 lri.cal_mode = mode;
@@ -177,8 +189,12 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                                             + std::to_string(sector_index) + " mode="
                                             + std::to_string(static_cast<int>(mode));
                 std::cout << "CHECK " << context << std::endl;
+                const auto* selected_filter = lri.filter_atom(mode);
                 Tensors<T> actual;
+                const auto before = *selections;
                 lri.cal_loop3(labels, actual, 1.0);
+                if (*selections != before + 1)
+                    throw std::runtime_error(context + ": selector must run once per contraction");
                 compare(actual, expected, context);
 
                 // Seed every block, including those outside the selected sector.
@@ -192,7 +208,10 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                 double sum = 0;
                 for (const double factor : {-0.5, 0.0, 1.25})
                 {
+                    const auto before_factor = *selections;
                     lri.cal_loop3(labels, actual, factor);
+                    if (*selections != before_factor + 1 || lri.filter_atom(mode) != selected_filter)
+                        throw std::runtime_error(context + ": selection count or filter identity changed");
                     sum += factor;
                     Tensors<T> accumulated = copy_tensors(seed);
                     for (const auto& left : expected)
@@ -204,6 +223,14 @@ void check(const std::string& scalar, T imaginary, int selected, const std::stri
                         }
                     compare(actual, accumulated, context + " factor=" + std::to_string(factor));
                 }
+                auto copied = lri;
+                Tensors<T> copied_result;
+                copied.cal_loop3(labels, copied_result, 1.0);
+                compare(copied_result, expected, context + " copied selector");
+                copied.filter_atom = {};
+                copied_result.clear();
+                copied.cal_loop3(labels, copied_result, 1.0);
+                compare(copied_result, full, context + " symmetry disabled");
             }
         }
         std::cout << "PASS " << scalar << " label=" << name << std::endl;
