@@ -13,6 +13,9 @@
 #include "RI_Tools.h"
 #include "../global/Global_Func-2.h"
 #include "Filter_Atom.h"
+#ifdef __GPU_RI
+#include "gpu/GPU_Resident_Options.h"
+#endif
 
 #include <mpi.h>
 #include <array>
@@ -33,6 +36,12 @@ enum class LRI_Cal_Mode {
 	GPU,
 	#endif
 };
+
+#ifdef __GPU_RI
+template<typename TA, typename TC, typename Tdata>
+struct Gpu_LR_Plan_Cache;
+namespace GPU_Data { template<typename TA, typename TAC, typename Tdata> class Resident_Blocks; }
+#endif
 
 template<typename TA, typename Tcell, std::size_t Ndim, typename Tdata>
 class LRI
@@ -83,8 +92,19 @@ public:
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
 		const Tdata fac_add_Ds = Tdata(1.0));
-	
+
 	#ifdef __GPU_RI
+  private:
+	// Caches symbolic GEMM batch layouts; tensor values are recopied every call.
+	std::shared_ptr<Gpu_LR_Plan_Cache<TA, TC, Tdata>> gpu_lr_plan_cache;
+	// Owns device copies only for explicitly named geometry-fixed input packs.
+	std::shared_ptr<GPU_Data::Resident_Blocks<TA, TAC, Tdata>> gpu_resident_blocks;
+	GPU_Resident_Options gpu_resident_options;
+	// Detach shared resident values before replacing/freeing an input, without MPI collectives.
+	void invalidate_gpu_resident_data(const std::string &save_name);
+  public:
+	// Configure named geometry-tensor residency; changes invalidate dependent GPU layouts.
+	void set_gpu_resident_options(const GPU_Resident_Options &options);
 	void cal_loop3_GPU(
 		const std::vector<Label::ab_ab> &labels,
 		std::map<TA, std::map<TAC, Tensor<Tdata>>> &Ds_result,
