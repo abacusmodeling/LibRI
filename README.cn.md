@@ -24,3 +24,6 @@ LibRI 为只包含头文件的 C++ 库，用以计算 RI 形式下的高阶方�
   > 若 BLAS 与 LAPACK 库使用 Math Kernel Library (MKL)，则建议在 include 任意 LibRI 头文件前定义宏 `__MKL_RI`。LibRI 中部分函数将在编译时自动替换为 MKL 中的函数。
 - [cereal](https://uscilab.github.io/cereal/) 库，用于数据序列化与反序列化，为纯头文件库。
 - [LibComm](https://github.com/abacusmodeling/LibComm.git)  库，用于进程间数据传输，为纯头文件库。
+- 进行 GPU 或 DCU 异构计算，需定义宏 `__GPU_RI`，且需要其中一个异构数学库：
+  - [LibDDLA](https://github.com/userchba/LibDDLA)，用于线性代数异构计算，需定义宏 `__DDLA_RI`。
+  - [magma](https://gitee.com/linpeize/magma/tree/gemm_vbatched_2)，用于线性代数异构计算，需定义宏 `__MAGMA_RI`。该版本在 magma 公开发行版上进行了特制开发，以满足 LibRI 异构计算的需求。
