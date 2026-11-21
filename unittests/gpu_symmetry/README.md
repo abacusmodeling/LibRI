@@ -14,7 +14,12 @@ cmake --build build-symmetry --parallel 2
 ctest --test-dir build-symmetry --output-on-failure
 ```
 
-The GPU test requires one GPU, one MPI rank, and LibDDLA 0.0.6 or newer built for CUDA. The DDLA package is discovered in
+The GPU test requires one GPU, one MPI rank, and a CUDA-enabled LibDDLA
+installation exposing the handle-selected public computational API
+(`gemmVbatched<T>` and `gemmVbatched2s<T>`, without a backend template argument).
+The version number alone is insufficient: older 0.0.6 installations expose a
+different API. The consumer defines only `__GPU_RI` and `__DDLA_RI`; GPU
+capability is read from DDLA's generated configuration header. The DDLA package is discovered in
 either `lib/cmake/LibDDLA` or `lib64/cmake/LibDDLA`; only its public headers
 and imported CMake target are used. Omit
 `ENABLE_GPU` and `DDLA_ROOT` to check a CPU-only build. The library headers can

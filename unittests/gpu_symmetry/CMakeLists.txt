@@ -24,7 +24,7 @@ if(ENABLE_GPU)
     "${DDLA_ROOT}/lib/cmake/LibDDLA" "${DDLA_ROOT}/lib64/cmake/LibDDLA"
     NO_DEFAULT_PATH)
   target_compile_features(test_lri_gpu_symmetry PRIVATE cxx_std_17)
-  target_compile_definitions(test_lri_gpu_symmetry PRIVATE __GPU_RI __DDLA_RI DDLA_USE_CUDA)
+  target_compile_definitions(test_lri_gpu_symmetry PRIVATE __GPU_RI __DDLA_RI)
   target_link_libraries(test_lri_gpu_symmetry PRIVATE ddla::ddla)
 endif()
 
