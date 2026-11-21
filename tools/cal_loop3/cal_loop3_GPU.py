@@ -325,7 +325,7 @@ def content_a01b01_a01b2(ab_ab, formulas):
 						for (std::size_t ia01= 0; ia01<list_Aa01.size(); ++ia01)
 						{{
 							const TA &Aa01 = list_Aa01[ia01];
-							if(this->filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
+							if(this->filter_atom->filter_for31(label,Ab01,Ab2,Aa01))	continue;
 							const Tensor<Tdata> &D_{a01b2} = tools.get_Ds_ab(Label::ab::{a01b2}, Aa01, Ab2);
 							if(D_{a01b2}.empty())	continue;
 
@@ -378,7 +378,7 @@ def content_a01b01_a01b2(ab_ab, formulas):
 						for (std::size_t ia2 = 0; ia2 < list_Aa2.size(); ++ia2) // F
 						{{
 							const TAC &Aa2 = list_Aa2[ia2];
-							if (this->filter_atom->filter_for32(label, Aa01, Aa2, Ab01))	continue;
+							if (this->filter_atom->filter_for32(label, Aa01, Ab01, Aa2))	continue;
 							const Tensor<Tdata> &D_a = {get_D_a(a)};
 							if (D_a.empty())	continue;
 
@@ -483,7 +483,7 @@ def content_a01b01_a2b01(ab_ab, formulas):
 						for (std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for31(label,Aa01,Ab01,Aa2))	continue;
+							if(this->filter_atom->filter_for31(label,Aa01,Aa2,Ab01))	continue;
 							const Tensor<Tdata> &D_{a2b01} = tools.get_Ds_ab(Label::ab::{a2b01}, Aa2, Ab01);
 							if(D_{a2b01}.empty())	continue;
 
@@ -790,7 +790,7 @@ def content_a01b2_a2b01(ab_ab, formulas):
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
 						{{
 							const TA &Aa01 = list_Aa01[ia01];
-							if(this->filter_atom->filter_for31(label,Aa01,Ab01,Ab2))	continue;
+							if(this->filter_atom->filter_for31(label,Ab01,Ab2,Aa01))	continue;
 							const Tensor<Tdata> &D_{a01b2} = tools.get_Ds_ab(Label::ab::{a01b2}, Aa01, Ab2);
 							if(D_{a01b2}.empty())	continue;
 
@@ -839,7 +839,7 @@ def content_a01b2_a2b01(ab_ab, formulas):
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
 						{{
 							const TAC &Ab01 = list_Ab01[ib01];
-							if(this->filter_atom->filter_for32(label, Aa01, Ab01, Aa2))	continue;
+							if(this->filter_atom->filter_for32(label, Aa01, Aa2, Ab01))	continue;
 							const Tensor<Tdata> &D_{a2b01} = tools.get_Ds_ab(Label::ab::{a2b01}, Aa2, Ab01);
 							if(D_{a2b01}.empty())	continue;
 
