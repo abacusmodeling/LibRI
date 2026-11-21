@@ -132,6 +132,10 @@ class Filter_Atom_Symmetry: public Filter_Atom<TA, std::pair<TA, TC>>
 		}
 	}
 
+  #ifdef __GPU_RI
+	#include "Filter_Atom_Symmetry_GPU.h"
+  #endif
+
   public:	// private
 	Symmetry_Filter<TA,TC,Tdata> symmetry;
 };
