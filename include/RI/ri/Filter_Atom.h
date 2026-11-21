@@ -57,6 +57,41 @@ public:
 
 
 
+  #ifdef __GPU_RI
+	virtual bool filter_GPU_for11(const Label::ab_ab &label, const TA  &A1) const { return false; }
+	virtual bool filter_GPU_for11(const Label::ab_ab &label, const TAC &A1) const { return false; }
+
+	virtual bool filter_GPU_for12(const Label::ab_ab &label, const TA  &A1) const { return false; }
+	virtual bool filter_GPU_for12(const Label::ab_ab &label, const TAC &A1) const { return false; }
+
+	virtual bool filter_GPU_for13(const Label::ab_ab &label, const TA  &A1) const { return false; }
+	virtual bool filter_GPU_for13(const Label::ab_ab &label, const TAC &A1) const { return false; }
+
+	virtual bool filter_GPU_for21(const Label::ab_ab &label, const TA  &A1, const TAC &A2) const { return false; }
+	virtual bool filter_GPU_for21(const Label::ab_ab &label, const TAC &A1, const TA  &A2) const { return false; }
+	virtual bool filter_GPU_for21(const Label::ab_ab &label, const TAC &A1, const TAC &A2) const { return false; }
+
+	virtual bool filter_GPU_for22(const Label::ab_ab &label, const TA  &A1, const TAC &A2) const { return false; }
+	virtual bool filter_GPU_for22(const Label::ab_ab &label, const TAC &A1, const TA  &A2) const { return false; }
+	virtual bool filter_GPU_for22(const Label::ab_ab &label, const TAC &A1, const TAC &A2) const { return false; }
+
+	virtual bool filter_GPU_for23(const Label::ab_ab &label, const TA  &A1, const TAC &A2) const { return false; }
+	virtual bool filter_GPU_for23(const Label::ab_ab &label, const TAC &A1, const TA  &A2) const { return false; }
+	virtual bool filter_GPU_for23(const Label::ab_ab &label, const TAC &A1, const TAC &A2) const { return false; }
+
+	virtual bool filter_GPU_for31(const Label::ab_ab &label, const TA  &A1, const TAC &A2, const TAC &A3) const { return false; }
+	virtual bool filter_GPU_for31(const Label::ab_ab &label, const TAC &A1, const TA  &A2, const TAC &A3) const { return false; }
+	virtual bool filter_GPU_for31(const Label::ab_ab &label, const TAC &A1, const TAC &A2, const TA  &A3) const { return false; }
+	virtual bool filter_GPU_for31(const Label::ab_ab &label, const TAC &A1, const TAC &A2, const TAC &A3) const { return false; }
+
+	virtual bool filter_GPU_for32(const Label::ab_ab &label, const TA  &A1, const TAC &A2, const TAC &A3) const { return false; }
+	virtual bool filter_GPU_for32(const Label::ab_ab &label, const TAC &A1, const TA  &A2, const TAC &A3) const { return false; }
+	virtual bool filter_GPU_for32(const Label::ab_ab &label, const TAC &A1, const TAC &A2, const TA  &A3) const { return false; }
+	virtual bool filter_GPU_for32(const Label::ab_ab &label, const TAC &A1, const TAC &A2, const TAC &A3) const { return false; }
+  #endif
+
+
+
 	virtual ~Filter_Atom()=default;
 };
 
