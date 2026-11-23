@@ -16,6 +16,8 @@
 #include "../global/Tensor_Multiply.h"
 
 #include "../global/gpu/GPU_Backend.h"
+#include "gpu/GPU_LR_Batch_Plan.h"
+#include "gpu/GPU_Resident_Blocks.h"
 #include "gpu/GPU_Data_Input.h"
 #include "gpu/GPU_Data_Mul.h"
 #include "gpu/GPU_Data_Tmp.h"
@@ -23,6 +25,7 @@
 #include "gpu/Dim.h"
 
 #include <omp.h>
+#include <typeinfo>
 
 #ifdef __MKL_RI
 #include <mkl_service.h>
@@ -38,6 +41,28 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 	const Tdata fac_add_Ds)
 {
 	using namespace Array_Operator;
+	using Case_Plan = Gpu_LR_Case_Plan<TA, TAC, Tdata>;
+	using Matrix_Map = typename Case_Plan::Matrix_Map;
+	// Mutable atom filters can change the batch graph without changing tensors.
+	// Keep the cache for the base, no-op filter only.
+	const bool cacheable = typeid(*this->filter_atom) == typeid(Filter_Atom<TA, TAC>);
+    // Every GPU call retains the same allocation context, independently of
+    // local filter/cache hits. Per-call execution-context creation stays collective.
+    if(!this->gpu_lr_plan_cache)
+        this->gpu_lr_plan_cache.reset(new Gpu_LR_Plan_Cache<TA, TC, Tdata>());
+    Gpu_LR_Plan_Cache<TA, TC, Tdata> &cache = *this->gpu_lr_plan_cache;
+	if(cacheable)
+	{
+		const int thread_count = omp_get_max_threads();
+		if(cache.communicator != this->mpi_comm || !cache.matches(this->period, thread_count, this->data_ab_name,
+		                  this->parallel->list_A, this->data_pool))
+        {
+			cache.capture(this->period, thread_count, this->data_ab_name,
+			              this->parallel->list_A, this->data_pool);
+            cache.communicator = this->mpi_comm;
+        }
+	}
+
 
 	constexpr std::size_t memory_limit = std::size_t(5)*1024*1024*1024;
 
@@ -52,8 +77,56 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 	mkl_set_num_threads(1);
 	#endif
 
-	GPU_Backend::Context gpu_context(this->mpi_comm);
-	GPU_Backend::Queue &queue = gpu_context.queue();
+	using Resident = GPU_Data::Resident_Blocks<TA, TAC, Tdata>;
+	using Resident_Map = typename Resident::Block_Map;
+	std::shared_ptr<GPU_Backend::Context> call_context;
+	Resident *resident = nullptr;
+	if(!this->gpu_resident_options.enabled || this->gpu_resident_options.data_names.empty())
+		call_context.reset(new GPU_Backend::Context(this->mpi_comm));
+	else
+	{
+		if(!this->gpu_resident_blocks)
+		{
+			const std::size_t budget_bytes = gpu_resident_budget_bytes(this->gpu_resident_options.budget_gib);
+			this->gpu_resident_blocks.reset(new Resident(this->mpi_comm, budget_bytes));
+		}
+		resident = this->gpu_resident_blocks.get();
+	}
+	GPU_Backend::Queue &queue = resident ? resident->queue() : call_context->queue();
+    if(!cache.dimension_context || cache.dimension_communicator != this->mpi_comm)
+    {
+        cache.dimension_context = resident ? resident->context_owner() : call_context;
+        cache.dimension_communicator = this->mpi_comm;
+    }
+    const auto &context_owner = cache.dimension_context;
+	const auto resident_for = [&](Label::ab input_label, int variant, const Matrix_Map &source) -> const Resident_Map*
+	{
+		if(!resident) return nullptr;
+		const auto name = this->data_ab_name.find(input_label);
+		if(name == this->data_ab_name.end() || !this->gpu_resident_options.data_names.count(name->second)) return nullptr;
+		return resident->ensure(name->second, variant, source);
+	};
+	// The transposed C maps have a different element layout from the source C blocks.
+	// In practice, data_wrapper(Label::ab::a) and data_wrapper(Label::ab::b) are both Cs_+suffix,
+	// so the second call hits catche and return the address map built at the first call, no repeated upload.
+	const Resident_Map *resident_a = resident_for(Label::ab::a, 0, data_wrapper(Label::ab::a).Ds_ab);
+	const Resident_Map *resident_b = resident_for(Label::ab::b, 0, data_wrapper(Label::ab::b).Ds_ab);
+	// Evaluate the source only when this call needs a0b0; other labels need not register it.
+	bool needs_v = false;
+	for(const Label::ab_ab label : labels)
+		needs_v = needs_v || label == Label::ab_ab::a0b0_a1b1
+		                  || label == Label::ab_ab::a0b0_a1b2
+		                  || label == Label::ab_ab::a0b0_a2b1
+		                  || label == Label::ab_ab::a0b0_a2b2;
+	const Resident_Map *resident_v = resident && needs_v
+		? resident_for(Label::ab::a0b0, 0, data_wrapper(Label::ab::a0b0).Ds_ab)
+		: nullptr;
+	const Resident_Map *resident_a_transpose = Ds_a_transpose.empty()
+		? nullptr : resident_for(Label::ab::a, 1, Ds_a_transpose);
+	const bool same_c_name = this->data_ab_name.at(Label::ab::a) == this->data_ab_name.at(Label::ab::b);
+	const int b_transpose_variant = same_c_name ? 1 : 2;
+	const Resident_Map *resident_b_transpose = Ds_b_transpose.empty()
+		? nullptr : resident_for(Label::ab::b, b_transpose_variant, Ds_b_transpose);
 
 	for(const Label::ab_ab &label : labels)
 	{
@@ -68,6 +141,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 				case Label::ab_ab::a0b0_a1b1:
 				{
+					Case_Plan *case_plan = cacheable ? &this->gpu_lr_plan_cache->cases[label] : nullptr;
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map( LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
 						data_wrapper(Label::ab::a0b0).Ds_ab ),
@@ -82,6 +156,11 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						list_Ab2_Db;
 
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a0b0, rDs_a1b1;
+					rDs_b.defer_input_copies();
+					rDs_a0b0.defer_input_copies();
+					rDs_a1b1.defer_input_copies();
+					rDs_b.bind_resident_blocks(resident_b);
+					rDs_a0b0.bind_resident_blocks(resident_v);
 					GPU_Data::Tmp<TA, TAC, Tdata> rDs_tmp;
 					GPU_Data::Mul<TA, TAC, Tdata> rDs_mul;
 					GPU_Data::Output<TA, TAC, Tdata> rDs_output;
@@ -89,6 +168,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					Dim_mnk dim_0, dim_1, dim_2;
 
 					// D_mul = D_b * D_a0b0 * D_a1b1
+					if(!case_plan || !case_plan->first.ready)
+					{
 					#pragma omp parallel
 					{
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01) // A
@@ -111,31 +192,39 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 									if(D_b.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
-									{
-										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
-										rDs_a0b0.insert(Aa01, Ab01, D_a0b0);
-										rDs_a1b1.insert(Aa01, Ab01, D_a1b1);
-										const GPU_Data::Pack &D_tmp = rDs_tmp.insert({D_b.shape[1], D_b.shape[2], D_a0b0.shape[0]});
-										const GPU_Data::Pack &D_mul = rDs_mul.insert_1st(Aa01, Ab2, {D_tmp.shape[1], D_tmp.shape[2], D_a1b1.shape[0]});
-										dim_0.input({D_b.shape[1], D_b.shape[2]}, D_a0b0.shape[0], D_b.shape[0]);
-										dim_1.input({D_tmp.shape[1], D_tmp.shape[2]}, D_a1b1.shape[0], D_a1b1.shape[1]);
-									}
-									rDs_b.insert_data(D_b);
-									rDs_a0b0.insert_data(D_a0b0);
-									rDs_a1b1.insert_data(D_a1b1);
+									rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
+									rDs_a0b0.insert(Aa01, Ab01, D_a0b0);
+									rDs_a1b1.insert(Aa01, Ab01, D_a1b1);
+									const GPU_Data::Pack &D_tmp = rDs_tmp.insert({D_b.shape[1], D_b.shape[2], D_a0b0.shape[0]});
+									const GPU_Data::Pack &D_mul = rDs_mul.insert_1st(Aa01, Ab2, {D_tmp.shape[1], D_tmp.shape[2], D_a1b1.shape[0]});
+									dim_0.input({D_b.shape[1], D_b.shape[2]}, D_a0b0.shape[0], D_b.shape[0]);
+									dim_1.input({D_tmp.shape[1], D_tmp.shape[2]}, D_a1b1.shape[0], D_a1b1.shape[1]);
 								} // end for Aa01
 							} // end for Ab2
 						} // end for Ab01
 					} // end omp parallel
+						if(case_plan) case_plan->save_first({&rDs_b,&rDs_a0b0,&rDs_a1b1}, rDs_mul, &rDs_tmp, dim_0, &dim_1);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = data_wrapper(Label::ab::b).Ds_ab;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a0b0).Ds_ab;
+						const Matrix_Map &source_2 = data_wrapper(Label::ab::a1b1).Ds_ab;
+						case_plan->load_first({&rDs_b,&rDs_a0b0,&rDs_a1b1},
+						    {&source_0,&source_1,&source_2},
+						    rDs_mul, &rDs_tmp, dim_0, &dim_1);
+					}
+					rDs_b.finish_deferred_copies();
+					rDs_a0b0.finish_deferred_copies();
+					rDs_a1b1.finish_deferred_copies();
 
 					rDs_b.upload(queue);
 					rDs_a0b0.upload(queue);
 					rDs_a1b1.upload(queue);
 					const std::vector<GPU_Backend::Int> rDs_tmp_segments_size = rDs_tmp.upload(memory_limit, queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
-					dim_1.upload(queue);
+					dim_0.upload(queue, context_owner);
+					dim_1.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -148,11 +237,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a1b1.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
 						C0_left,
-						rDs_mul.h_array_1.size(), rDs_tmp_segments_size, queue);
+						rDs_mul.first_offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a0b0,rDs_a1b1,rDs_tmp,rDs_mul,dim_0,dim_1);
 
 					// D_result = D_mul * D_a
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a;
+					rDs_a.defer_input_copies();
+					rDs_a.bind_resident_blocks(resident_a);
+					if(!case_plan || !case_plan->second.ready)
+					{
 					#pragma omp parallel
 					{
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01) // A
@@ -173,31 +267,38 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const GPU_Data::Pack &D_mul = rDs_mul.find_2nd(Aa01, Ab2);
 									if (!D_mul.exist)	continue;
 
-									#pragma omp critical(rDs_output)
-									{
-										rDs_mul.insert_2nd(D_mul);
-										rDs_a.insert(Aa01, Aa2, D_a);
-										rDs_output.insert( Aa2.first, {Ab2.first, (Ab2.second - Aa2.second) % period}, {D_a.shape[2], D_mul.shape[0]});
-										dim_2.input(D_a.shape[2], D_mul.shape[0], {D_a.shape[0], D_a.shape[1]});
-									}
-									rDs_a.insert_data(D_a);
+									rDs_mul.insert_2nd(D_mul);
+									rDs_a.insert(Aa01, Aa2, D_a);
+									rDs_output.insert( Aa2.first, {Ab2.first, (Ab2.second - Aa2.second) % period}, {D_a.shape[2], D_mul.shape[0]});
+									dim_2.input(D_a.shape[2], D_mul.shape[0], {D_a.shape[0], D_a.shape[1]});
 								} // end for Ab2
 							} // end for Aa2
 						} // end for Aa01
 					} // end omp parallel
+						if(case_plan) case_plan->save_second({&rDs_a}, rDs_mul, nullptr, rDs_output, dim_2, nullptr);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = data_wrapper(Label::ab::a).Ds_ab;
+						case_plan->load_second({&rDs_a},
+						    {&source_0},
+						    rDs_mul, nullptr, rDs_output, dim_2, nullptr);
+					}
+					rDs_a.finish_deferred_copies();
 
 					rDs_output.upload(queue);
 					rDs_mul.upload_2nd(queue);
 					rDs_a.upload(queue);
-					dim_2.upload(queue);
+					dim_2.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_2.m.data(), dim_2.n.data(), dim_2.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array, rDs_mul.d_array_2,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
-						rDs_output.h_array.size(), queue);
+						rDs_output.offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_output,rDs_mul,rDs_a,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b0_a1b1
@@ -247,7 +348,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 									if(D_b.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a0b1.insert(Aa01, Ab01, D_a0b1);
@@ -270,8 +370,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a1b0.upload(queue);
 					const std::vector<GPU_Backend::Int> rDs_tmp_segments_size = rDs_tmp.upload(memory_limit, queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
-					dim_1.upload(queue);
+					dim_0.upload(queue, context_owner);
+					dim_1.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -284,8 +384,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a0b1.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
 						C0_left,
-						rDs_mul.h_array_1.size(), rDs_tmp_segments_size, queue);
+						rDs_mul.first_offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a0b1,rDs_a1b0,rDs_tmp,rDs_mul,dim_0,dim_1);
 
 					// D_result = D_mul * D_a
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a;
@@ -309,7 +410,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const GPU_Data::Pack &D_mul = rDs_mul.find_2nd(Aa01, Ab2);
 									if (!D_mul.exist)	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_mul.insert_2nd(D_mul);
 										rDs_a.insert(Aa01, Aa2, D_a);
@@ -325,15 +425,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_output.upload(queue);
 					rDs_mul.upload_2nd(queue);
 					rDs_a.upload(queue);
-					dim_2.upload(queue);
+					dim_2.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_2.m.data(), dim_2.n.data(), dim_2.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array, rDs_mul.d_array_2,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
-						rDs_output.h_array.size(), queue);
+						rDs_output.offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_output,rDs_mul,rDs_a,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b1_a1b0
@@ -342,6 +443,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 				case Label::ab_ab::a0b0_a1b2:
 				{
+					Case_Plan *case_plan = cacheable ? &this->gpu_lr_plan_cache->cases[label] : nullptr;
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map( LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
 						data_wrapper(Label::ab::a0b0).Ds_ab ),
@@ -356,6 +458,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						data_wrapper(Label::ab::a1b2).index_Ds_ab[0]);
 
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a1b2;
+					rDs_b.defer_input_copies();
+					rDs_a1b2.defer_input_copies();
+					rDs_b.bind_resident_blocks(resident_b);
 					GPU_Data::Mul<TA, TAC, Tdata> rDs_mul;
 					GPU_Data::Tmp<TA, TAC, Tdata> rDs_tmp;
 					GPU_Data::Output<TA, TAC, Tdata> rDs_output;
@@ -364,6 +469,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 					// b0b1a1 = b0b1b2 * a1b2
 					// D_mul = D_b * D_a1b2
+					if(!case_plan || !case_plan->first.ready)
+					{
 					#pragma omp parallel
 					{
 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
@@ -384,37 +491,51 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a1b2 = tools.get_Ds_ab(Label::ab::a1b2, Aa01, Ab2);
 									if(D_a1b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
-									{
-										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
-										rDs_a1b2.insert(Aa01, Ab2, D_a1b2);
-										const GPU_Data::Pack &D_mul = rDs_mul.insert_1st(Aa01, Ab01, {D_b.shape[0], D_b.shape[1], D_a1b2.shape[0]});
-										dim_0.input({D_b.shape[0], D_b.shape[1]}, D_a1b2.shape[0], D_b.shape[2]);
-									}
-									rDs_b.insert_data(D_b);
-									rDs_a1b2.insert_data(D_a1b2);
+									rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
+									rDs_a1b2.insert(Aa01, Ab2, D_a1b2);
+									const GPU_Data::Pack &D_mul = rDs_mul.insert_1st(Aa01, Ab01, {D_b.shape[0], D_b.shape[1], D_a1b2.shape[0]});
+									dim_0.input({D_b.shape[0], D_b.shape[1]}, D_a1b2.shape[0], D_b.shape[2]);
 								} // end for Ab2
 							} // end for Aa01
 						} // end for Ab01
 					} // end omp parallel
+						if(case_plan) case_plan->save_first({&rDs_b,&rDs_a1b2}, rDs_mul, nullptr, dim_0, nullptr);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = data_wrapper(Label::ab::b).Ds_ab;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a1b2).Ds_ab;
+						case_plan->load_first({&rDs_b,&rDs_a1b2},
+						    {&source_0,&source_1},
+						    rDs_mul, nullptr, dim_0, nullptr);
+					}
+					rDs_b.finish_deferred_copies();
+					rDs_a1b2.finish_deferred_copies();
 
 					rDs_b.upload(queue);
 					rDs_a1b2.upload(queue);
 					rDs_mul.upload_1st(queue);
 
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array, rDs_a1b2.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a1b2,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a * D_a0b0
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a, rDs_a0b0;
+					rDs_a.defer_input_copies();
+					rDs_a0b0.defer_input_copies();
+					rDs_a.bind_resident_blocks(resident_a_transpose);
+					rDs_a0b0.bind_resident_blocks(resident_v);
 
+					if(!case_plan || !case_plan->second.ready)
+					{
 					#pragma omp parallel
 					{
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01) // A
@@ -437,22 +558,29 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 									if (D_a.empty())	continue;
 
-									#pragma omp critical(rDs_output)
-									{
-										rDs_a.insert(Aa01, Aa2, D_a);
-										rDs_a0b0.insert(Aa01, Ab01, D_a0b0);
-										rDs_mul.insert_2nd(D_mul);
-										const GPU_Data::Pack &D_tmp = rDs_tmp.insert({D_mul.shape[1], D_mul.shape[2], D_a0b0.shape[0]});
-										rDs_output.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % period}, {D_a.shape[2], D_tmp.shape[0]});
-										dim_1.input({D_mul.shape[1], D_mul.shape[2]}, D_a0b0.shape[0], D_a0b0.shape[1]);
-										dim_2.input(D_a.shape[2], D_tmp.shape[0], {D_a.shape[0], D_a.shape[1]});
-									}
-									rDs_a.insert_data(D_a);
-									rDs_a0b0.insert_data(D_a0b0);
+									rDs_a.insert(Aa01, Aa2, D_a);
+									rDs_a0b0.insert(Aa01, Ab01, D_a0b0);
+									rDs_mul.insert_2nd(D_mul);
+									const GPU_Data::Pack &D_tmp = rDs_tmp.insert({D_mul.shape[1], D_mul.shape[2], D_a0b0.shape[0]});
+									rDs_output.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % period}, {D_a.shape[2], D_tmp.shape[0]});
+									dim_1.input({D_mul.shape[1], D_mul.shape[2]}, D_a0b0.shape[0], D_a0b0.shape[1]);
+									dim_2.input(D_a.shape[2], D_tmp.shape[0], {D_a.shape[0], D_a.shape[1]});
 								} // end for Ab01
 							}  // end for Aa2
 						} // end for Aa01
 					} // end omp parallel
+						if(case_plan) case_plan->save_second({&rDs_a,&rDs_a0b0}, rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = Ds_a_transpose;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a0b0).Ds_ab;
+						case_plan->load_second({&rDs_a,&rDs_a0b0},
+						    {&source_0,&source_1},
+						    rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
+					rDs_a.finish_deferred_copies();
+					rDs_a0b0.finish_deferred_copies();
 
 					const std::vector<GPU_Backend::Int> rDs_tmp_segments_size = rDs_tmp.upload(memory_limit, queue);
 					rDs_output.upload(queue);
@@ -460,8 +588,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a0b0.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = false;
 					GPU_Backend::gemmVbatched2s(
@@ -474,8 +602,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_tmp,rDs_output,rDs_mul,rDs_a,rDs_a0b0,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b0_a1b2
@@ -524,7 +653,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a1b2 = tools.get_Ds_ab(Label::ab::a1b2, Aa01, Ab2);
 									if(D_a1b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a1b2.insert(Aa01, Ab2, D_a1b2);
@@ -542,15 +670,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a1b2.upload(queue);
 					rDs_mul.upload_1st(queue);
 
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a1b2.d_array, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a1b2,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a * D_a0b1
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a, rDs_a0b1;
@@ -577,7 +706,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 									if (D_a.empty())	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a0b1.insert(Aa01, Ab01, D_a0b1);
@@ -600,8 +728,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a0b1.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = false;
 					GPU_Backend::gemmVbatched2s(
@@ -614,8 +742,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_tmp,rDs_output,rDs_mul,rDs_a,rDs_a0b1,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b1_a1b2
@@ -664,7 +793,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a0b2 = tools.get_Ds_ab(Label::ab::a0b2, Aa01, Ab2);
 									if(D_a0b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a0b2.insert(Aa01, Ab2, D_a0b2);
@@ -682,15 +810,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a0b2.upload(queue);
 					rDs_mul.upload_1st(queue);
 
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array, rDs_a0b2.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a0b2,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a * D_a1b0
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a, rDs_a1b0;
@@ -717,7 +846,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
 									if (D_a.empty())	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a1b0.insert(Aa01, Ab01, D_a1b0);
@@ -740,8 +868,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a1b0.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = false;
 					GPU_Backend::gemmVbatched2s(
@@ -754,8 +882,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_tmp,rDs_output,rDs_mul,rDs_a,rDs_a1b0,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b2_a1b0
@@ -804,7 +933,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a0b2 = tools.get_Ds_ab(Label::ab::a0b2, Aa01, Ab2);
 									if(D_a0b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a0b2.insert(Aa01, Ab2, D_a0b2);
@@ -822,15 +950,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a0b2.upload(queue);
 					rDs_mul.upload_1st(queue);
 
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a0b2.d_array, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a0b2,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a * D_a1b1
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a, rDs_a1b1;
@@ -857,7 +986,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
 									if (D_a.empty())	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a1b1.insert(Aa01, Ab01, D_a1b1);
@@ -880,8 +1008,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a1b1.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = false;
 					GPU_Backend::gemmVbatched2s(
@@ -894,8 +1022,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_tmp,rDs_output,rDs_mul,rDs_a,rDs_a1b1,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b2_a1b1
@@ -904,6 +1033,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 				case Label::ab_ab::a0b0_a2b1:
 				{
+					Case_Plan *case_plan = cacheable ? &this->gpu_lr_plan_cache->cases[label] : nullptr;
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
 						data_wrapper(Label::ab::a0b0).Ds_ab );
@@ -918,6 +1048,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						list_Ab2_Db;
 
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a, rDs_a2b1;
+					rDs_a.defer_input_copies();
+					rDs_a2b1.defer_input_copies();
+					rDs_a.bind_resident_blocks(resident_a_transpose);
 					GPU_Data::Mul<TA, TAC, Tdata> rDs_mul;
 					GPU_Data::Tmp<TA, TAC, Tdata> rDs_tmp;
 					GPU_Data::Output<TA, TAC, Tdata> rDs_output;
@@ -926,6 +1059,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 					// b1a1a0 = a2b1 * a1a0a2
 					// D_mul = D_a * D_a2b1
+					if(!case_plan || !case_plan->first.ready)
+					{
 					#pragma omp parallel
 					{
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
@@ -946,37 +1081,51 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b1 = tools.get_Ds_ab(Label::ab::a2b1, Aa2, Ab01);
 									if(D_a2b1.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
-									{
-										rDs_a.insert(Aa01, Aa2, D_a);
-										rDs_a2b1.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % this->period}, D_a2b1);
-										const GPU_Data::Pack &D_mul = rDs_mul.insert_1st(Aa01, Ab01, {D_a2b1.shape[1], D_a.shape[0], D_a.shape[1]});
-										dim_0.input(D_a2b1.shape[1], {D_a.shape[0], D_a.shape[1]}, D_a2b1.shape[0]);
-									}
-									rDs_a.insert_data(D_a);
-									rDs_a2b1.insert_data(D_a2b1);
+									rDs_a.insert(Aa01, Aa2, D_a);
+									rDs_a2b1.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % this->period}, D_a2b1);
+									const GPU_Data::Pack &D_mul = rDs_mul.insert_1st(Aa01, Ab01, {D_a2b1.shape[1], D_a.shape[0], D_a.shape[1]});
+									dim_0.input(D_a2b1.shape[1], {D_a.shape[0], D_a.shape[1]}, D_a2b1.shape[0]);
 
 								} // end for Aa2
 							} // end for Ab01
 						} // end for Aa01
 					} // end omp parallel
+						if(case_plan) case_plan->save_first({&rDs_a,&rDs_a2b1}, rDs_mul, nullptr, dim_0, nullptr);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = Ds_a_transpose;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a2b1).Ds_ab;
+						case_plan->load_first({&rDs_a,&rDs_a2b1},
+						    {&source_0,&source_1},
+						    rDs_mul, nullptr, dim_0, nullptr);
+					}
+					rDs_a.finish_deferred_copies();
+					rDs_a2b1.finish_deferred_copies();
 
 					rDs_a.upload(queue);
 					rDs_a2b1.upload(queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a2b1.d_array, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b1,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a0b0 * D_b
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a0b0;
+					rDs_b.defer_input_copies();
+					rDs_a0b0.defer_input_copies();
+					rDs_b.bind_resident_blocks(resident_b);
+					rDs_a0b0.bind_resident_blocks(resident_v);
 
+					if(!case_plan || !case_plan->second.ready)
+					{
 					#pragma omp parallel
 					{
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01) // A
@@ -999,22 +1148,29 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 									if(D_b.empty())	continue;
 
-									#pragma omp critical(rDs_output)
-									{
-										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
-										rDs_a0b0.insert(Aa01, Ab01, D_a0b0);
-										rDs_mul.insert_2nd(D_mul);
-										const GPU_Data::Pack &D_tmp = rDs_tmp.insert({D_a0b0.shape[1], D_mul.shape[0], D_mul.shape[1]});
-										rDs_output.insert(Aa01, Ab2, {D_tmp.shape[2], D_b.shape[2]});
-										dim_1.input(D_a0b0.shape[1], {D_mul.shape[0], D_mul.shape[1]}, D_a0b0.shape[0]);
-										dim_2.input(D_tmp.shape[2], D_b.shape[2], {D_b.shape[0], D_b.shape[1]});
-									}
-									rDs_b.insert_data(D_b);
-									rDs_a0b0.insert_data(D_a0b0);
+									rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
+									rDs_a0b0.insert(Aa01, Ab01, D_a0b0);
+									rDs_mul.insert_2nd(D_mul);
+									const GPU_Data::Pack &D_tmp = rDs_tmp.insert({D_a0b0.shape[1], D_mul.shape[0], D_mul.shape[1]});
+									rDs_output.insert(Aa01, Ab2, {D_tmp.shape[2], D_b.shape[2]});
+									dim_1.input(D_a0b0.shape[1], {D_mul.shape[0], D_mul.shape[1]}, D_a0b0.shape[0]);
+									dim_2.input(D_tmp.shape[2], D_b.shape[2], {D_b.shape[0], D_b.shape[1]});
 								} // end for Aa01
 							} // end for Ab2
 						} // end for Ab01
 					} // end omp parallel
+						if(case_plan) case_plan->save_second({&rDs_b,&rDs_a0b0}, rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = data_wrapper(Label::ab::b).Ds_ab;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a0b0).Ds_ab;
+						case_plan->load_second({&rDs_b,&rDs_a0b0},
+						    {&source_0,&source_1},
+						    rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
+					rDs_b.finish_deferred_copies();
+					rDs_a0b0.finish_deferred_copies();
 
 					const std::vector<GPU_Backend::Int> rDs_tmp_segments_size = rDs_tmp.upload(memory_limit, queue);
 					rDs_output.upload(queue);
@@ -1022,8 +1178,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.upload(queue);
 					rDs_a0b0.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -1036,8 +1192,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_tmp,rDs_output,rDs_mul,rDs_b,rDs_a0b0,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b0_a2b1
@@ -1086,7 +1243,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b0 = tools.get_Ds_ab(Label::ab::a2b0, Aa2, Ab01);
 									if(D_a2b0.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b0.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % this->period}, D_a2b0);
@@ -1104,15 +1260,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b0.upload(queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::NoTrans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array, rDs_a2b0.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b0,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a0b1 * D_b
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a0b1;
@@ -1139,7 +1296,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 									if(D_b.empty())	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a0b1.insert(Aa01, Ab01, D_a0b1);
@@ -1162,8 +1318,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.upload(queue);
 					rDs_a0b1.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -1176,8 +1332,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_tmp,rDs_output,rDs_mul,rDs_b,rDs_a0b1,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b1_a2b0
@@ -1226,7 +1383,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b1 = tools.get_Ds_ab(Label::ab::a2b1, Aa2, Ab01);
 									if(D_a2b1.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b1.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % this->period}, D_a2b1);
@@ -1244,15 +1400,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b1.upload(queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a2b1.d_array, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b1,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a1b0 * D_b
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a1b0;
@@ -1279,7 +1436,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 									if(D_b.empty())	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a1b0.insert(Aa01, Ab01, D_a1b0);
@@ -1302,8 +1458,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.upload(queue);
 					rDs_a1b0.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -1316,8 +1472,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_tmp,rDs_output,rDs_mul,rDs_b,rDs_a1b0,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b0_a2b1
@@ -1366,7 +1523,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b0 = tools.get_Ds_ab(Label::ab::a2b0, Aa2, Ab01);
 									if(D_a2b0.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b0.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % this->period}, D_a2b0);
@@ -1384,15 +1540,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b0.upload(queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::NoTrans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array, rDs_a2b0.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b0,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a1b1 * D_b
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a1b1;
@@ -1419,7 +1576,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_b = tools.get_Ds_ab(Label::ab::b, Ab01, Ab2);
 									if(D_b.empty())	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a1b1.insert(Aa01, Ab01, D_a1b1);
@@ -1442,8 +1598,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.upload(queue);
 					rDs_a1b1.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -1456,8 +1612,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_tmp,rDs_output,rDs_mul,rDs_b,rDs_a1b1,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b1_a2b0
@@ -1466,6 +1623,7 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 				case Label::ab_ab::a0b0_a2b2:
 				{
+					Case_Plan *case_plan = cacheable ? &this->gpu_lr_plan_cache->cases[label] : nullptr;
 					const std::vector<TA >  list_Aa01 = LRI_Cal_Aux::filter_list_map(
 						list_Aa01_Da,
 						data_wrapper(Label::ab::a0b0).Ds_ab );
@@ -1480,6 +1638,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						data_wrapper(Label::ab::a2b2).index_Ds_ab[0]);
 
 					GPU_Data::Input<TA, TAC, Tdata> rDs_a, rDs_a2b2;
+					rDs_a.defer_input_copies();
+					rDs_a2b2.defer_input_copies();
+					rDs_a.bind_resident_blocks(resident_a_transpose);
 					GPU_Data::Mul<TA, TAC, Tdata> rDs_mul;
 					GPU_Data::Tmp<TA, TAC, Tdata> rDs_tmp;
 					GPU_Data::Output<TA, TAC, Tdata> rDs_output;
@@ -1488,6 +1649,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 
 					// b2a1a0 = a2b2 * a1a0a2
 					// D_mul = D_a * D_a2b2
+					if(!case_plan || !case_plan->first.ready)
+					{
 					#pragma omp parallel
 					{
 						for(std::size_t ia01=0; ia01<list_Aa01.size(); ++ia01)
@@ -1508,36 +1671,50 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b2 = tools.get_Ds_ab(Label::ab::a2b2, Aa2, Ab2);
 									if(D_a2b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
-									{
-										rDs_a.insert(Aa01, Aa2, D_a);
-										rDs_a2b2.insert(Aa2.first, {Ab2.first, (Ab2.second - Aa2.second) % period}, D_a2b2);
-										rDs_mul.insert_1st(Aa01, Ab2, {D_a2b2.shape[1], D_a.shape[0], D_a.shape[1]});
-										dim_0.input(D_a2b2.shape[1], {D_a.shape[0], D_a.shape[1]}, D_a2b2.shape[0]);
-									}
-									rDs_a.insert_data(D_a);
-									rDs_a2b2.insert_data(D_a2b2);
+									rDs_a.insert(Aa01, Aa2, D_a);
+									rDs_a2b2.insert(Aa2.first, {Ab2.first, (Ab2.second - Aa2.second) % period}, D_a2b2);
+									rDs_mul.insert_1st(Aa01, Ab2, {D_a2b2.shape[1], D_a.shape[0], D_a.shape[1]});
+									dim_0.input(D_a2b2.shape[1], {D_a.shape[0], D_a.shape[1]}, D_a2b2.shape[0]);
 								} // end for Ab2
 							} // end for Aa2
 						} // end for Aa01
 					} // end omp parallel
+						if(case_plan) case_plan->save_first({&rDs_a,&rDs_a2b2}, rDs_mul, nullptr, dim_0, nullptr);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = Ds_a_transpose;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a2b2).Ds_ab;
+						case_plan->load_first({&rDs_a,&rDs_a2b2},
+						    {&source_0,&source_1},
+						    rDs_mul, nullptr, dim_0, nullptr);
+					}
+					rDs_a.finish_deferred_copies();
+					rDs_a2b2.finish_deferred_copies();
 
 					rDs_a.upload(queue);
 					rDs_a2b2.upload(queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a2b2.d_array, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b2,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a0b0 * D_b
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a0b0;
+					rDs_b.defer_input_copies();
+					rDs_a0b0.defer_input_copies();
+					rDs_b.bind_resident_blocks(resident_b_transpose);
+					rDs_a0b0.bind_resident_blocks(resident_v);
 
+					if(!case_plan || !case_plan->second.ready)
+					{
 					#pragma omp parallel
 					{
 						for (std::size_t ia01 = 0; ia01 < list_Aa01.size(); ++ia01)
@@ -1560,22 +1737,29 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const GPU_Data::Pack &D_mul = rDs_mul.find_2nd(Aa01, Ab2);
 									if (!D_mul.exist)	continue;
 
-									#pragma omp critical(rDs_output)
-									{
-										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
-										rDs_a0b0.insert(Aa01, Ab01, D_a0b0);
-										rDs_mul.insert_2nd(D_mul);
-										const GPU_Data::Pack &D_tmp = rDs_tmp.insert({D_a0b0.shape[1], D_mul.shape[0], D_mul.shape[1]});
-										rDs_output.insert(Aa01, Ab01, {D_tmp.shape[2], D_b.shape[0]});
-										dim_1.input(D_a0b0.shape[1], {D_mul.shape[0], D_mul.shape[1]}, D_a0b0.shape[0]);
-										dim_2.input(D_tmp.shape[2], D_b.shape[0], {D_b.shape[1], D_b.shape[2]});
-									}
-									rDs_b.insert_data(D_b);
-									rDs_a0b0.insert_data(D_a0b0);
+									rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
+									rDs_a0b0.insert(Aa01, Ab01, D_a0b0);
+									rDs_mul.insert_2nd(D_mul);
+									const GPU_Data::Pack &D_tmp = rDs_tmp.insert({D_a0b0.shape[1], D_mul.shape[0], D_mul.shape[1]});
+									rDs_output.insert(Aa01, Ab01, {D_tmp.shape[2], D_b.shape[0]});
+									dim_1.input(D_a0b0.shape[1], {D_mul.shape[0], D_mul.shape[1]}, D_a0b0.shape[0]);
+									dim_2.input(D_tmp.shape[2], D_b.shape[0], {D_b.shape[1], D_b.shape[2]});
 								} // end for Aa01
 							} // end for Ab2
 						} // end for Ab01
 					} // end omp parallel
+						if(case_plan) case_plan->save_second({&rDs_b,&rDs_a0b0}, rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
+					else
+					{
+						const Matrix_Map &source_0 = Ds_b_transpose;
+						const Matrix_Map &source_1 = data_wrapper(Label::ab::a0b0).Ds_ab;
+						case_plan->load_second({&rDs_b,&rDs_a0b0},
+						    {&source_0,&source_1},
+						    rDs_mul, &rDs_tmp, rDs_output, dim_1, &dim_2);
+					}
+					rDs_b.finish_deferred_copies();
+					rDs_a0b0.finish_deferred_copies();
 
 					rDs_b.upload(queue);
 					rDs_a0b0.upload(queue);
@@ -1583,8 +1767,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					const std::vector<GPU_Backend::Int> rDs_tmp_segments_size = rDs_tmp.upload(memory_limit, queue);
 					rDs_output.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -1597,8 +1781,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a0b0,rDs_mul,rDs_tmp,rDs_output,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b0_a2b2
@@ -1647,7 +1832,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b2 = tools.get_Ds_ab(Label::ab::a2b2, Aa2, Ab2);
 									if(D_a2b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b2.insert(Aa2.first, {Ab2.first, (Ab2.second - Aa2.second) % period}, D_a2b2);
@@ -1664,15 +1848,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b2.upload(queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a2b2.d_array, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b2,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a0b1 * D_b
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a0b1;
@@ -1699,7 +1884,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const GPU_Data::Pack &D_mul = rDs_mul.find_2nd(Aa01, Ab2);
 									if (!D_mul.exist)	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a0b1.insert(Aa01, Ab01, D_a0b1);
@@ -1722,8 +1906,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					const std::vector<GPU_Backend::Int> rDs_tmp_segments_size = rDs_tmp.upload(memory_limit, queue);
 					rDs_output.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -1736,8 +1920,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a0b1,rDs_mul,rDs_tmp,rDs_output,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b1_a2b2
@@ -1786,7 +1971,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b2 = tools.get_Ds_ab(Label::ab::a2b2, Aa2, Ab2);
 									if(D_a2b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b2.insert(Aa2.first, {Ab2.first, (Ab2.second - Aa2.second) % period}, D_a2b2);
@@ -1803,15 +1987,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b2.upload(queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a2b2.d_array, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b2,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a1b0 * D_b
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a1b0;
@@ -1838,7 +2023,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const GPU_Data::Pack &D_mul = rDs_mul.find_2nd(Aa01, Ab2);
 									if (!D_mul.exist)	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a1b0.insert(Aa01, Ab01, D_a1b0);
@@ -1861,8 +2045,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					const std::vector<GPU_Backend::Int> rDs_tmp_segments_size = rDs_tmp.upload(memory_limit, queue);
 					rDs_output.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -1875,8 +2059,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a1b0,rDs_mul,rDs_tmp,rDs_output,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b0_a2b2
@@ -1925,7 +2110,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b2 = tools.get_Ds_ab(Label::ab::a2b2, Aa2, Ab2);
 									if(D_a2b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b2.insert(Aa2.first, {Ab2.first, (Ab2.second - Aa2.second) % period}, D_a2b2);
@@ -1942,15 +2126,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b2.upload(queue);
 					rDs_mul.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a2b2.d_array, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul.d_array_1,
-						rDs_mul.h_array_1.size(), queue);
+						rDs_mul.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b2,rDs_mul,dim_0);
 
 					// D_result = D_mul * D_a1b1 * D_b
 					GPU_Data::Input<TA, TAC, Tdata> rDs_b, rDs_a1b1;
@@ -1977,7 +2162,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const GPU_Data::Pack &D_mul = rDs_mul.find_2nd(Aa01, Ab2);
 									if (!D_mul.exist)	continue;
 
-									#pragma omp critical(rDs_output)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a1b1.insert(Aa01, Ab01, D_a1b1);
@@ -2000,8 +2184,8 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					const std::vector<GPU_Backend::Int> rDs_tmp_segments_size = rDs_tmp.upload(memory_limit, queue);
 					rDs_output.upload(queue);
 
-					dim_1.upload(queue);
-					dim_2.upload(queue);
+					dim_1.upload(queue, context_owner);
+					dim_2.upload(queue, context_owner);
 
 					constexpr bool C0_left = true;
 					GPU_Backend::gemmVbatched2s(
@@ -2014,8 +2198,9 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
 						C0_left,
-						rDs_output.h_array.size(), rDs_tmp_segments_size, queue);
+						rDs_output.offsets().size(), rDs_tmp_segments_size, queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a1b1,rDs_mul,rDs_tmp,rDs_output,dim_1,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b1_a2b2
@@ -2065,7 +2250,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a1b2 = tools.get_Ds_ab(Label::ab::a1b2, Aa01, Ab2);
 									if(D_a1b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul_1)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a1b2.insert(Aa01, Ab2, D_a1b2);
@@ -2082,15 +2266,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.upload(queue);
 					rDs_a1b2.upload(queue);
 					rDs_mul_1.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array, rDs_a1b2.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_1.d_array_1,
-						rDs_mul_1.h_array_1.size(), queue);
+						rDs_mul_1.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a1b2,rDs_mul_1,dim_0);
 
 					// D_mul2 = D_a2b1 * D_a
 					// b1a1a0 = a2b1 * a1a0a2
@@ -2114,7 +2299,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b1 = tools.get_Ds_ab(Label::ab::a2b1, Aa2, Ab01);
 									if(D_a2b1.empty())	continue;
 
-									#pragma omp critical(rDs_mul_2)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b1.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % period}, D_a2b1);
@@ -2131,15 +2315,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b1.upload(queue);
 					rDs_mul_2.upload_1st(queue);
-					dim_1.upload(queue);
+					dim_1.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_1.m.data(), dim_1.n.data(), dim_1.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a2b1.d_array, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_2.d_array_1,
-						rDs_mul_2.h_array_1.size(), queue);
+						rDs_mul_2.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b1,rDs_mul_2,dim_1);
 
 					// D_result = D_mul2 * D_mul1
 					// a0b0 = b1a1a0 * b0b1a1
@@ -2159,7 +2344,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 								const GPU_Data::Pack &D_mul_2 = rDs_mul_2.find_2nd(Aa01, Ab01);
 								if (!D_mul_2.exist)	continue;
 
-								#pragma omp critical(rDs_output)
 								{
 									rDs_mul_1.insert_2nd(D_mul_1);
 									rDs_mul_2.insert_2nd(D_mul_2);
@@ -2173,15 +2357,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_mul_1.upload_2nd(queue);
 					rDs_mul_2.upload_2nd(queue);
 					rDs_output.upload(queue);
-					dim_2.upload(queue);
+					dim_2.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_2.m.data(), dim_2.n.data(), dim_2.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_2.d_array_2, rDs_mul_1.d_array_2,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
-						rDs_output.h_array.size(), queue);
+						rDs_output.offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_mul_1,rDs_mul_2,rDs_output,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b2_a2b1
@@ -2229,7 +2414,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a0b2 = tools.get_Ds_ab(Label::ab::a0b2, Aa01, Ab2);
 									if(D_a0b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul_1)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a0b2.insert(Aa01, Ab2, D_a0b2);
@@ -2246,15 +2430,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.upload(queue);
 					rDs_a0b2.upload(queue);
 					rDs_mul_1.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a0b2.d_array, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_1.d_array_1,
-						rDs_mul_1.h_array_1.size(), queue);
+						rDs_mul_1.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a0b2,rDs_mul_1,dim_0);
 
 					// D_mul2 = D_a2b0 * D_a
 					// a1a0b0 = a1a0a2 * a2b0
@@ -2278,7 +2463,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b0 = tools.get_Ds_ab(Label::ab::a2b0, Aa2, Ab01);
 									if(D_a2b0.empty())	continue;
 
-									#pragma omp critical(rDs_mul_2)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b0.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % period}, D_a2b0);
@@ -2295,15 +2479,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b0.upload(queue);
 					rDs_mul_2.upload_1st(queue);
-					dim_1.upload(queue);
+					dim_1.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::NoTrans,
 						dim_1.m.data(), dim_1.n.data(), dim_1.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array, rDs_a2b0.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_2.d_array_1,
-						rDs_mul_2.h_array_1.size(), queue);
+						rDs_mul_2.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b0,rDs_mul_2,dim_1);
 
 					// D_result = D_mul2 * D_mul1
 					// a1b1 = a1a0b0 * a0b0b1
@@ -2323,7 +2508,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 								const GPU_Data::Pack &D_mul_2 = rDs_mul_2.find_2nd(Aa01, Ab01);
 								if (!D_mul_2.exist)	continue;
 
-								#pragma omp critical(rDs_output)
 								{
 									rDs_mul_1.insert_2nd(D_mul_1);
 									rDs_mul_2.insert_2nd(D_mul_2);
@@ -2337,15 +2521,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_mul_1.upload_2nd(queue);
 					rDs_mul_2.upload_2nd(queue);
 					rDs_output.upload(queue);
-					dim_2.upload(queue);
+					dim_2.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::NoTrans,
 						dim_2.m.data(), dim_2.n.data(), dim_2.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_2.d_array_2, rDs_mul_1.d_array_2,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
-						rDs_output.h_array.size(), queue);
+						rDs_output.offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_mul_1,rDs_mul_2,rDs_output,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b2_a2b0
@@ -2393,7 +2578,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a0b2 = tools.get_Ds_ab(Label::ab::a0b2, Aa01, Ab2);
 									if(D_a0b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul_1)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a0b2.insert(Aa01, Ab2, D_a0b2);
@@ -2410,15 +2594,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.upload(queue);
 					rDs_a0b2.upload(queue);
 					rDs_mul_1.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_b.d_array, rDs_a0b2.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_1.d_array_1,
-						rDs_mul_1.h_array_1.size(), queue);
+						rDs_mul_1.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a0b2,rDs_mul_1,dim_0);
 
 					// D_mul2 = D_a2b1 * D_a
 					// b1a0a1 = a2b1 * a0a1a2
@@ -2442,7 +2627,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b1 = tools.get_Ds_ab(Label::ab::a2b1, Aa2, Ab01);
 									if(D_a2b1.empty())	continue;
 
-									#pragma omp critical(rDs_mul_2)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b1.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % period}, D_a2b1);
@@ -2459,15 +2643,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b1.upload(queue);
 					rDs_mul_2.upload_1st(queue);
-					dim_1.upload(queue);
+					dim_1.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_1.m.data(), dim_1.n.data(), dim_1.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a2b1.d_array, rDs_a.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_2.d_array_1,
-						rDs_mul_2.h_array_1.size(), queue);
+						rDs_mul_2.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b1,rDs_mul_2,dim_1);
 
 					// D_result = D_mul2 * D_mul1
 					// a1b0 = b1a0a1 * b0b1a0
@@ -2487,7 +2672,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 								const GPU_Data::Pack &D_mul_2 = rDs_mul_2.find_2nd(Aa01, Ab01);
 								if (!D_mul_2.exist)	continue;
 
-								#pragma omp critical(rDs_output)
 								{
 									rDs_mul_1.insert_2nd(D_mul_1);
 									rDs_mul_2.insert_2nd(D_mul_2);
@@ -2501,15 +2685,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_mul_1.upload_2nd(queue);
 					rDs_mul_2.upload_2nd(queue);
 					rDs_output.upload(queue);
-					dim_2.upload(queue);
+					dim_2.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::Trans, GPU_Backend::Trans,
 						dim_2.m.data(), dim_2.n.data(), dim_2.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_2.d_array_2, rDs_mul_1.d_array_2,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
-						rDs_output.h_array.size(), queue);
+						rDs_output.offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_mul_1,rDs_mul_2,rDs_output,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a0b2_a2b1
@@ -2557,7 +2742,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a1b2 = tools.get_Ds_ab(Label::ab::a1b2, Aa01, Ab2);
 									if(D_a1b2.empty())	continue;
 
-									#pragma omp critical(rDs_mul_1)
 									{
 										rDs_b.insert(Ab01.first, {Ab2.first, (Ab2.second - Ab01.second) % period}, D_b);
 										rDs_a1b2.insert(Aa01, Ab2, D_a1b2);
@@ -2574,15 +2758,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_b.upload(queue);
 					rDs_a1b2.upload(queue);
 					rDs_mul_1.upload_1st(queue);
-					dim_0.upload(queue);
+					dim_0.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::Trans,
 						dim_0.m.data(), dim_0.n.data(), dim_0.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a1b2.d_array, rDs_b.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_1.d_array_1,
-						rDs_mul_1.h_array_1.size(), queue);
+						rDs_mul_1.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_b,rDs_a1b2,rDs_mul_1,dim_0);
 
 					// D_mul2 = D_a2b0 * D_a
 					// a0a1b0 = a0a1a2 * a2b0
@@ -2606,7 +2791,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 									const Tensor<Tdata> &D_a2b0 = tools.get_Ds_ab(Label::ab::a2b0, Aa2, Ab01);
 									if(D_a2b0.empty())	continue;
 
-									#pragma omp critical(rDs_mul_2)
 									{
 										rDs_a.insert(Aa01, Aa2, D_a);
 										rDs_a2b0.insert(Aa2.first, {Ab01.first, (Ab01.second - Aa2.second) % period}, D_a2b0);
@@ -2623,15 +2807,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_a.upload(queue);
 					rDs_a2b0.upload(queue);
 					rDs_mul_2.upload_1st(queue);
-					dim_1.upload(queue);
+					dim_1.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::NoTrans,
 						dim_1.m.data(), dim_1.n.data(), dim_1.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_a.d_array, rDs_a2b0.d_array,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_2.d_array_1,
-						rDs_mul_2.h_array_1.size(), queue);
+						rDs_mul_2.first_offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_a,rDs_a2b0,rDs_mul_2,dim_1);
 
 					// D_result = D_mul2 * D_mul1
 					// a0b1 = a0a1b0 * a1b0b1
@@ -2651,7 +2836,6 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 								const GPU_Data::Pack &D_mul_2 = rDs_mul_2.find_2nd(Aa01, Ab01);
 								if (!D_mul_2.exist)	continue;
 
-								#pragma omp critical(rDs_output)
 								{
 									rDs_mul_1.insert_2nd(D_mul_1);
 									rDs_mul_2.insert_2nd(D_mul_2);
@@ -2665,15 +2849,16 @@ void LRI<TA,Tcell,Ndim,Tdata>::cal_loop3_GPU(
 					rDs_mul_1.upload_2nd(queue);
 					rDs_mul_2.upload_2nd(queue);
 					rDs_output.upload(queue);
-					dim_2.upload(queue);
+					dim_2.upload(queue, context_owner);
 
 					GPU_Backend::gemmVbatched(
 						GPU_Backend::NoTrans, GPU_Backend::NoTrans,
 						dim_2.m.data(), dim_2.n.data(), dim_2.k.data(),
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_mul_2.d_array_2, rDs_mul_1.d_array_2,
 						GPU_Backend::Type_to_GPU<Tdata>{1}, rDs_output.d_array,
-						rDs_output.h_array.size(), queue);
+						rDs_output.offsets().size(), queue);
 					GPU_Backend::sync(queue);
+					GPU_Data::release_completed_uploads(rDs_mul_1,rDs_mul_2,rDs_output,dim_2);
 
 					rDs_output.download(Ds_result, queue, fac_add_Ds);
 				} break; // end case a1b2_a2b0
