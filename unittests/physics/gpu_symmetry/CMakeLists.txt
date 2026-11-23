@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 project(libri_gpu_symmetry_tests LANGUAGES CXX)
 
 option(ENABLE_GPU "Run the DDLA/CUDA contraction checks" OFF)
-set(LIBRI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." CACHE PATH "LibRI source tree")
+set(LIBRI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." CACHE PATH "LibRI source tree")
 set(LIBCOMM_ROOT "" CACHE PATH "LibComm installation")
 set(CEREAL_ROOT "" CACHE PATH "cereal installation")
 set(DDLA_ROOT "" CACHE PATH "DDLA installation")
@@ -34,7 +34,7 @@ if(ENABLE_GPU)
     "${DDLA_ROOT}/lib/cmake/LibDDLA" "${DDLA_ROOT}/lib64/cmake/LibDDLA"
     NO_DEFAULT_PATH)
   target_compile_features(${test_target} PRIVATE cxx_std_17)
-  target_compile_definitions(${test_target} PRIVATE __GPU_RI __DDLA_RI DDLA_USE_CUDA)
+  target_compile_definitions(${test_target} PRIVATE __GPU_RI __DDLA_RI)
   target_link_libraries(${test_target} PRIVATE ddla::ddla)
 endif()
 
@@ -77,3 +77,10 @@ if(ENABLE_GPU)
       ENVIRONMENT "OMP_NUM_THREADS=${threads};OMP_PROC_BIND=false;MKL_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
   endforeach()
 endif()
+
+# Exercise the GPU callback contract on a CPU host; no GPU backend is instantiated.
+add_executable(test_gpu_symmetry_filters test_gpu_symmetry_filters.cpp)
+target_compile_features(test_gpu_symmetry_filters PRIVATE cxx_std_14)
+target_compile_definitions(test_gpu_symmetry_filters PRIVATE __GPU_RI)
+target_include_directories(test_gpu_symmetry_filters PRIVATE "${LIBRI_ROOT}/include")
+add_test(NAME gpu_symmetry_filters COMMAND test_gpu_symmetry_filters)
