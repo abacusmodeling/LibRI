@@ -965,7 +965,7 @@ def content_prefix():
 		{
 			using namespace Array_Operator;
 
-			constexpr std::size_t memory_limit = std::size_t(5)*1024*1024*1024;
+			constexpr std::size_t memory_limit = std::size_t(1)*1024*1024*1024;
 
 			const Data_Pack_Wrapper<TA,TC,Tdata> data_wrapper(this->data_pool, this->data_ab_name);
 			const LRI_Cal_Tools<TA,TC,Tdata> tools(this->period, this->data_pool, this->data_ab_name);

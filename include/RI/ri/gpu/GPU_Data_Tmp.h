@@ -38,7 +38,16 @@ class Tmp
 		const std::size_t memory_limit, GPU_Backend::Queue queue)
 	{
 		this->queue_ = queue;
-		const std::size_t size_limit = std::min(this->totalSize, memory_limit / sizeof(Tdata_GPU));
+		// Each segment must fit at least one tensor to make progress.
+		std::size_t largest_tensor = 0;
+		for (const Pack& pack : this->h_array)
+		{
+			const std::size_t tensor_size = pack.shape.get_shape_all();
+			largest_tensor = std::max(largest_tensor, tensor_size);
+		}
+		const std::size_t requested_size = memory_limit / sizeof(Tdata_GPU);
+		const std::size_t permitted_size = std::max(requested_size, largest_tensor);
+		const std::size_t size_limit = std::min(this->totalSize, permitted_size);
 		const std::vector<std::vector<Pack>> h_array_segments = segment_points(this->h_array, size_limit);
 
 		GPU_Backend::allocate(&this->d_data, size_limit, queue);
