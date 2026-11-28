@@ -23,6 +23,13 @@ namespace Divide_Atoms
 		Out: [[0,0], [0,1], [0,2], [1,0], [1,1], [1,2]]
 	*/
 	template<typename Tcell>
+	std::vector<std::array<Tcell,0>> traversal_period(const std::array<Tcell,0> &)
+	{
+		// With no periodic axes, the origin is the only cell.
+		return {std::array<Tcell,0>{}};
+	}
+
+	template<typename Tcell>
 	std::vector<std::array<Tcell,1>> traversal_period(const std::array<Tcell,1> &period)
 	{
 		std::vector<std::array<Tcell,1>> cells;
